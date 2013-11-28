@@ -27,6 +27,8 @@ Where I can find examples of using GAF?
 You can find two demo projects in demo directory here.
 
 Links and resources:
+-----------------
+
 * [Official Homepage][1]
 * [FAQ page][2]
 
