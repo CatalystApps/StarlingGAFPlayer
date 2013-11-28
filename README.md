@@ -4,7 +4,7 @@ Starling GAF Player
 What is Starling GAF Player?
 -----------------
 
-Starling GAF Player is an ActionScript 3 library that allows developer to easily play GAF animation format using Starling framework. 
+Starling GAF Player is an ActionScript 3 library that allows developer to easily play GAF animation format using [Starling][3] framework. 
 
 What is GAF?
 -----------------
@@ -34,3 +34,4 @@ Links and resources:
 
 [1]: http://gafmedia.com
 [2]: http://gafmedia.com/converter/?action=faq
+[3]: http://www.starling-framework.org
