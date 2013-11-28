@@ -1,0 +1,19 @@
+<project name="GAF" basedir="../" default="build">
+
+  <property name="FLEX_HOME" location="/tools/flex_sdk_4.6"/>
+  
+  <property name="deploy.dir" location="bin" />
+  <property name="src.dir" location="src" />
+  <property name="lib.dir" location="lib" />
+    
+  <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+  
+  <target name="build">
+    <compc output="${deploy.dir}/demo.swc">
+      <include-sources dir="${src.dir}" includes="*" />
+      <include-libraries file="${lib.dir}/FZip.swc" />
+      <external-library-path file="${lib.dir}/starling.swc" />
+      <external-library-path dir="${FLEX_HOME}/frameworks/libs/player/" includes="*" />
+    </compc>
+  </target>  
+</project>
