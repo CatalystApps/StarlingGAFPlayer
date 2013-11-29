@@ -32,6 +32,11 @@ Links and resources:
 * [Official Homepage][1]
 * [FAQ page][2]
 
+
+Distribution includes [Starling library][4] binary that is licensed under [Simplified BSD License]
+
 [1]: http://gafmedia.com
 [2]: http://gafmedia.com/converter/?action=faq
 [3]: http://www.starling-framework.org
+[4]: https://github.com/PrimaryFeather/Starling-Framework
+[5]: https://raw.github.com/PrimaryFeather/Starling-Framework/master/LICENSE.md
