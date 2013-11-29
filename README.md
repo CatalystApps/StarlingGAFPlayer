@@ -33,7 +33,7 @@ Links and resources:
 * [FAQ page][2]
 
 
-Distribution includes [Starling library][4] binary that is licensed under [Simplified BSD License]
+Distribution includes [Starling library][4] binary that is licensed under [Simplified BSD License][5]
 
 [1]: http://gafmedia.com
 [2]: http://gafmedia.com/converter/?action=faq
