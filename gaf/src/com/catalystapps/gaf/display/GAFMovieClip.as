@@ -293,6 +293,8 @@ package com.catalystapps.gaf.display
 								// TODO: uncomment this line when this limitation will be removed
 								// this.updateFilter(image, instance, this.scale);
 								
+								image.filter = null;
+								
 								this.addChild(pixelMaskDisplayObject);
 							}
 							else
