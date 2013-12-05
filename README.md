@@ -24,7 +24,7 @@ Yes, please visit [GAF site FAQ page][2] for more info.
 Where I can find examples of using GAF?
 -----------------
 
-You can find two demo projects in demo directory here.
+You can find two demo projects in demo directory [here][6].
 
 Links and resources:
 -----------------
@@ -33,10 +33,11 @@ Links and resources:
 * [FAQ page][2]
 
 
-Distribution includes [Starling library][4] binary that is licensed under [Simplified BSD License]
+Distribution includes [Starling library][4] binary that is licensed under [Simplified BSD License][5]
 
 [1]: http://gafmedia.com
 [2]: http://gafmedia.com/converter/?action=faq
 [3]: http://www.starling-framework.org
 [4]: https://github.com/PrimaryFeather/Starling-Framework
 [5]: https://raw.github.com/PrimaryFeather/Starling-Framework/master/LICENSE.md
+[6]: https://github.com/CatalystApps/StarlingGAFPlayer/tree/master/demo
