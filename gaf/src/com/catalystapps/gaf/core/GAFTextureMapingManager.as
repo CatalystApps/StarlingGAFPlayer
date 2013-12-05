@@ -7,7 +7,7 @@ package com.catalystapps.gaf.core
 
 	import flash.geom.Matrix;
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class GAFTextureMapingManager
 	{

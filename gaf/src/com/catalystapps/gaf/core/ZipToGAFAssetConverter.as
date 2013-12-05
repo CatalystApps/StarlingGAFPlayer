@@ -6,8 +6,7 @@ package com.catalystapps.gaf.core
 	import deng.fzip.FZipLibrary;
 
 	import starling.textures.Texture;
-	import starling.textures.TextureAtlas;
-
+	
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFBundle;
@@ -24,8 +23,31 @@ package com.catalystapps.gaf.core
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
+	/** Dispatched when convertation completed */
+    [Event(name="complete", type="flash.events.Event")]
+	
+	/** Dispatched when convertation failed for some reason */
+    [Event(name="error", type="flash.events.ErrorEvent")]
+
 	/**
-	 * @author mitvad
+	 * The ZipToGAFAssetConverter simply converts loaded GAF file into <code>GAFAsset</code> object that
+	 * is used to create <code>GAFMovieClip</code> - animation display object ready to be used in starling display list. 
+	 * If GAF file is created as Bundle it converts as <code>GAFBundle</code>
+	 * 
+	 * <p>Here is the simple rules to understend what is <code>GAFAsset</code>, <code>GAFBundle</code> and <code>GAFMovieClip</code>:</p>
+	 * 
+	 * <ul>
+	 * 	<li><code>GAFAsset</code> - is like a library symbol in Flash IDE. When you load GAF asset file you can not use it directly. 
+	 * 		All you need to do is convert it into <code>GAFAsset</code> using ZipToGAFAssetConverter</li>
+	 * 	<li><code>GAFBundle</code> - is a storage of all <code>GAFAsset's</code> from Bundle</li>
+	 * 	<li><code>GAFMovieClip</code> - is like an instance of Flash <code>MovieClip</code>. 
+	 * 		You can create it from <code>GAFAsset</code> and use in <code>Starling Display Object</code></li>
+	 * </ul>
+	 * 
+	 * @see com.catalystapps.gaf.data.GAFAsset
+	 * @see com.catalystapps.gaf.data.GAFBundle
+	 * @see com.catalystapps.gaf.display.GAFMovieClip
+	 * 
 	 */
 	public class ZipToGAFAssetConverter extends EventDispatcher
 	{
@@ -66,6 +88,7 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 		
+		/** @private */
 		public function ZipToGAFAssetConverter()
 		{
 			this.texturesDictionary = new Object();
@@ -77,6 +100,15 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Converts GAF file (*.zip) into <code>GAFAsset</code> or <code>GAFBundle</code> depending on file content.
+		 * Because convertation process is asynchronous use <code>Event.COMPLETE</code> listener to trigger successful convertation.
+		 * Use <code>ErrorEvent.ERROR</code> listener to trigger any convertation fail.
+		 * 
+		 * @param zipByteArray *.zip file binary
+		 * @param defaultScale Scale value for <code>GAFAsset</code> that will be set by default
+		 * @param defaultContentScaleFactor Content scale factor (csf) value for <code>GAFAsset</code> that will be set by default
+		 */
 		public function convert(zipByteArray: ByteArray, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
 			this._defaultScale = defaultScale;
@@ -296,11 +328,17 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Return converted <code>GAFAsset</code>. If GAF asset file created as Bundle - returns null.
+		 */
 		public function get gafAsset(): GAFAsset
 		{
 			return _gafAsset;
 		}
-
+		
+		/**
+		 * Return converted <code>GAFBundle</code>. If GAF asset file created as singl animation - returns null.
+		 */
 		public function get gafBundle(): GAFBundle
 		{
 			return _gafBundle;

@@ -16,7 +16,7 @@ package com.catalystapps.gaf.data
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class GAFAssetConfig
 	{

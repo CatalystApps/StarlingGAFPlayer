@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class CAnimationObjects
 	{

@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
 	/**
-	 * @author mitvad
+	 * Data object that describe sequence
 	 */
 	public class CAnimationSequence
 	{
@@ -27,6 +27,9 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * @private
+		 */
 		public function CAnimationSequence(id: String , startFrameNo: uint, endFrameNo: uint)
 		{
 			this._id = id;
@@ -40,6 +43,9 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * @private
+		 */
 		public function isSequenceFrame(frameNo: uint): Boolean
 		{
 			// first frame is "1" !!!
@@ -78,16 +84,25 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Sequence ID
+		 */
 		public function get id(): String
 		{
 			return _id;
 		}
-
+		
+		/**
+		 * Sequence start frame number
+		 */
 		public function get startFrameNo(): uint
 		{
 			return _startFrameNo;
 		}
-
+		
+		/**
+		 * Sequence start end number
+		 */
 		public function get endFrameNo(): uint
 		{
 			return _endFrameNo;

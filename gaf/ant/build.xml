@@ -5,15 +5,31 @@
   <property name="deploy.dir" location="bin" />
   <property name="src.dir" location="src" />
   <property name="lib.dir" location="lib" />
+  <property name="doc.dir" location="doc" />
     
   <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
   
   <target name="build">
-    <compc output="${deploy.dir}/demo.swc">
+    <compc output="${deploy.dir}/gaf.swc">
       <include-sources dir="${src.dir}" includes="*" />
       <include-libraries file="${lib.dir}/FZip.swc" />
       <external-library-path file="${lib.dir}/starling.swc" />
       <external-library-path dir="${FLEX_HOME}/frameworks/libs/player/" includes="*" />
     </compc>
   </target>  
+	
+  <target name="doc" depends="clean"> 
+  	<asdoc output="${doc.dir}" lenient="true" failonerror="true"> 
+        <doc-sources path-element="${src.dir}"/>
+  		<compiler.source-path path-element="${FLEX_HOME}/frameworks/projects/framework/src"/> 
+  		<compiler.library-path file="${lib.dir}/starling.swc"/>
+  		<compiler.library-path file="${lib.dir}/FZip.swc"/>
+        </asdoc> 
+    </target>	
+	
+	<target name="clean"> 
+	    <delete includeEmptyDirs="true"> 
+	         <fileset dir="${doc.dir}" includes="**/*"/> 
+	    </delete> 
+	</target> 
 </project>

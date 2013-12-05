@@ -3,7 +3,7 @@ package com.catalystapps.gaf.core
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.display.GAFMovieClip;
 	/**
-	 * @author mitvad
+	 * Utility class that allows easily manage all <code>GAFAsset's</code>
 	 */
 	public class GAFAssetsManager
 	{
@@ -34,6 +34,9 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Add <code>GAFAsset</code> into assets collection
+		 */
 		public static function addGAFAsset(asset: GAFAsset): void
 		{
 			if(!_assetsCollection[asset.id])
@@ -42,8 +45,18 @@ package com.catalystapps.gaf.core
 				
 				_assetsTotal++;
 			}
+			else
+			{
+				throw new Error("Trying to add asset that already exist in collection. Asset ID: " + asset.id);
+			}
 		}
 		
+		/**
+		 * Returns instance of <code>GAFMovieClip</code>. In case when <code>GAFAsset</code> with specified ID is absent - returns <code>null</code>
+		 * 
+		 * @param id Asset ID
+		 * @param mappedAssetID To be defined
+		 */
 		public static function getGAFMovieClip(id: String, mappedAssetID: String = ""): GAFMovieClip
 		{
 			if(_assetsCollection[id])
@@ -56,7 +69,12 @@ package com.catalystapps.gaf.core
 			}
 		}
 		
-		public static function hasGAFMovieClip(id: String): Boolean
+		/**
+		 * Check is there asset in collection
+		 * 
+		 * @param id Asset ID
+		 */
+		public static function hasGAFAsset(id: String): Boolean
 		{
 			if(_assetsCollection[id])
 			{
@@ -68,6 +86,9 @@ package com.catalystapps.gaf.core
 			}
 		}
 		
+		/**
+		 * Total number of assets in collection
+		 */
 		public static function get assetsTotal(): uint
 		{
 			return _assetsTotal;

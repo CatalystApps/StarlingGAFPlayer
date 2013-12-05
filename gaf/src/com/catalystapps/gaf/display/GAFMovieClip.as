@@ -16,8 +16,17 @@ package com.catalystapps.gaf.display
 
 	import flash.geom.Matrix;
 
+	
+	/** Dispatched when playhead reached first frame of sequence */
+    [Event(name="typeSequenceStart", type="com.catalystapps.gaf.event.SequenceEvent")]
+	
+	/** Dispatched when playhead reached end frame of sequence */
+    [Event(name="typeSequenceEnd", type="com.catalystapps.gaf.event.SequenceEvent")]
+	
 	/**
-	 * @author mitvad
+	 * GAFMovieClip represents animation display object that is ready to be used in Starling display list. It has 
+	 * all controls for animation familiar from standard MovieClip (<code>play</code>, <code>stop</code>, <code>gotoAndPlay,</code> etc.) 
+	 * and some more like <code>loop</code>, <code>nPlay</code>, <code>setSequence</code> that helps manage playback
 	 */
 	public class GAFMovieClip extends Sprite
 	{
@@ -57,6 +66,12 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Creates a new GAFMovieClip instance.
+		 * 
+		 * @param gafAsset <code>GAFAsset</code> from what <code>GAFMovieClip</code> will be created
+		 * @param mappedAssetID To be defined. For now - use default value
+		 */
 		public function GAFMovieClip(gafAsset: GAFAsset, mappedAssetID: String = "")
 		{
 			this._gafAsset = gafAsset;
@@ -76,16 +91,33 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Returns the child display object that exists with the specified ID. Use to obtain animation's parts
+		 * 
+		 * @param id Child ID
+		 * @return The child display object with the specified ID
+		 */
 		public function getChildByID(id: String): DisplayObject
 		{
 			return this.imagesDictionary[id];
 		}
 		
+		/**
+		 * Clear playing sequence. If animation already in play just continue playing without sequence limitation
+		 */
 		public function clearSequence(): void
 		{
 			this.playingSequence = null;
 		}
 		
+		/**
+		 * Set sequence to play
+		 * 
+		 * @param id Sequence ID
+		 * @param play Play or not immediately. <code>true</code> - starts playng from sequence start frame. <code>false</code> - go to sequence start frame and stop
+		 * 
+		 * @return 
+		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
 			this.playingSequence = this._gafAsset.config.animationSequences.getSecuenceByID(id);
@@ -105,6 +137,9 @@ package com.catalystapps.gaf.display
 			return this.playingSequence;
 		}
 		
+		/**
+		 * Moves the playhead in the timeline of the movie clip.
+		 */
 		public function play(): void
 		{
 			if(this._totalFrames > 1)
@@ -122,7 +157,10 @@ package com.catalystapps.gaf.display
 				this._inPlay = true;
 			}
 		}
-
+		
+		/**
+		 * Stops the playhead in the movie clip. 
+		 */
 		public function stop(): void
 		{
 			if(this.hasEventListener(Event.ENTER_FRAME))
@@ -133,6 +171,11 @@ package com.catalystapps.gaf.display
 			this._inPlay = false;
 		}
 		
+		/**
+		 * Brings the playhead to the specified frame of the movie clip and stops it there. First frame is "1"
+		 * 
+		 * @param frame A number representing the frame number, or a string representing the label of the frame, to which the playhead is sent.
+		 */
 		public function gotoAndStop(frame: *): void
 		{
 			this.checkAndSetCurrentFrame(frame);
@@ -142,6 +185,11 @@ package com.catalystapps.gaf.display
 			this.stop();
 		}
 		
+		/**
+		 * Starts playing animation at the specified frame. First frame is "1"
+		 * 
+		 * @param frame A number representing the frame number, or a string representing the label of the frame, to which the playhead is sent.
+		 */
 		public function gotoAndPlay(frame: *): void
 		{
 			this.checkAndSetCurrentFrame(frame);
@@ -332,6 +380,9 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Disposes all resources of the display object
+		 */
 		override public function dispose(): void
 		{
 			this.stop();
@@ -405,21 +456,33 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Specifies the number of the frame in which the playhead is located in the timeline of the GAFMovieClip instance. First frame is "1"
+		 */
 		public function get currentFrame(): uint
 		{
 			return _currentFrame + 1;// Like in standart AS3 API for MovieClip first frame is "1" instead of "0" (but internally used "0")
 		}
-
+		
+		/**
+		 * The total number of frames in the GAFMovieClip instance. 
+		 */
 		public function get totalFrames(): uint
 		{
 			return _totalFrames;
 		}
-
+		
+		/**
+		 * Indicates whether GAFMovieClip instance already in play
+		 */
 		public function get inPlay(): Boolean
 		{
 			return _inPlay;
 		}
-
+		
+		/**
+		 * Indicates whether GAFMovieClip instance continue playing from start frame after playback reached animation end
+		 */
 		public function get loop(): Boolean
 		{
 			return _loop;

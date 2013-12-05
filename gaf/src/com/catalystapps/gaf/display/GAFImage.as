@@ -3,7 +3,7 @@ package com.catalystapps.gaf.display
 	import starling.display.Image;
 
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class GAFImage extends Image
 	{

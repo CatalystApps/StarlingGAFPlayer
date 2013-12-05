@@ -5,7 +5,7 @@ package com.catalystapps.gaf.display
 	import flash.geom.Matrix;
 
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class GAFTexture
 	{

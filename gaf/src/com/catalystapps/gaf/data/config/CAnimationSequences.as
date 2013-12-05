@@ -2,7 +2,7 @@ package com.catalystapps.gaf.data.config
 {
 	import com.catalystapps.gaf.event.SequenceEvent;
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class CAnimationSequences
 	{

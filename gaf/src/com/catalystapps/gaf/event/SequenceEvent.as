@@ -5,7 +5,7 @@ package com.catalystapps.gaf.event
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 
 	/**
-	 * @author mitvad
+	 * SequenceEvent object is dispatched into the event flow when when any sequence events occur.
 	 */
 	public class SequenceEvent extends Event
 	{
@@ -15,7 +15,10 @@ package com.catalystapps.gaf.event
 		//
 		//--------------------------------------------------------------------------
 		
+		/** Dispatched when playhead reached first frame of sequence */
 		public static const TYPE_SEQUENCE_START: String = "typeSequenceStart";
+		
+		/** Dispatched when playhead reached end frame of sequence */
 		public static const TYPE_SEQUENCE_END: String = "typeSequenceEnd";
 		
 		//--------------------------------------------------------------------------
@@ -32,6 +35,9 @@ package com.catalystapps.gaf.event
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Creates an SequenceEvent object that contains information about sequence events. SequenceEvent objects are passed as parameters to event listeners. 
+		 */
 		public function SequenceEvent(type: String, sequence: CAnimationSequence)
 		{
 			super(type, false, null);
@@ -69,6 +75,9 @@ package com.catalystapps.gaf.event
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Sequence data Object
+		 */
 		public function get sequence(): CAnimationSequence
 		{
 			return _sequence;

@@ -3,8 +3,10 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	
 	/**
-	 * @author mitvad
+	 * <p>GAFAsset represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation. 
+	 * It is used to create <code>GAFMovieClip</code> that is ready animation object to be used in starling display list</p>
 	 */
 	public class GAFAsset
 	{
@@ -29,9 +31,13 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Creates an GAFAsset object
+		 * 
+		 * @param config GAF asset config
+		 */
 		public function GAFAsset(config: GAFAssetConfig)
 		{
-			this._id = id;
 			this._config = config;
 		}
 
@@ -41,6 +47,9 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Disposes the underlying GAF asset config
+		 */
 		public function dispose(): void
 		{
 			this._config.dispose();
@@ -70,6 +79,9 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Asset idintifier (name given at animation's upload or assigned by developer)
+		 */
 		public function get id(): String
 		{
 			return _id;
@@ -80,11 +92,13 @@ package com.catalystapps.gaf.data
 			_id = id;
 		}
 		
+		/** @private */
 		public function get textureAtlas(): CTextureAtlas
 		{
 			return _config.textureAtlas.contantScaleFactor.atlas;
 		}
-
+		
+		/** @private */
 		public function get config(): GAFAssetConfig
 		{
 			return _config;
@@ -92,6 +106,11 @@ package com.catalystapps.gaf.data
 		
 		////////////////////////////////////////////////////////////////////////////
 		
+		/**
+		 * Texture atlas scale that will be used for <code>GAFMovieClip</code> creation. To create <code>GAFMovieClip's</code>
+		 * with different scale assign apropriate scale to <code>GAFAsset</code> and only after that instantiate <code>GAFMovieClip</code>.
+		 * Possible values are values from converted animation config. They are depends from project settings on site converter
+		 */
 		public function set scale(scale: Number): void
 		{
 			var csf: Number = this.contentScaleFactor;
@@ -124,6 +143,11 @@ package com.catalystapps.gaf.data
 			return _config.textureAtlas.scale;
 		}
 		
+		/**
+		 * Texture atlas content scale factor (csf) that will be used for <code>GAFMovieClip</code> creation. To create <code>GAFMovieClip's</code>
+		 * with different csf assign apropriate csf to <code>GAFAsset</code> and only after that instantiate <code>GAFMovieClip</code>.
+		 * Possible values are values from converted animation config. They are depends from project settings on site converter
+		 */
 		public function set contentScaleFactor(csf: Number): void
 		{
 			var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
@@ -149,6 +173,7 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/** @private */
 		public static var debug: Boolean = false;
 	}
 }

@@ -2,7 +2,7 @@ package com.catalystapps.gaf.data.config
 {
 	import flash.geom.Matrix;
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class CAnimationFrameInstance
 	{

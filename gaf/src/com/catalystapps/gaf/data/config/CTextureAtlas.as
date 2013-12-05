@@ -4,14 +4,12 @@ package com.catalystapps.gaf.data.config
 	import starling.textures.TextureAtlas;
 
 	import com.catalystapps.gaf.core.GAFTextureMapingManager;
-	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.display.GAFTexture;
 
 	import flash.display.BitmapData;
 	import flash.geom.Matrix;
-	import flash.geom.Rectangle;
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class CTextureAtlas
 	{

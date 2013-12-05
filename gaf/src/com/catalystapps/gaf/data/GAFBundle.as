@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data
 {
 	/**
-	 * @author mitvad
+	 * GAFBundle is utility class that used to save all converted GAFAssets from bundle in one place with easy access after convertation complete
 	 */
 	public class GAFBundle
 	{
@@ -26,6 +26,7 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/** @private */
 		public function GAFBundle()
 		{
 			this._assets = new Vector.<GAFAsset>();
@@ -38,6 +39,9 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Disposes all assets in bundle
+		 */
 		public function dispose(): void
 		{
 			for each(var asset: GAFAsset in this._assets)
@@ -46,6 +50,7 @@ package com.catalystapps.gaf.data
 			}
 		}
 		
+		/** @private */
 		public function addGAFAsset(gafAsset: GAFAsset): void
 		{
 			if(!this._assetsDictionary[gafAsset.id])
@@ -59,6 +64,9 @@ package com.catalystapps.gaf.data
 			}
 		}
 		
+		/**
+		 * Returns <code>GAFAsset</code> from bundle by ID
+		 */
 		public function getGAFassetByID(id: String): GAFAsset
 		{
 			return this._assetsDictionary[id];
@@ -88,6 +96,9 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Returns all <code>GAFAsset's</code> from bundle as <code>Vector</code>
+		 */
 		public function get assets(): Vector.<GAFAsset>
 		{
 			return _assets;

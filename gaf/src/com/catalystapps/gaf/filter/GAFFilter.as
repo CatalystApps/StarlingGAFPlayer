@@ -8,7 +8,7 @@ package com.catalystapps.gaf.filter
 	import flash.display3D.Program3D;
 
 	/**
-	 * @author p0d04Va
+	 * @private
 	 */
 	public class GAFFilter extends FragmentFilter
 	{
