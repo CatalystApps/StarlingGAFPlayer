@@ -299,7 +299,7 @@ package com.catalystapps.gaf.data
 						io = stateConfig.split(",");
 						
 						instance = new CAnimationFrameInstance(stateID);						
-						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], int(io[5]), int(io[6])), io[7], maskID, filter);
+						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), io[7], maskID, filter);
 						
 						currentFrame.addInstance(instance);
 					}
