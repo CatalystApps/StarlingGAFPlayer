@@ -242,6 +242,14 @@ package com.catalystapps.gaf.data
 					else
 					{
 						currentFrame = new CAnimationFrame(f.frameNumber);
+						
+						if(currentFrame.frameNumber > 1)
+						{
+							for(missedFrameNumber = 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
+							{
+								animationConfigFrames.addFrame(new CAnimationFrame(missedFrameNumber));
+							}
+						}
 					}
 					
 					states = f.state;
@@ -312,7 +320,7 @@ package com.catalystapps.gaf.data
 				}
 			}
 			
-			for(missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber < jsonObject.animationFrameCount; missedFrameNumber++)
+			for(missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
 			{
 				animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 			}

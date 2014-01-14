@@ -27,6 +27,9 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code> 
+		 */
 		public function GAFImage(assetTexture: GAFTexture)
 		{
 			this._assetTexture = assetTexture;

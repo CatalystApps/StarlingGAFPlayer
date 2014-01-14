@@ -68,8 +68,7 @@ package com.catalystapps.gaf.data.config
 				{
 					this._instances.splice(this._instances.indexOf(this._instancesDictionary[instance.id]), 1);
 					
-					this._instancesDictionary[instance.id] = null;
-					
+					delete this._instancesDictionary[instance.id];
 				}
 			}
 			else

@@ -97,9 +97,79 @@ package com.catalystapps.gaf.display
 		 * @param id Child ID
 		 * @return The child display object with the specified ID
 		 */
-		public function getChildByID(id: String): DisplayObject
+		public function getChildByID(id: String): GAFImage
 		{
 			return this.imagesDictionary[id];
+		}
+		
+		/**
+		 * Returns the mask display object that exists with the specified ID. Use to obtain animation's masks
+		 * 
+		 * @param id Mask ID
+		 * @return The mask display object with the specified ID
+		 */
+		public function getMaskByID(id: String): GAFImage
+		{
+			return this.masksDictionary[id];
+		}
+		
+		/**
+		 * Shows mask display object that exists with the specified ID. Used for debug purposes only!
+		 * 
+		 * @param id Mask ID
+		 */
+		public function showMaskByID(id: String): void
+		{
+			var maskImage: GAFImage = this.masksDictionary[id];
+			
+			if(maskImage)
+			{
+				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
+				
+				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
+				
+				if(maskInstance)
+				{
+					var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskImage.assetTexture.pivotMatrix, this.scale).clone();
+					
+					maskImage.transformationMatrix = maskTransformMatrix;
+					
+					////////////////////////////////
+					
+					var filterProperties: Vector.<Number> = new Vector.<Number>();
+					filterProperties.push(1,0,0,0,255, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0);
+					
+					var gafFilter: GAFFilter = new GAFFilter();
+					gafFilter.setColorTransformFilter(filterProperties);
+					
+					maskImage.filter = gafFilter;
+					
+					////////////////////////////////
+					
+					this.addChild(maskImage);
+				}
+			}
+		}
+		/**
+		 * Hides mask display object that previously has been shown using <code>showMaskByID</code> method. 
+		 * Used for debug purposes only!
+		 * 
+		 * @param id Mask ID
+		 */
+		public function hideMaskByID(id: String): void
+		{
+			var maskImage: GAFImage = this.masksDictionary[id];
+			
+			if(maskImage)
+			{
+				maskImage.transformationMatrix = new Matrix();
+				maskImage.filter = null;
+				
+				if(maskImage.parent == this)
+				{
+					this.removeChild(maskImage);
+				}
+			}
 		}
 		
 		/**
