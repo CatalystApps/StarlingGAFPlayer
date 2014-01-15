@@ -63,8 +63,8 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 		
-		private var zip: FZip;
-		private var zipLoader: FZipLibrary;
+		private var _zip: FZip;
+		private var _zipLoader: FZipLibrary;
 		
 		private var currentConfigIndex: uint = 0;
 		private var configConvertTimeout: Number;
@@ -114,15 +114,15 @@ package com.catalystapps.gaf.core
 			this._defaultScale = defaultScale;
 			this._defaultContentScaleFactor = defaultContentScaleFactor;
 			
-			this.zip = new FZip();
-			this.zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);			
-			this.zip.loadBytes(zipByteArray);
+			this._zip = new FZip();
+			this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);			
+			this._zip.loadBytes(zipByteArray);
 			
-			this.zipLoader = new FZipLibrary();
-			this.zipLoader.formatAsBitmapData(".png");
-			this.zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
-			this.zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
-			this.zipLoader.addZip(this.zip);
+			this._zipLoader = new FZipLibrary();
+			this._zipLoader.formatAsBitmapData(".png");
+			this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
+			this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
+			this._zipLoader.addZip(this._zip);
 		}
 
 		//--------------------------------------------------------------------------
@@ -133,7 +133,7 @@ package com.catalystapps.gaf.core
 		
 		private function parseZip() : void 
 		{		
-			var length: uint = this.zip.getFileCount();
+			var length: uint = this._zip.getFileCount();
 			
 			var zipFile: FZipFile;
 			
@@ -147,12 +147,12 @@ package com.catalystapps.gaf.core
 			
 			for(var i: uint = 0; i < length; i++)
 			{
-				zipFile = this.zip.getFileAt(i);
+				zipFile = this._zip.getFileAt(i);
 				
 				if(zipFile.filename.indexOf(".png") != -1)
 				{
 					fileName = zipFile.filename.substring(zipFile.filename.lastIndexOf("/") + 1);
-					bmp = this.zipLoader.getBitmapData(zipFile.filename);
+					bmp = this._zipLoader.getBitmapData(zipFile.filename);
 					
 					this.pngImgs[fileName] = bmp;
 				}
@@ -307,7 +307,7 @@ package com.catalystapps.gaf.core
 		
 		private function onZipLoadedComplete(event: Event): void
 		{
-			if(this.zip.getFileCount())
+			if(this._zip.getFileCount())
 			{				
 				this.parseZip();
 			}
@@ -342,6 +342,22 @@ package com.catalystapps.gaf.core
 		public function get gafBundle(): GAFBundle
 		{
 			return _gafBundle;
+		}
+		
+		/**
+		 * Return loaded zip file as <code>FZip</code> object
+		 */
+		public function get zip(): FZip
+		{
+			return _zip;
+		}
+		
+		/**
+		 * Return zipLoader object
+		 */
+		public function get zipLoader(): FZipLibrary
+		{
+			return _zipLoader;
 		}
 		
 	}
