@@ -25,7 +25,7 @@ package com.catalystapps.gaf.core
 		
 		private static var _assetsCollection: Object = {};
 		
-		private static var _tmpTexture: Texture = Texture.fromColor(10, 50, 0xFF0000);
+		private static var _tmpTexture: Texture;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -82,6 +82,8 @@ package com.catalystapps.gaf.core
 			}
 			
 			// when there is no mapped texture
+			
+			if (!_tmpTexture) _tmpTexture = Texture.fromColor(10, 50, 0xFF0000);
 			
 			result = new GAFTexture("tmpTexture", _tmpTexture, new Matrix());
 			
