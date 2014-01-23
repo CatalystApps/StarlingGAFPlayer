@@ -511,7 +511,7 @@ package com.catalystapps.gaf.display
 			
 			this.draw();
 			
-			var sequenceEvent: SequenceEvent = this._gafAsset.config.animationSequences.hasEvent(this._currentFrame);
+			var sequenceEvent: SequenceEvent = this._gafAsset.config.animationSequences.hasEvent(this._currentFrame + 1);
 			
 			if(sequenceEvent)
 			{
