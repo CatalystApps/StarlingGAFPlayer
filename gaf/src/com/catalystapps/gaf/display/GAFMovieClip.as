@@ -1,11 +1,13 @@
 package com.catalystapps.gaf.display
 {
 	import starling.display.Image;
+	import starling.display.Quad;
 	import starling.display.Sprite;
 	import starling.events.Event;
 	import starling.extensions.pixelmask.PixelMaskDisplayObject;
 
 	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
@@ -14,7 +16,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.filter.GAFFilter;
 
 	import flash.geom.Matrix;
-
 	
 	/** Dispatched when playhead reached first frame of sequence */
     [Event(name="typeSequenceStart", type="com.catalystapps.gaf.event.SequenceEvent")]
@@ -380,6 +381,28 @@ package com.catalystapps.gaf.display
 						}
 					}
 				}
+			}
+					
+			var debugView: Quad;			
+			for each (var debugRegion: GAFDebugInformation in _gafAsset.config.debugRegions)
+			{
+				switch (debugRegion.type)
+				{
+					case GAFDebugInformation.TYPE_POINT:
+						debugView = new Quad(4, 4, debugRegion.color);
+						debugView.x = debugRegion.point.x - 2;
+						debugView.y = debugRegion.point.y - 2;
+						debugView.alpha = debugRegion.alpha;
+						break;
+					case GAFDebugInformation.TYPE_RECT:
+						debugView = new Quad(debugRegion.rect.width, debugRegion.rect.height, debugRegion.color);
+						debugView.x = debugRegion.rect.x;
+						debugView.y = debugRegion.rect.y;
+						debugView.alpha = debugRegion.alpha;
+						break;
+				}
+				
+				addChild(debugView);
 			}
 		}
 		
