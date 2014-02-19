@@ -60,11 +60,6 @@ package com.catalystapps.gaf.data.config
 		
 		public function update(zIndex: uint, matrix: Matrix, alpha: Number, maskID: String, filter: CFilter): void
 		{
-			if(maskID && filter)
-			{
-				trace("!!! WARNING !!! Currently it's not possible to use filters under mask! Filter will be ignored for instance '" + this._id + "' under mask id '" + maskID + "'");
-			}
-			
 			this._zIndex = zIndex;
 			this._matrix = matrix;
 			this._alpha = alpha;

@@ -1,27 +1,25 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
-	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
-	import deng.fzip.FZip;
-	import deng.fzip.FZipErrorEvent;
-	import deng.fzip.FZipFile;
-	import deng.fzip.FZipLibrary;
-
-	import com.catalystapps.gaf.data.GAFAsset;
-	import com.catalystapps.gaf.data.GAFAssetConfig;
-	import com.catalystapps.gaf.data.GAFBundle;
-	import com.catalystapps.gaf.data.GAFGFXData;
+	import flash.events.ErrorEvent;
+	import flash.utils.setTimeout;
+	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
-	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
-
-	import flash.display.BitmapData;
-	import flash.events.ErrorEvent;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.utils.ByteArray;
+	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
+	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
+	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
+	import flash.display.BitmapData;
+	import deng.fzip.FZipFile;
+	import flash.events.Event;
+	import deng.fzip.FZipErrorEvent;
+	import flash.utils.ByteArray;
+	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFBundle;
+	import com.catalystapps.gaf.data.GAFGFXData;
+	import deng.fzip.FZip;
+	import deng.fzip.FZipLibrary;
+	import flash.events.EventDispatcher;
 
 	/** Dispatched when convertation completed */
     [Event(name="complete", type="flash.events.Event")]
@@ -97,7 +95,7 @@ package com.catalystapps.gaf.core
 		
 		private var currentConfigIndex: uint = 0;
 		private var configConvertTimeout: Number;
-		
+
 		private var gafAssetConfigSources: Object;
 		private var gafAssetsIDs: Array;
 		
@@ -226,6 +224,8 @@ package com.catalystapps.gaf.core
 //				
 //				return;
 //			}
+			
+			///////////////////////////////////
 			
 			///////////////////////////////////
 			

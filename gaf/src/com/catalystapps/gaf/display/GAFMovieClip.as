@@ -1,14 +1,13 @@
 package com.catalystapps.gaf.display
 {
-	import starling.display.Quad;
-	import com.catalystapps.gaf.data.GAFDebugInformation;
-	import starling.display.DisplayObject;
 	import starling.display.Image;
+	import starling.display.Quad;
 	import starling.display.Sprite;
 	import starling.events.Event;
 	import starling.extensions.pixelmask.PixelMaskDisplayObject;
 
 	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
@@ -17,7 +16,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.filter.GAFFilter;
 
 	import flash.geom.Matrix;
-
 	
 	/** Dispatched when playhead reached first frame of sequence */
     [Event(name="typeSequenceStart", type="com.catalystapps.gaf.event.SequenceEvent")]

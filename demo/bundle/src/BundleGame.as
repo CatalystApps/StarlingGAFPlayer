@@ -24,6 +24,8 @@ package
 	{
 		private var gafBundle: GAFBundle;
 		
+		private var gafMovieClip: GAFMovieClip;
+		
 		private var currentAssetIndex: uint = 0;
 		
 		public function BundleGame()
@@ -77,15 +79,17 @@ package
 		
 		private function initGAFMovieClip(): void
 		{
+			(this.gafMovieClip) ? this.gafMovieClip.dispose() : null;
+			
 			this.removeChildren();
 			
 			var gafAsset: GAFAsset = this.gafBundle.assets[this.currentAssetIndex];
 			
-			var mc: GAFMovieClip = new GAFMovieClip(gafAsset);
+			this.gafMovieClip = new GAFMovieClip(gafAsset);
 			
-			this.addChild(mc);
+			this.addChild(this.gafMovieClip);
 			
-			mc.play();
+			this.gafMovieClip.play();
 		}
 		
 		private function onError(event: ErrorEvent): void

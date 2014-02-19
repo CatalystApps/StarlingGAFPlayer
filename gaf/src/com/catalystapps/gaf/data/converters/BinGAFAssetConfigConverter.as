@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
@@ -250,6 +251,11 @@ package com.catalystapps.gaf.data.converters
 					
 					instance = new CAnimationFrameInstance(stateID + "");						
 					instance.update(zindex, matrix, alpha, maskID, filter);
+					
+					if(maskID && filter)
+					{
+						config.addWarning("Warning! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.");
+					}
 						
 					currentFrame.addInstance(instance);
 				}
@@ -359,7 +365,7 @@ package com.catalystapps.gaf.data.converters
 					}
 				}
 				
-				item = new CTextureAtlasCSF(csf);
+				item = new CTextureAtlasCSF(csf, scale);
 				contentScaleFactors.push(item);
 				
 				if(!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
@@ -410,6 +416,8 @@ package com.catalystapps.gaf.data.converters
 			var elementHeight: Number;
 			var elementAtlasID: uint;
 			
+			var elements: CTextureAtlasElements = new CTextureAtlasElements();
+			
 			for (i = 0; i < elementsLength; i++)
 			{
 				pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
@@ -421,7 +429,12 @@ package com.catalystapps.gaf.data.converters
 				elementAtlasID = tagContent.readUnsignedInt();
 				
 				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "", new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight), new Matrix(1/elementScale, 0, 0, 1/elementScale, -pivot.x/elementScale, -pivot.y/elementScale));
-				textureAtlas.addElement(element);
+				elements.addElement(element);
+			}
+			
+			for each(contentScaleFactor in contentScaleFactors)
+			{
+				contentScaleFactor.elements = elements;
 			}
 			
 			config.allTextureAtlases.push(textureAtlas);

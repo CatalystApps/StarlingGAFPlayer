@@ -28,6 +28,7 @@ package com.catalystapps.gaf.data
 		private var _animationConfigFrames: CAnimationFrames;
 		private var _animationObjects: CAnimationObjects;
 		private var _animationSequences: CAnimationSequences;
+
 		private var _debugRegions: Vector.<GAFDebugInformation>;
 		
 		private var _warnings: Vector.<String>;
@@ -69,14 +70,14 @@ package com.catalystapps.gaf.data
 			
 			return null;
 		}	
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
 		
-		protected function addWarning(text: String): void
+		public function addWarning(text: String): void
 		{
 			if(!this._warnings)
 			{

@@ -1,22 +1,22 @@
 package com.catalystapps.gaf.data.converters
 {
-	import flash.geom.Point;
-	import com.catalystapps.gaf.data.GAFDebugInformation;
-	import com.catalystapps.gaf.data.config.CFilter;
-	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
+	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
+	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
+	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
-	import com.catalystapps.gaf.data.config.CAnimationSequence;
-	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
+	import com.catalystapps.gaf.data.config.CAnimationSequence;
+	import com.catalystapps.gaf.data.config.CAnimationSequences;
+	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
+	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
+	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
+
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
-	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
-	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
-	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
-	import com.catalystapps.gaf.data.GAFAssetConfig;
 	/**
 	 * @private
 	 */
@@ -51,6 +51,16 @@ package com.catalystapps.gaf.data.converters
 					
 					/////////////////////
 					
+					var elements: CTextureAtlasElements = new CTextureAtlasElements();
+					
+					for each(var e: Object in ta.elements)
+					{
+						var element: CTextureAtlasElement = new CTextureAtlasElement(e.name, e.atlasID, new Rectangle(int(e.x), int(e.y), e.width, e.height), new Matrix(1/e.scale, 0, 0, 1/e.scale, -e.pivotX/e.scale, -e.pivotY/e.scale));
+						elements.addElement(element);
+					}
+					
+					/////////////////////
+					
 					var contentScaleFactors: Vector.<CTextureAtlasCSF> = new Vector.<CTextureAtlasCSF>();
 					var contentScaleFactor: CTextureAtlasCSF;
 					
@@ -68,7 +78,9 @@ package com.catalystapps.gaf.data.converters
 							}
 						}
 						
-						item = new CTextureAtlasCSF(csf);
+						item = new CTextureAtlasCSF(csf, scale);
+						item.elements = elements;
+						
 						contentScaleFactors.push(item);
 						
 						if(!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
@@ -99,12 +111,6 @@ package com.catalystapps.gaf.data.converters
 					}
 					
 					/////////////////////
-					
-					for each(var e: Object in ta.elements)
-					{
-						var element: CTextureAtlasElement = new CTextureAtlasElement(e.name, e.atlasID, new Rectangle(int(e.x), int(e.y), e.width, e.height), new Matrix(1/e.scale, 0, 0, 1/e.scale, -e.pivotX/e.scale, -e.pivotY/e.scale));
-						textureAtlas.addElement(element);
-					}
 					
 					allTextureAtlases.push(textureAtlas);
 					
@@ -261,7 +267,7 @@ package com.catalystapps.gaf.data.converters
 						if(maskID && filter)
 						{
 							result.addWarning("Warning! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.");
-						}	
+						}
 						
 						currentFrame.addInstance(instance);
 					}
@@ -271,7 +277,7 @@ package com.catalystapps.gaf.data.converters
 					animationConfigFrames.addFrame(currentFrame);
 					
 					prevFrame = currentFrame;
-				}					
+				}
 			}
 			
 			for(missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
@@ -279,9 +285,7 @@ package com.catalystapps.gaf.data.converters
 				animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 			}
 
-			result.animationConfigFrames = animationConfigFrames;
-			
-			///////////////////////////////////////////////////////////////
+			result.animationConfigFrames = animationConfigFrames;			
 			
 			///////////////////////////////////////////////////////////////
 			
