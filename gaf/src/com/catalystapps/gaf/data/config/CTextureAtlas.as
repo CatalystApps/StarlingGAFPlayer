@@ -26,12 +26,7 @@ package com.catalystapps.gaf.data.config
 		//--------------------------------------------------------------------------
 		
 		private var _textureAtlasesDictionary: Object;
-		private var _textureAtlasConfig: CTextureAtlasScale;
-		
-		/*
-		 * Available only when GAFAsset.debug set to true. Used for debug purpose only
-		 */
-		private var _imgs: Object;
+		private var _textureAtlasConfig: CTextureAtlasCSF;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -39,7 +34,7 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
-		public function CTextureAtlas(textureAtlasesDictionary: Object, textureAtlasConfig: CTextureAtlasScale)
+		public function CTextureAtlas(textureAtlasesDictionary: Object, textureAtlasConfig: CTextureAtlasCSF)
 		{
 			this._textureAtlasesDictionary = textureAtlasesDictionary;
 			this._textureAtlasConfig = textureAtlasConfig;
@@ -56,13 +51,13 @@ package com.catalystapps.gaf.data.config
 			return Texture.fromBitmapData(img, false, false, csf);
 		}
 		
-		public static function createFromTextures(texturesDictionary: Object, textureAtlasConfig: CTextureAtlasScale): CTextureAtlas
+		public static function createFromTextures(texturesDictionary: Object, textureAtlasConfig: CTextureAtlasCSF): CTextureAtlas
 		{
 			var atlasesDictionary: Object = new Object();
 			
 			var atlas: TextureAtlas;
 			
-			for each(var element: CTextureAtlasElement in textureAtlasConfig.elementsVector)
+			for each(var element: CTextureAtlasElement in textureAtlasConfig.elements.elementsVector)
 			{
 				if(!atlasesDictionary[element.atlasID])
 				{
@@ -89,7 +84,7 @@ package com.catalystapps.gaf.data.config
 		
 		public function getTexture(id: String, mappedAssetID: String = "", ignoreMapping: Boolean = false): GAFTexture
 		{
-			var textureAtlasElement: CTextureAtlasElement = this._textureAtlasConfig.getElement(id);
+			var textureAtlasElement: CTextureAtlasElement = this._textureAtlasConfig.elements.getElement(id);
 			
 			if(textureAtlasElement)
 			{
@@ -97,9 +92,9 @@ package com.catalystapps.gaf.data.config
 			
 				var pivotMatrix: Matrix;
 			
-				if(this._textureAtlasConfig.getElement(id))
+				if(this._textureAtlasConfig.elements.getElement(id))
 				{
-					pivotMatrix = this._textureAtlasConfig.getElement(id).pivotMatrix;
+					pivotMatrix = this._textureAtlasConfig.elements.getElement(id).pivotMatrix;
 				}
 				else
 				{
@@ -151,22 +146,5 @@ package com.catalystapps.gaf.data.config
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
-		/*
-		 * Available only when GAFAsset.debug set to true. Used for debug purpose only
-		 */
-		public function get imgs(): Object
-		{
-			return _imgs;
-		}
-		
-		/*
-		 * Used only when GAFAsset.debug set to true. Used for debug purpose only
-		 */
-		public function set imgs(imgs: Object): void
-		{
-			_imgs = imgs;
-		}
-		
 	}
 }

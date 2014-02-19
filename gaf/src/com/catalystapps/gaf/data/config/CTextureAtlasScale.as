@@ -22,9 +22,6 @@ package com.catalystapps.gaf.data.config
 		private var _allContentScaleFactors: Vector.<CTextureAtlasCSF>;
 		private var _contantScaleFactor: CTextureAtlasCSF;
 		
-		private var _elementsVector: Vector.<CTextureAtlasElement>;
-		private var _elementsDictionary: Object;
-		
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -33,8 +30,7 @@ package com.catalystapps.gaf.data.config
 		
 		public function CTextureAtlasScale()
 		{
-			this._elementsVector = new Vector.<CTextureAtlasElement>();
-			this._elementsDictionary = new Object();
+			
 		}
 		
 		//--------------------------------------------------------------------------
@@ -48,28 +44,6 @@ package com.catalystapps.gaf.data.config
 			for each(var cTextureAtlasCSF: CTextureAtlasCSF in this._allContentScaleFactors)
 			{
 				cTextureAtlasCSF.dispose();
-			}
-		}
-		
-		public function addElement(element: CTextureAtlasElement): void
-		{
-			if(!this._elementsDictionary[element.id])
-			{
-				this._elementsDictionary[element.id] = element;
-				
-				this._elementsVector.push(element);
-			}
-		}
-		
-		public function getElement(id: String): CTextureAtlasElement
-		{
-			if(this._elementsDictionary[id])
-			{
-				return this._elementsDictionary[id];
-			}
-			else
-			{
-				return null;
 			}
 		}
 		
@@ -110,11 +84,6 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
-		public function get elementsVector(): Vector.<CTextureAtlasElement>
-		{
-			return _elementsVector;
-		}
-
 		public function set scale(scale: Number): void
 		{
 			_scale = scale;

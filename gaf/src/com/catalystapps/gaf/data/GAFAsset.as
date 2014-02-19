@@ -16,6 +16,10 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		public static const CONTENT_ALL: String = "contentAll";
+		public static const CONTENT_DEFAULT: String = "contentDefault";
+		public static const CONTENT_SPECIFY: String = "contentSpecify";
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
@@ -24,6 +28,8 @@ package com.catalystapps.gaf.data
 		
 		private var _id: String;
 		private var _config: GAFAssetConfig;
+		
+		private var _gafgfxData: GAFGFXData;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -55,11 +61,123 @@ package com.catalystapps.gaf.data
 			this._config.dispose();
 		}
 		
+		/**
+		 * Load all all grafical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
+		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
+		 * before asset conversion)
+		 * 
+		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
+		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 */
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
+		{
+			var csfConfig: CTextureAtlasCSF;
+			
+			switch(content)
+			{
+				case CONTENT_ALL:
+					for each(var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
+					{
+						for each(csfConfig in scaleConfig.allContentScaleFactors)
+						{
+							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf);
+							
+							csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scaleConfig.scale, csfConfig.csf), csfConfig);
+						}
+					}
+					return;
+					
+				case CONTENT_DEFAULT:
+					csfConfig = this._config.textureAtlas.contantScaleFactor;
+					
+					this._gafgfxData.createTextures(this.scale, this.contentScaleFactor);
+					
+					csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale, this.contentScaleFactor), csfConfig);
+					return;
+				
+				case CONTENT_SPECIFY:
+					csfConfig = this.getCSFConfig(scale, csf);
+					
+					this._gafgfxData.createTextures(scale, csf);
+					
+					csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);
+					return;
+			}
+			
+		}
+		
+		/**
+		 * Unload all all grafical data connected with this asset from device GPU memory. Used in case of manual control of video memory usage
+		 * 
+		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
+		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 */
+		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
+		{
+			var csfConfig: CTextureAtlasCSF;
+			
+			switch(content)
+			{
+				case CONTENT_ALL:
+					for each(var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
+					{
+						for each(csfConfig in scaleConfig.allContentScaleFactors)
+						{
+							this._gafgfxData.disposeTextures(scaleConfig.scale, csfConfig.csf);
+							csfConfig.atlas.dispose();
+							csfConfig.atlas = null;
+						}
+					}
+					return;
+				
+				case CONTENT_DEFAULT:
+					this._gafgfxData.disposeTextures(this.scale, this.contentScaleFactor);
+					this._config.textureAtlas.contantScaleFactor.atlas.dispose();
+					this._config.textureAtlas.contantScaleFactor.atlas = null;
+					return;
+				
+				case CONTENT_SPECIFY:
+					csfConfig = this.getCSFConfig(scale, csf);
+					if(csfConfig)
+					{
+						this._gafgfxData.disposeTextures(scale, csf);
+						csfConfig.atlas.dispose();
+						csfConfig.atlas = null;
+					}
+					return;
+			}
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
+		
+		private function getCSFConfig(scale: Number, csf: Number): CTextureAtlasCSF
+		{
+			var scaleConfig: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
+			
+			if(scaleConfig)
+			{
+				var csfConfig: CTextureAtlasCSF = scaleConfig.getTextureAtlasForCSF(csf);
+				
+				if(csfConfig)
+				{
+					return csfConfig;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			else
+			{
+				return null;
+			}
+		}
 		
 		//--------------------------------------------------------------------------
 		//
@@ -95,7 +213,12 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function get textureAtlas(): CTextureAtlas
 		{
-			return _config.textureAtlas.contantScaleFactor.atlas;
+			if(!this._config.textureAtlas.contantScaleFactor.atlas)
+			{
+				this.loadInVideoMemory(CONTENT_DEFAULT);
+			}
+			
+			return this._config.textureAtlas.contantScaleFactor.atlas;
 		}
 		
 		/** @private */
@@ -167,13 +290,23 @@ package com.catalystapps.gaf.data
 			return this._config.textureAtlas.contantScaleFactor.csf;
 		}
 		
+		/**
+		 * Graphical data storage that used by <code>GAFAsset</code>.
+		 */
+		public function set gafgfxData(gafgfxData: GAFGFXData): void
+		{
+			_gafgfxData = gafgfxData;
+		}
+		
+		public function get gafgfxData(): GAFGFXData
+		{
+			return _gafgfxData;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  STATIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
-		/** @private */
-		public static var debug: Boolean = false;
 	}
 }

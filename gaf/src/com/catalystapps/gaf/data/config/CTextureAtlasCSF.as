@@ -17,8 +17,12 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
+		private var _scale: Number;
 		private var _csf: Number;
+		
 		private var _sources: Vector.<CTextureAtlasSource>;
+		
+		private var _elements: CTextureAtlasElements;
 		
 		private var _atlas: CTextureAtlas;
 		
@@ -29,9 +33,10 @@ package com.catalystapps.gaf.data.config
 		//--------------------------------------------------------------------------
 		
 		
-		public function CTextureAtlasCSF(csf: Number)
+		public function CTextureAtlasCSF(csf: Number, scale: Number)
 		{
 			this._csf = csf;
+			this._scale = scale;
 			
 			this._sources = new Vector.<CTextureAtlasSource>();
 		}
@@ -44,7 +49,9 @@ package com.catalystapps.gaf.data.config
 		
 		public function dispose(): void
 		{
-			this._atlas.dispose();
+			(this._atlas) ? this._atlas.dispose() : null;
+			
+			this._atlas = null;
 		}
 		
 		//--------------------------------------------------------------------------
@@ -94,6 +101,16 @@ package com.catalystapps.gaf.data.config
 		public function set atlas(atlas: CTextureAtlas): void
 		{
 			_atlas = atlas;
+		}
+
+		public function get elements(): CTextureAtlasElements
+		{
+			return _elements;
+		}
+
+		public function set elements(elements: CTextureAtlasElements): void
+		{
+			_elements = elements;
 		}
 	}
 }

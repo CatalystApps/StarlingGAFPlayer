@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
@@ -40,6 +41,8 @@ package com.catalystapps.gaf.data
 		private var _animationConfigFrames: CAnimationFrames;
 		private var _animationObjects: CAnimationObjects;
 		private var _animationSequences: CAnimationSequences;
+		
+		private var _warnings: Vector.<String>;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -102,6 +105,16 @@ package com.catalystapps.gaf.data
 					
 					/////////////////////
 					
+					var elements: CTextureAtlasElements = new CTextureAtlasElements();
+					
+					for each(var e: Object in ta.elements)
+					{
+						var element: CTextureAtlasElement = new CTextureAtlasElement(e.name, e.atlasID, new Rectangle(int(e.x), int(e.y), e.width, e.height), new Matrix(1/e.scale, 0, 0, 1/e.scale, -e.pivotX/e.scale, -e.pivotY/e.scale));
+						elements.addElement(element);
+					}
+					
+					/////////////////////
+					
 					var contentScaleFactors: Vector.<CTextureAtlasCSF> = new Vector.<CTextureAtlasCSF>();
 					var contentScaleFactor: CTextureAtlasCSF;
 					
@@ -119,7 +132,9 @@ package com.catalystapps.gaf.data
 							}
 						}
 						
-						item = new CTextureAtlasCSF(csf);
+						item = new CTextureAtlasCSF(csf, scale);
+						item.elements = elements;
+						
 						contentScaleFactors.push(item);
 						
 						if(!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
@@ -150,12 +165,6 @@ package com.catalystapps.gaf.data
 					}
 					
 					/////////////////////
-					
-					for each(var e: Object in ta.elements)
-					{
-						var element: CTextureAtlasElement = new CTextureAtlasElement(e.name, e.atlasID, new Rectangle(int(e.x), int(e.y), e.width, e.height), new Matrix(1/e.scale, 0, 0, 1/e.scale, -e.pivotX/e.scale, -e.pivotY/e.scale));
-						textureAtlas.addElement(element);
-					}
 					
 					allTextureAtlases.push(textureAtlas);
 					
@@ -309,6 +318,11 @@ package com.catalystapps.gaf.data
 						instance = new CAnimationFrameInstance(stateID);						
 						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), io[7], maskID, filter);
 						
+						if(maskID && filter)
+						{
+							result.addWarning("Warning! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.");
+						}
+						
 						currentFrame.addInstance(instance);
 					}
 					
@@ -337,6 +351,20 @@ package com.catalystapps.gaf.data
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
+		
+		protected function addWarning(text: String): void
+		{
+			if(!this._warnings)
+			{
+				this._warnings = new Vector.<String>();
+			}
+			
+			if(this._warnings.indexOf(text) == -1)
+			{
+				trace(text);
+				this._warnings.push(text);
+			}
+		}
 		
 		//--------------------------------------------------------------------------
 		//
@@ -409,6 +437,11 @@ package com.catalystapps.gaf.data
 		public function get version(): String
 		{
 			return _version;
+		}
+
+		public function get warnings(): Vector.<String>
+		{
+			return _warnings;
 		}
 		
 	}

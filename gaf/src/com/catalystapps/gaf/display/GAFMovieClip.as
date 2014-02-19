@@ -1,6 +1,5 @@
 package com.catalystapps.gaf.display
 {
-	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.display.Sprite;
 	import starling.events.Event;
@@ -401,6 +400,7 @@ package com.catalystapps.gaf.display
 			}
 			else if(image.filter && !instance.filter)
 			{
+				image.filter.dispose();
 				image.filter = null;
 			}
 			else if(!image.filter && instance.filter)
@@ -453,13 +453,33 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 		
 		/**
-		 * Disposes all resources of the display object
+		 * Disposes all resources of the display object instance. Note: this method won't delete used texture atlases from GPU memory.
+		 * To delete texture atlases from GPU memory use <code>unloadFromVideoMemory()</code> method for <code>GAFAsset</code> instance
+		 * from what <code>GAFMovieClip</code> was instantiated.
+		 * Call this method every time before delete no longer required instance! Otherwise GPU memory leak may occur!
 		 */
 		override public function dispose(): void
 		{
 			this.stop();
 			
 			this._gafAsset = null;
+			
+			var image: GAFImage;
+			
+			for each(image in this.imagesDictionary)
+			{
+				image.dispose();
+			}
+			
+			for each(image in this.masksDictionary)
+			{
+				image.dispose();
+			}
+			
+			for each(var pixelMaskDisplayObject: PixelMaskDisplayObject in this.maskedImagesDictionary)
+			{
+				pixelMaskDisplayObject.dispose();
+			}
 			
 			super.dispose();
 		}

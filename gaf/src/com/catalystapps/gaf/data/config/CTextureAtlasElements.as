@@ -1,11 +1,9 @@
-package com.catalystapps.gaf.display
+package com.catalystapps.gaf.data.config
 {
-	import starling.display.Image;
-
 	/**
-	 * @private
+	 * @author mitvad
 	 */
-	public class GAFImage extends Image
+	public class CTextureAtlasElements
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -19,7 +17,8 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
-		private var _assetTexture: GAFTexture;
+		private var _elementsVector: Vector.<CTextureAtlasElement>;
+		private var _elementsDictionary: Object;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -27,21 +26,39 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
-		/**
-		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code> 
-		 */
-		public function GAFImage(assetTexture: GAFTexture)
+		public function CTextureAtlasElements(): void
 		{
-			this._assetTexture = assetTexture;
-			
-			super(this._assetTexture.texture);
+			this._elementsVector = new Vector.<CTextureAtlasElement>();
+			this._elementsDictionary = new Object();
 		}
-
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
+		
+		public function addElement(element: CTextureAtlasElement): void
+		{
+			if(!this._elementsDictionary[element.id])
+			{
+				this._elementsDictionary[element.id] = element;
+				
+				this._elementsVector.push(element);
+			}
+		}
+		
+		public function getElement(id: String): CTextureAtlasElement
+		{
+			if(this._elementsDictionary[id])
+			{
+				return this._elementsDictionary[id];
+			}
+			else
+			{
+				return null;
+			}
+		}
 		
 		//--------------------------------------------------------------------------
 		//
@@ -55,17 +72,6 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
-		/**
-		 * Disposes all resources of the display object
-		 */
-		override public function dispose(): void
-		{
-			(this.filter) ? this.filter.dispose() : null;
-			this.filter = null;
-			
-			super.dispose();
-		}
-		
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
@@ -78,9 +84,9 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
-		public function get assetTexture(): GAFTexture
+		public function get elementsVector(): Vector.<CTextureAtlasElement>
 		{
-			return _assetTexture;
+			return _elementsVector;
 		}
 		
 	}
