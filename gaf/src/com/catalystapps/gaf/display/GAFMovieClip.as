@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.display
 {
+	import starling.display.Quad;
+	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.display.Sprite;
@@ -382,6 +384,28 @@ package com.catalystapps.gaf.display
 					}
 				}
 			}
+					
+			var debugView: Quad;			
+			for each (var debugRegion: GAFDebugInformation in _gafAsset.config.debugRegions)
+			{
+				switch (debugRegion.type)
+				{
+					case GAFDebugInformation.TYPE_POINT:
+						debugView = new Quad(4, 4, debugRegion.color);
+						debugView.x = debugRegion.point.x - 2;
+						debugView.y = debugRegion.point.y - 2;
+						debugView.alpha = debugRegion.alpha;
+						break;
+					case GAFDebugInformation.TYPE_RECT:
+						debugView = new Quad(debugRegion.rect.width, debugRegion.rect.height, debugRegion.color);
+						debugView.x = debugRegion.rect.x;
+						debugView.y = debugRegion.rect.y;
+						debugView.alpha = debugRegion.alpha;
+						break;
+				}
+				
+				addChild(debugView);
+			}
 		}
 		
 		private function updateFilter(image: Image, instance: CAnimationFrameInstance, scale: Number): void
@@ -401,6 +425,7 @@ package com.catalystapps.gaf.display
 			}
 			else if(image.filter && !instance.filter)
 			{
+				image.filter.dispose();
 				image.filter = null;
 			}
 			else if(!image.filter && instance.filter)
@@ -453,13 +478,33 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 		
 		/**
-		 * Disposes all resources of the display object
+		 * Disposes all resources of the display object instance. Note: this method won't delete used texture atlases from GPU memory.
+		 * To delete texture atlases from GPU memory use <code>unloadFromVideoMemory()</code> method for <code>GAFAsset</code> instance
+		 * from what <code>GAFMovieClip</code> was instantiated.
+		 * Call this method every time before delete no longer required instance! Otherwise GPU memory leak may occur!
 		 */
 		override public function dispose(): void
 		{
 			this.stop();
 			
 			this._gafAsset = null;
+			
+			var image: GAFImage;
+			
+			for each(image in this.imagesDictionary)
+			{
+				image.dispose();
+			}
+			
+			for each(image in this.masksDictionary)
+			{
+				image.dispose();
+			}
+			
+			for each(var pixelMaskDisplayObject: PixelMaskDisplayObject in this.maskedImagesDictionary)
+			{
+				pixelMaskDisplayObject.dispose();
+			}
 			
 			super.dispose();
 		}
@@ -511,7 +556,7 @@ package com.catalystapps.gaf.display
 			
 			this.draw();
 			
-			var sequenceEvent: SequenceEvent = this._gafAsset.config.animationSequences.hasEvent(this._currentFrame);
+			var sequenceEvent: SequenceEvent = this._gafAsset.config.animationSequences.hasEvent(this._currentFrame + 1);
 			
 			if(sequenceEvent)
 			{

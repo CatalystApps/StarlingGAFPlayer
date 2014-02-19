@@ -1,16 +1,16 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
+	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
 	import deng.fzip.FZip;
 	import deng.fzip.FZipErrorEvent;
 	import deng.fzip.FZipFile;
 	import deng.fzip.FZipLibrary;
 
-	import starling.textures.Texture;
-	
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFBundle;
-	import com.catalystapps.gaf.data.config.CTextureAtlas;
+	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
@@ -57,6 +57,35 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * In process of conversion doesn't create textures (doesn't load in GPU memory). 
+		 * Be sure to set up <code>ZipToGAFAssetConverter.keepImagesInRAM = true</code> when using this action, otherwise Error will occur
+		 */
+		public static const ACTION_DONT_LOAD_IN_GPU_MEMORY: String = "actionDontLoadInGPUMemory";
+		
+		/**
+		 * In process of conversion create textures (load in GPU memory).
+		 */
+		public static const ACTION_LOAD_ALL_IN_GPU_MEMORY: String = "actionLoadAllInGPUMemory";
+		
+		/**
+		 * In process of conversion create textures (load in GPU memory) only atlases for default scale and csf
+		 */
+		public static const ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT: String = "actionLoadInGPUMemoryOnlyDefault";
+		
+		/**
+		 * Action that should be applied to atlases in process of conversion. Possible values are action constants.
+		 * By default loads in GPU memory only atlases for default scale and csf
+		 */
+		public static var actionWithAtlases: String = ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT;
+		
+		/**
+		 * Indicates keep or not to keep all atlases as BitmapData for further usage. 
+		 * All saved atlases available through <code>gafgfxData</code> property in <code>GAFAsset</code>
+		 * By default converter won't keep images for further usage
+		 */
+		public static var keepImagesInRAM: Boolean = false;
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
@@ -69,12 +98,12 @@ package com.catalystapps.gaf.core
 		private var currentConfigIndex: uint = 0;
 		private var configConvertTimeout: Number;
 		
-		private var texturesDictionary: Object;
-		
-		private var jsonConfigs: Object;
+		private var gafAssetConfigSources: Object;
 		private var gafAssetsIDs: Array;
 		
 		private var pngImgs: Object;
+		
+		private var gfxData: GAFGFXData;
 		
 		private var _gafAsset: GAFAsset;
 		private var _gafBundle: GAFBundle;
@@ -91,7 +120,7 @@ package com.catalystapps.gaf.core
 		/** @private */
 		public function ZipToGAFAssetConverter()
 		{
-			this.texturesDictionary = new Object();
+			this.gfxData = new GAFGFXData();
 		}
 		
 		//--------------------------------------------------------------------------
@@ -142,9 +171,9 @@ package com.catalystapps.gaf.core
 			
 			this.pngImgs = new Object();
 			
-			this.jsonConfigs = new Object();
+			this.gafAssetConfigSources = new Object();
 			this.gafAssetsIDs = new Array();
-			
+						
 			for(var i: uint = 0; i < length; i++)
 			{
 				zipFile = this._zip.getFileAt(i);
@@ -160,7 +189,13 @@ package com.catalystapps.gaf.core
 				{
 					this.gafAssetsIDs.push(zipFile.filename);
 					
-					this.jsonConfigs[zipFile.filename] = zipFile.getContentAsString();
+					this.gafAssetConfigSources[zipFile.filename] = zipFile.getContentAsString();
+				}
+				else if(zipFile.filename.indexOf(".gaf") != -1)
+				{
+					this.gafAssetsIDs.push(zipFile.filename);	
+					
+					this.gafAssetConfigSources[zipFile.filename] = zipFile.content;			
 				}
 			}
 			
@@ -172,43 +207,67 @@ package com.catalystapps.gaf.core
 			clearTimeout(this.configConvertTimeout);
 			
 			var config: GAFAssetConfig;
+			var configSource: Object = this.gafAssetConfigSources[this.gafAssetsIDs[this.currentConfigIndex]];
 			
-			try
-			{
-				config = GAFAssetConfig.convert(this.jsonConfigs[this.gafAssetsIDs[this.currentConfigIndex]], this._defaultScale, this._defaultContentScaleFactor);
-			}
-			catch(error: Error)
-			{
-				this.zipProcessError(error.message, 4);
-				
-				return;
-			}
+//			try
+//			{
+				if (configSource is ByteArray)
+				{
+					config = BinGAFAssetConfigConverter.convert(configSource as ByteArray, this._defaultScale, this._defaultContentScaleFactor);
+				}	
+				else 
+				{
+					config = JsonGAFAssetConfigConverter.convert(configSource as String, this._defaultScale, this._defaultContentScaleFactor);			
+				}
+//			}
+//			catch(error: Error)
+//			{
+//				this.zipProcessError(error.message, 4);
+//				
+//				return;
+//			}
+			
+			///////////////////////////////////
 			
 			for each(var cScale: CTextureAtlasScale in config.allTextureAtlases)
 			{
 				for each(var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
 				{
-					var texturesDictionary: Object = new Object();
-					var imagesDictionary: Object = new Object();
-					
 					for each(var taSource: CTextureAtlasSource in cCSF.sources)
 					{
-						texturesDictionary[taSource.id] = this.getTexture(cScale.scale, cCSF.csf, taSource);
-						
-						imagesDictionary[taSource.id] = this.pngImgs[taSource.source];
-					}
-					
-					cCSF.atlas = CTextureAtlas.createFromTextures(texturesDictionary, cScale);
-					
-					if(GAFAsset.debug)
-					{
-						cCSF.atlas.imgs = imagesDictionary;
+						if(this.pngImgs[taSource.source])
+						{
+							this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id, this.pngImgs[taSource.source]);
+						}
+						else
+						{
+							this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
+						}
 					}
 				}
 			}
 			
+			///////////////////////////////////
+			
 			var asset: GAFAsset = new GAFAsset(config);
 			asset.id = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
+			
+			asset.gafgfxData = this.gfxData;
+			
+			///////////////////////////////////
+			
+			switch(ZipToGAFAssetConverter.actionWithAtlases)
+			{
+				case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
+					asset.loadInVideoMemory(GAFAsset.CONTENT_ALL);
+					break;
+				
+				case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
+					asset.loadInVideoMemory(GAFAsset.CONTENT_DEFAULT);
+					break;
+			}
+			
+			///////////////////////////////////
 			
 			if(this.gafAssetsIDs.length > 1)
 			{
@@ -228,6 +287,16 @@ package com.catalystapps.gaf.core
 			
 			if(this.currentConfigIndex >= this.gafAssetsIDs.length)
 			{
+				if(!ZipToGAFAssetConverter.keepImagesInRAM)
+				{
+					this.gfxData.removeImages();
+					
+					if(ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
+					{
+						throw new Error("Impossible parameters combination! keepImagesInRAM = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
+					}
+				}
+			
 				this.dispatchEvent(new Event(Event.COMPLETE));
 			}
 			else
@@ -257,35 +326,6 @@ package com.catalystapps.gaf.core
 			}
 			
 			return configName.substring(startIndex, endIndex);
-		}
-		
-		private function getTexture(scale: Number, csf: Number, taSource: CTextureAtlasSource): Texture
-		{
-			if(!this.texturesDictionary[scale])
-			{
-				this.texturesDictionary[scale] = new Object();
-			}
-			
-			if(!this.texturesDictionary[scale][csf])
-			{
-				this.texturesDictionary[scale][csf] = new Object();
-			}
-			
-			if(!this.texturesDictionary[scale][csf][taSource.id])
-			{
-				var img: BitmapData = this.pngImgs[taSource.source];
-						
-				if(!img)
-				{
-					this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
-		
-					return null;
-				}
-						
-				this.texturesDictionary[scale][csf][taSource.id] = CTextureAtlas.textureFromImg(img, csf);
-			}
-			
-			return this.texturesDictionary[scale][csf][taSource.id];
 		}
 		
 		private function zipProcessError(text: String, id: int = 0):void

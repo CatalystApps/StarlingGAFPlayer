@@ -55,6 +55,17 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
+		/**
+		 * Disposes all resources of the display object
+		 */
+		override public function dispose(): void
+		{
+			(this.filter) ? this.filter.dispose() : null;
+			this.filter = null;
+			
+			super.dispose();
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
