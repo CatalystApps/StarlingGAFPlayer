@@ -246,12 +246,17 @@ package com.catalystapps.gaf.data.converters
 						{
 							for each (var filterConfig: Object in state["e"])
 							{
-								if (filterConfig["t"] == "Fblur")
+								switch (filterConfig["t"])
 								{
-									checkAndInitFilter();
-									
-									filter.initFilterBlur(filterConfig["x"], filterConfig["y"]);
-								}
+									case "Fblur":
+										checkAndInitFilter();									
+										filter.initFilterBlur(filterConfig["x"], filterConfig["y"]);
+										break;
+									case "ColorMatrixFilter":
+										checkAndInitFilter();
+										filter.initColorMatrixFilter(filterConfig["matrix"]);
+										break;
+								}								
 							}							
 						}
 						

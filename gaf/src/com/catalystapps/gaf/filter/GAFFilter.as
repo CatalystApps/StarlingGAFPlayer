@@ -65,7 +65,7 @@ package com.catalystapps.gaf.filter
 		}
 		
 		public function setColorTransformFilter(value:Vector.<Number>):void
-        {
+        {			
 			cUserMatrix = new Vector.<Number>();
 			cShaderMatrix = new Vector.<Number>();
 			changeColor = false;
