@@ -1,6 +1,6 @@
 <project name="GAF" basedir="../" default="build">
 
-  <property name="FLEX_HOME" location="c:/flex_sdk/flex.sdk.4.6.air.3.8/"/>
+  <property name="FLEX_HOME" location="/tools/flex_sdk_4.6"/>
   
   <property name="deploy.dir" location="bin" />
   <property name="src.dir" location="src" />

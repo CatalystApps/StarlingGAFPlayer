@@ -271,7 +271,7 @@ package com.catalystapps.gaf.data.converters
 						
 						if(maskID && filter)
 						{
-							result.addWarning("Warning! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.");
+							result.addWarning("Warning! Animation contains objects with filters under mask! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.");
 						}
 						
 						currentFrame.addInstance(instance);
