@@ -71,6 +71,14 @@ package com.catalystapps.gaf.data.config
 		{
 			var i: uint;
 			
+			for (i = 0; i < params.length; i++)
+			{
+				if (i % 5 == 4)
+				{
+					params[i] = params[i] / 255;
+				}								
+			}	
+			
 			if (this._colorTransformFilterParams)
 			{
 				i = 0;

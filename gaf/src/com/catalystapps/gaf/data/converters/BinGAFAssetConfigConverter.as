@@ -311,14 +311,14 @@ package com.catalystapps.gaf.data.converters
 		}
 		
 		private static function readColorMatrixFilter(source: ByteArray, filter:CFilter): void
-		{
-			//filter.initFilterBlur(source.readFloat(), source.readFloat());
-			trace("colorMatrixFilter");
-			
+		{	
+			var matrix: Array = [];		
 			for (var i: uint = 0; i < 20; i++)
 			{
-				trace(i, source.readFloat());
+				matrix.push(source.readFloat());
 			}
+						
+			filter.initColorMatrixFilter(matrix);
 		}
 		
 		private static function readFixed(source: ByteArray): Number
