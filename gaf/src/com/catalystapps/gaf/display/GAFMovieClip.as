@@ -12,6 +12,7 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
+	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.event.SequenceEvent;
 	import com.catalystapps.gaf.filter.GAFFilter;
 
@@ -136,11 +137,11 @@ package com.catalystapps.gaf.display
 					
 					////////////////////////////////
 					
-					var filterProperties: Vector.<Number> = new Vector.<Number>();
-					filterProperties.push(1,0,0,0,255, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0);
+					var cFilter: CFilter = new CFilter();
+					cFilter.addColorMatrixFilter([1,0,0,0,255, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0]);
 					
 					var gafFilter: GAFFilter = new GAFFilter();
-					gafFilter.setColorTransformFilter(filterProperties);
+					gafFilter.setConfig(cFilter, scale);
 					
 					maskImage.filter = gafFilter;
 					
@@ -418,8 +419,7 @@ package com.catalystapps.gaf.display
 			else if(image.filter && instance.filter)
 			{
 				gafFilter = image.filter as GAFFilter;
-				gafFilter.setColorTransformFilter(instance.filter.colorTransformFilterParams);
-				gafFilter.setBlurFilter(instance.filter.blurFilterParams, scale);
+				gafFilter.setConfig(instance.filter, scale);				
 			}
 			else if(image.filter && !instance.filter)
 			{
@@ -429,8 +429,7 @@ package com.catalystapps.gaf.display
 			else if(!image.filter && instance.filter)
 			{
 				gafFilter = new GAFFilter();
-				gafFilter.setColorTransformFilter(instance.filter.colorTransformFilterParams);
-				gafFilter.setBlurFilter(instance.filter.blurFilterParams, scale);
+				gafFilter.setConfig(instance.filter, scale);
 				image.filter = gafFilter;
 			}
 		}

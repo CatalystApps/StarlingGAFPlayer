@@ -22,6 +22,11 @@ package com.catalystapps.gaf.data.converters
 	 */
 	public class JsonGAFAssetConfigConverter
 	{
+		public static const FILTER_BLUR: String = "Fblur";
+		public static const FILTER_COLOR_TRANSFORM: String = "Fctransform";
+		public static const FILTER_DROP_SHADOW: String = "FdropShadowFilter";
+		public static const FILTER_GLOW: String = "FglowFilter";
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
@@ -239,24 +244,39 @@ package com.catalystapps.gaf.data.converters
 							
 							checkAndInitFilter();
 							
-							filter.initFilterColorTransform(params);
+							filter.addColorTransform(params);
 						}
 						
 						if(state.hasOwnProperty("e"))
 						{
+							var warning: String;
+							
 							for each (var filterConfig: Object in state["e"])
 							{
 								switch (filterConfig["t"])
 								{
-									case "Fblur":
+									case JsonGAFAssetConfigConverter.FILTER_BLUR:
 										checkAndInitFilter();									
-										filter.initFilterBlur(filterConfig["x"], filterConfig["y"]);
+										warning = filter.addBlurFilter(filterConfig["x"], filterConfig["y"]);
 										break;
-									case "ColorMatrixFilter":
+									case JsonGAFAssetConfigConverter.FILTER_COLOR_TRANSFORM:
 										checkAndInitFilter();
-										filter.initColorMatrixFilter(filterConfig["matrix"]);
+										warning = filter.addColorMatrixFilter(filterConfig["matrix"]);
 										break;
-								}								
+									case JsonGAFAssetConfigConverter.FILTER_DROP_SHADOW:
+										checkAndInitFilter();
+										warning = filter.addDropShadowFilter(filterConfig["x"], filterConfig["y"], filterConfig["color"], filterConfig["alpha"], filterConfig["angle"], filterConfig["distance"]);
+										break;
+									case JsonGAFAssetConfigConverter.FILTER_GLOW:
+										checkAndInitFilter();
+										warning = filter.addGlowFilter(filterConfig["x"], filterConfig["y"], filterConfig["color"], filterConfig["alpha"]);										
+										break;
+									default:
+										warning = WarningConstants.UNSUPPORTED_FILTERS;										
+										break;
+								}	
+								
+								result.addWarning(warning);							
 							}							
 						}
 						

@@ -119,7 +119,7 @@ package com.catalystapps.gaf.data.converters
 				case BinGAFAssetConfigConverter.TAG_END:
 					break;
 				default:
-					trace("Unsupported tag found, check for playback library updates");
+					config.addWarning(WarningConstants.UNSUPPORTED_TAG);
 					break;
 			}
 			 
@@ -207,7 +207,7 @@ package com.catalystapps.gaf.data.converters
 						
 						checkAndInitFilter();
 						
-						filter.initFilterColorTransform(params);
+						filter.addColorTransform(params);
 					}
 					
 					if (hasEffect)
@@ -218,24 +218,28 @@ package com.catalystapps.gaf.data.converters
 						for (var k: uint = 0; k < filterLength; k++)
 						{
 							filterType = tagContent.readUnsignedInt();
+							var warning: String;
+							
 							switch (filterType)
 							{
 								case BinGAFAssetConfigConverter.FILTER_DROP_SHADOW:
-									readDropShadowFilter(tagContent, filter);
+									warning = readDropShadowFilter(tagContent, filter);
 									break;
 								case BinGAFAssetConfigConverter.FILTER_BLUR:
-									readBlurFilter(tagContent, filter);
+									warning = readBlurFilter(tagContent, filter);
 									break;
 								case BinGAFAssetConfigConverter.FILTER_GLOW:
-									readGlowFilter(tagContent, filter);
+									warning = readGlowFilter(tagContent, filter);
 									break;
 								case BinGAFAssetConfigConverter.FILTER_COLOR_MATRIX:
-									readColorMatrixFilter(tagContent, filter);
+									warning = readColorMatrixFilter(tagContent, filter);
 									break;								
 								default:
-									trace("Unsupported filter");
+									warning = WarningConstants.UNSUPPORTED_FILTERS;
 									break;
 							}
+							
+							config.addWarning(warning);
 						}						
 					}
 					
@@ -275,42 +279,38 @@ package com.catalystapps.gaf.data.converters
 			config.animationConfigFrames = animationConfigFrames;
 		}
 		
-		private static function readDropShadowFilter(source: ByteArray, filter:CFilter): void
+		private static function readDropShadowFilter(source: ByteArray, filter:CFilter): String
 		{
-			//filter.initFilterBlur(source.readFloat(), source.readFloat());
-			
-			trace("dropShadowFilter");
-			
-			trace("color", readColorValue(source));
-			trace("blurX", source.readFloat());
-			trace("blurY", source.readFloat());
-			trace("angle", source.readFloat());
-			trace("distance", source.readFloat());
-			trace("strength", source.readFloat());
-			trace("inner", source.readBoolean());
-			trace("knockout", source.readBoolean());			
+			var color: Array = readColorValue(source);
+			var blurX: Number = source.readFloat();
+			var blurY: Number = source.readFloat();
+			var angle: Number = source.readFloat();
+			var distance: Number = source.readFloat();
+			var strength: Number = source.readFloat();
+			var inner: Boolean = source.readBoolean();
+			var knockout: Boolean = source.readBoolean();
+		
+			return filter.addDropShadowFilter(blurX, blurY, color[1], color[0], angle, distance);	
 		}
 		
-		private static function readBlurFilter(source: ByteArray, filter:CFilter): void
+		private static function readBlurFilter(source: ByteArray, filter:CFilter): String
 		{
-			filter.initFilterBlur(source.readFloat(), source.readFloat());
+			return filter.addBlurFilter(source.readFloat(), source.readFloat());
 		}
 		
-		private static function readGlowFilter(source: ByteArray, filter:CFilter): void
-		{
-			//filter.initFilterBlur(source.readFloat(), source.readFloat());
+		private static function readGlowFilter(source: ByteArray, filter:CFilter): String
+		{			
+			var color: Array = readColorValue(source);
+			var blurX: Number = source.readFloat();
+			var blurY: Number = source.readFloat();
+			var strength: Number = source.readFloat();
+			var inner: Boolean = source.readBoolean();
+			var knockout: Boolean = source.readBoolean();
 			
-			trace("glowFilter");
-			
-			trace("color", readColorValue(source));
-			trace("blurX", source.readFloat());
-			trace("blurY", source.readFloat());
-			trace("strength", source.readFloat());
-			trace("inner", source.readBoolean());
-			trace("knockout", source.readBoolean());
+			return filter.addGlowFilter(blurX, blurY, color[1], color[0]);			
 		}
 		
-		private static function readColorMatrixFilter(source: ByteArray, filter:CFilter): void
+		private static function readColorMatrixFilter(source: ByteArray, filter:CFilter): String
 		{	
 			var matrix: Array = [];		
 			for (var i: uint = 0; i < 20; i++)
@@ -318,7 +318,7 @@ package com.catalystapps.gaf.data.converters
 				matrix.push(source.readFloat());
 			}
 						
-			filter.initColorMatrixFilter(matrix);
+			return filter.addColorMatrixFilter(matrix);
 		}
 		
 		private static function readFixed(source: ByteArray): Number

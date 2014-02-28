@@ -79,6 +79,11 @@ package com.catalystapps.gaf.data
 		
 		public function addWarning(text: String): void
 		{
+			if (text == "")
+			{
+				return;
+			}
+			
 			if(!this._warnings)
 			{
 				this._warnings = new Vector.<String>();
