@@ -19,12 +19,18 @@ package com.catalystapps.gaf.data.config
 		{
 			var copy: CBlurFilterData = new CBlurFilterData();
 			
-			for (var prop: String in this)
-			{
-				copy[prop] = this[prop];
-			}
+			copy.blurX = this.blurX;
+			copy.blurY = this.blurY;
+			copy.color = this.color;
+			copy.angle = this.angle;
+			copy.distance = this.distance;
+			copy.strength = this.strength;
+			copy.alpha = this.alpha;
+			copy.inner = this.inner;
+			copy.knockout = this.knockout;
 			
 			return copy;
 		}
+
 	}
 }

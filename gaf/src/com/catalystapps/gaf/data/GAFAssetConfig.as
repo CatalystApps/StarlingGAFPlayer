@@ -79,7 +79,7 @@ package com.catalystapps.gaf.data
 		
 		public function addWarning(text: String): void
 		{
-			if (text == "")
+			if (!text)
 			{
 				return;
 			}

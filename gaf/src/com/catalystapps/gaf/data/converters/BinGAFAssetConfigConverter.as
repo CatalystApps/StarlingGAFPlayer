@@ -119,7 +119,7 @@ package com.catalystapps.gaf.data.converters
 				case BinGAFAssetConfigConverter.TAG_END:
 					break;
 				default:
-					config.addWarning(WarningConstants.UNSUPPORTED_TAG);
+					trace(WarningConstants.UNSUPPORTED_TAG);
 					break;
 			}
 			 
@@ -235,7 +235,7 @@ package com.catalystapps.gaf.data.converters
 									warning = readColorMatrixFilter(tagContent, filter);
 									break;								
 								default:
-									warning = WarningConstants.UNSUPPORTED_FILTERS;
+									trace(WarningConstants.UNSUPPORTED_FILTERS);
 									break;
 							}
 							
@@ -258,7 +258,7 @@ package com.catalystapps.gaf.data.converters
 					
 					if(maskID && filter)
 					{
-						config.addWarning("Warning! Animation contains objects with filters under mask! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.");
+						config.addWarning(WarningConstants.FILTERS_UNDER_MASK);
 					}
 						
 					currentFrame.addInstance(instance);
