@@ -95,7 +95,12 @@ package com.catalystapps.gaf.filter
 		{
 			var i: uint;
 			var l: uint = cFilter.filterConfigs.length;
-			var filterConfig: ICFilterData;			
+			var filterConfig: ICFilterData;
+			
+			var blurUpdated: Boolean;
+			var ctmUpdated: Boolean;		
+			
+			mUniformColor = false;
 			
 			for (i = 0; i < l; i++)
 			{
@@ -104,12 +109,42 @@ package com.catalystapps.gaf.filter
 				if (filterConfig is CBlurFilterData)
 				{
 					updateBlurFilter(filterConfig as CBlurFilterData);
+					blurUpdated = true;
 				}
 				else if (filterConfig is CColorMatrixFilterData)
 				{
 					updateColorMatrixFilter(filterConfig as CColorMatrixFilterData);
+					ctmUpdated = true;
 				}				
 			}
+			
+			if (!blurUpdated)
+			{
+				resetBlurFilter();
+			}
+			
+			if (!ctmUpdated)
+			{
+				resetColorMatrixFilter();
+			}
+			
+			updateMarginsAndPasses();			
+		}
+		
+		private function resetBlurFilter(): void
+		{
+			mOffsets = new <Number>[0, 0, 0, 0];
+       		mWeights = new <Number>[0, 0, 0, 0];
+			mColor = new <Number>[1, 1, 1, 1];       	        
+       		mBlurX = 0;
+       		mBlurY = 0;			
+		}
+
+		private function resetColorMatrixFilter(): void
+		{
+			cUserMatrix = new Vector.<Number>();
+        	cShaderMatrix = new Vector.<Number>();     		
+			changeColor = false;		
 		}
 		
 		private function updateBlurFilter(cBlurFilterData: CBlurFilterData): void
@@ -119,9 +154,7 @@ package com.catalystapps.gaf.filter
 			offsetX = Math.cos(cBlurFilterData.angle) * cBlurFilterData.distance * _currentScale;
             offsetY = Math.sin(cBlurFilterData.angle) * cBlurFilterData.distance * _currentScale;
 			
-			setUniformColor((cBlurFilterData.color > - 1), cBlurFilterData.color, cBlurFilterData.alpha);
-			
-			updateMarginsAndPasses();				
+			setUniformColor((cBlurFilterData.color > - 1), cBlurFilterData.color, cBlurFilterData.alpha);						
 		}
 		
 		/** A uniform color will replace the RGB values of the input color, while the alpha
@@ -167,8 +200,7 @@ package com.catalystapps.gaf.filter
                 copyMatrix(value, cUserMatrix);
             }
             
-            updateShaderMatrix();
-			updateMarginsAndPasses();
+            updateShaderMatrix();			
 		}
 		
 		private function copyMatrix(from:Vector.<Number>, to:Vector.<Number>):void
@@ -432,6 +464,23 @@ package com.catalystapps.gaf.filter
         {
             if (mNormalProgram) mNormalProgram.dispose();
 			if (cShaderProgram) cShaderProgram.dispose();
+			
+			var target:Starling = Starling.current;
+			
+			if (target.hasProgram(GAFFilter.COLOR_TRANSFORM_PROGRAM_NAME))
+			{
+				target.deleteProgram(GAFFilter.COLOR_TRANSFORM_PROGRAM_NAME);
+			}
+			
+			if (target.hasProgram(GAFFilter.NORMAL_PROGRAM_NAME))
+			{
+				target.deleteProgram(GAFFilter.NORMAL_PROGRAM_NAME);
+			}
+			
+			if (target.hasProgram(GAFFilter.TINTED_PROGRAM_NAME))
+			{
+				target.deleteProgram(GAFFilter.TINTED_PROGRAM_NAME);
+			}
                         
             super.dispose();
         }
