@@ -450,7 +450,7 @@ package com.catalystapps.gaf.display
 			
 			for each(var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
 			{
-				image = new GAFImage(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.textureElementID, this._mappedAssetID));
+				image = new GAFImage(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.staticObjectID, this._mappedAssetID));
 				image.name = animationObjectConfig.instanceID;
 				
 				if(animationObjectConfig.mask)

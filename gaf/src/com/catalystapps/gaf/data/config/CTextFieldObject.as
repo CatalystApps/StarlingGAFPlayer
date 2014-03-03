@@ -1,39 +1,44 @@
+/**
+ * Created by Nazar on 03.03.14.
+ */
 package com.catalystapps.gaf.data.config
 {
-	/**
-	 * @private
-	 */
-	public class CAnimationObject
+	import flash.text.TextFormat;
+
+	public class CTextFieldObject
 	{
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
-		private var _instanceID: String;
-		private var _staticObjectID: String;
-		private var _type: String;
-		private var _mask: Boolean;
-		
+
+		private var _id: String;
+		private var _width: Number;
+		private var _height: Number;
+		private var _text: String;
+		private var _textFormat: TextFormat;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
-		public function CAnimationObject(instanceID: String, staticObjectID: String, type: String, mask: Boolean)
+
+		public function CTextFieldObject(id: String, text: String, textFormat: TextFormat, width: Number, height: Number)
 		{
-			this._instanceID = instanceID;
-			this._staticObjectID = staticObjectID;
-			this._type = type;
-			this._mask = mask;
+			_id = id;
+			_text = text;
+			_textFormat = textFormat;
+
+			_width = width;
+			_height = height;
 		}
 
 		//--------------------------------------------------------------------------
@@ -41,49 +46,85 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
-		public function get instanceID(): String
+
+		public function get id(): String
 		{
-			return _instanceID;
+			return _id;
 		}
 
-		public function get staticObjectID(): String
+		public function set id(value: String): void
 		{
-			return _staticObjectID;
+			_id = value;
 		}
 
-		public function get mask(): Boolean
+		public function get text(): String
 		{
-			return _mask;
+			return _text;
 		}
 
-		public function get type(): String
+		public function set text(value: String): void
 		{
-			return _type;
+			_text = value;
 		}
+
+		public function get textFormat(): TextFormat
+		{
+			return _textFormat;
+		}
+
+		public function set textFormat(value: TextFormat): void
+		{
+			_textFormat = value;
+		}
+
+		public function get width(): Number
+		{
+			return _width;
+		}
+
+		public function set width(value: Number): void
+		{
+			_width = value;
+		}
+
+		public function get height(): Number
+		{
+			return _height;
+		}
+
+		public function set height(value: Number): void
+		{
+			_height = value;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  STATIC METHODS
+		//
+		//--------------------------------------------------------------------------
 	}
 }

@@ -1,39 +1,33 @@
+/**
+ * Created by Nazar on 03.03.14.
+ */
 package com.catalystapps.gaf.data.config
 {
-	/**
-	 * @private
-	 */
-	public class CAnimationObject
+	public class CTextFieldObjects
 	{
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
-		private var _instanceID: String;
-		private var _staticObjectID: String;
-		private var _type: String;
-		private var _mask: Boolean;
-		
+
+		private var _textFieldObjectsDictionary: Object;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
-		public function CAnimationObject(instanceID: String, staticObjectID: String, type: String, mask: Boolean)
+
+		public function CTextFieldObjects()
 		{
-			this._instanceID = instanceID;
-			this._staticObjectID = staticObjectID;
-			this._type = type;
-			this._mask = mask;
+			_textFieldObjectsDictionary = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -41,49 +35,61 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
+		public function addTextFieldObject(textFieldObject: CTextFieldObject): void
+		{
+			if(!this._textFieldObjectsDictionary[textFieldObject.id])
+			{
+				this._textFieldObjectsDictionary[textFieldObject.id] = textFieldObject;
+			}
+		}
+
+		public function getAnimationObject(id: String): CAnimationObject
+		{
+			if(this._textFieldObjectsDictionary[id])
+			{
+				return this._textFieldObjectsDictionary[id];
+			}
+			else
+			{
+				return null;
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
-		public function get instanceID(): String
+
+		public function get textFieldObjectsDictionary(): Object
 		{
-			return _instanceID;
+			return _textFieldObjectsDictionary;
 		}
 
-		public function get staticObjectID(): String
-		{
-			return _staticObjectID;
-		}
+		//--------------------------------------------------------------------------
+		//
+		//  STATIC METHODS
+		//
+		//--------------------------------------------------------------------------
 
-		public function get mask(): Boolean
-		{
-			return _mask;
-		}
-
-		public function get type(): String
-		{
-			return _type;
-		}
 	}
 }

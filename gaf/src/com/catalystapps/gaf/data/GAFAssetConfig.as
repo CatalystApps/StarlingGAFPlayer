@@ -3,6 +3,7 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
+	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	/**
 	 * @private
@@ -28,6 +29,7 @@ package com.catalystapps.gaf.data
 		private var _animationConfigFrames: CAnimationFrames;
 		private var _animationObjects: CAnimationObjects;
 		private var _animationSequences: CAnimationSequences;
+		private var _textFields: CTextFieldObjects;
 
 		private var _debugRegions: Vector.<GAFDebugInformation>;
 		
@@ -147,6 +149,16 @@ package com.catalystapps.gaf.data
 		public function set animationSequences(animationSequences: CAnimationSequences): void
 		{
 			_animationSequences = animationSequences;
+		}
+
+		public function get textFields(): CTextFieldObjects
+		{
+			return _textFields;
+		}
+
+		public function set textFields(textFields: CTextFieldObjects): void
+		{
+			_textFields = textFields;
 		}
 
 		public function get allTextureAtlases(): Vector.<CTextureAtlasScale>

@@ -23,6 +23,7 @@ package com.catalystapps.gaf.data.config
 		private var _atlasID: String;
 		private var _region: Rectangle;
 		private var _pivotMatrix: Matrix;
+		private var _scale9Grid: Rectangle;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -92,6 +93,15 @@ package com.catalystapps.gaf.data.config
 		{
 			return _atlasID;
 		}
-		
+
+		public function get scale9Grid(): flash.geom.Rectangle
+		{
+			return _scale9Grid;
+		}
+
+		public function set scale9Grid(value: Rectangle): void
+		{
+			_scale9Grid = value;
+		}
 	}
 }
