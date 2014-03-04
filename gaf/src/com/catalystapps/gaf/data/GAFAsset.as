@@ -90,7 +90,9 @@ package com.catalystapps.gaf.data
 					
 				case CONTENT_DEFAULT:
 					csfConfig = this._config.textureAtlas.contantScaleFactor;
-					
+
+					if (csfConfig == null) return;
+
 					this._gafgfxData.createTextures(this.scale, this.contentScaleFactor);
 					
 					csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale, this.contentScaleFactor), csfConfig);
@@ -98,7 +100,9 @@ package com.catalystapps.gaf.data
 				
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
-					
+
+					if (csfConfig == null) return;
+
 					this._gafgfxData.createTextures(scale, csf);
 					
 					csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);
