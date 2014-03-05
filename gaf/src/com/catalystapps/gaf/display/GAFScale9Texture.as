@@ -59,8 +59,6 @@ package com.catalystapps.gaf.display
 			}
 			this._texture = texture;
 			this._scale9Grid = scale9Grid;
-			this._scale9Grid.x -= this._pivotMatrix.tx;
-			this._scale9Grid.y -= this._pivotMatrix.ty;
 			this.initialize();
 		}
 
