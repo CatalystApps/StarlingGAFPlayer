@@ -2,11 +2,13 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
+	import com.catalystapps.gaf.data.GAFScale9Image;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
+	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
 	import com.catalystapps.gaf.event.SequenceEvent;
 	import com.catalystapps.gaf.filter.GAFFilter;
 
@@ -14,7 +16,6 @@ package com.catalystapps.gaf.display
 	import flash.text.TextFormatAlign;
 
 	import starling.display.DisplayObject;
-	import starling.display.Image;
 	import starling.display.Quad;
 	import starling.display.Sprite;
 	import starling.events.Event;
@@ -412,7 +413,7 @@ package com.catalystapps.gaf.display
 						else
 						{
 							staticObject.transformationMatrix = instance.getTransformMatrix(objectPivotMatrix,
-							                                                         this.scale);
+							                                                                this.scale);
 							this.updateFilter(staticObject, instance, this.scale);
 
 							this.addChild(staticObject);
@@ -484,60 +485,55 @@ package com.catalystapps.gaf.display
 
 			var animationObjectsDictionary: Object = this._gafAsset.config.animationObjects.animationObjectsDictionary;
 
-			for each(var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
+			for each (var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
 			{
 				var staticObject: DisplayObject;
 				switch (animationObjectConfig.type)
 				{
 					case "texture":
-						staticObject = new GAFImage(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.staticObjectID,
-						                                                            this._mappedAssetID));
-						staticObject.name = animationObjectConfig.instanceID;
-
-						if (animationObjectConfig.mask)
+						var texture: IGAFTexture = this._gafAsset.textureAtlas.getTexture(animationObjectConfig.staticObjectID,
+						                                                                  this._mappedAssetID);
+						if (texture is GAFScale9Texture)
 						{
-							this.masksDictionary[animationObjectConfig.instanceID] = staticObject;
-
-							var pixelMaskDisplayObject: PixelMaskDisplayObject = new PixelMaskDisplayObject();
-							pixelMaskDisplayObject.mask = staticObject;
-
-							this.maskedImagesDictionary[animationObjectConfig.instanceID] = pixelMaskDisplayObject;
+							staticObject = new GAFScale9Image(texture as GAFScale9Texture);
 						}
 						else
 						{
-							this.staticObjectsDictionary[animationObjectConfig.instanceID] = staticObject;
+							staticObject = new GAFImage(texture);
 						}
+
+						staticObject.name = animationObjectConfig.instanceID;
 						break;
 					case "textField":
 						//tf = new GAFTextField(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.staticObjectID, this._mappedAssetID));
 						var tfObj: CTextFieldObject = this._gafAsset.config.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
 						staticObject = new GAFTextField(tfObj.width, tfObj.height, tfObj.text, tfObj.textFormat.font,
-						                      Number(tfObj.textFormat.size), uint(tfObj.textFormat.color),
-						                      tfObj.textFormat.bold);
+						                                Number(tfObj.textFormat.size), uint(tfObj.textFormat.color),
+						                                tfObj.textFormat.bold);
 						staticObject.name = animationObjectConfig.instanceID;
 						if (tfObj.textFormat.align = TextFormatAlign.JUSTIFY)
 						{
-							(staticObject as GAFTextField).hAlign = starling.utils.HAlign.LEFT;
+							(staticObject as GAFTextField).hAlign = HAlign.LEFT;
 						}
 						else
 						{
 							(staticObject as GAFTextField).hAlign = tfObj.textFormat.align;
 						}
-
-						if (animationObjectConfig.mask)
-						{
-							this.masksDictionary[animationObjectConfig.instanceID] = staticObject;
-
-							var pixelMaskDisplayObject: PixelMaskDisplayObject = new PixelMaskDisplayObject();
-							pixelMaskDisplayObject.mask = staticObject;
-
-							this.maskedImagesDictionary[animationObjectConfig.instanceID] = pixelMaskDisplayObject;
-						}
-						else
-						{
-							this.staticObjectsDictionary[animationObjectConfig.instanceID] = staticObject;
-						}
 						break;
+				}
+
+				if (animationObjectConfig.mask)
+				{
+					this.masksDictionary[animationObjectConfig.instanceID] = staticObject;
+
+					var pixelMaskDisplayObject: PixelMaskDisplayObject = new PixelMaskDisplayObject();
+					pixelMaskDisplayObject.mask = staticObject;
+
+					this.maskedImagesDictionary[animationObjectConfig.instanceID] = pixelMaskDisplayObject;
+				}
+				else
+				{
+					this.staticObjectsDictionary[animationObjectConfig.instanceID] = staticObject;
 				}
 			}
 		}

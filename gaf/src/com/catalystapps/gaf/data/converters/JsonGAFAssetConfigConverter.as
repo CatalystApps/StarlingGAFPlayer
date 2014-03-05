@@ -163,7 +163,7 @@ package com.catalystapps.gaf.data.converters
 				for (var am: String in jsonObject.animationMasks)
 				{
 					animationObjects.addAnimationObject(new CAnimationObject(am, jsonObject.animationMasks[am].id,
-					                                                         jsonObject.animationObjects[am].type,
+					                                                         jsonObject.animationMasks[am].type,
 					                                                         true));
 				}
 			}

@@ -19,7 +19,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
-		private var _assetTexture: GAFTexture;
+		private var _assetTexture: IGAFTexture;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -30,7 +30,7 @@ package com.catalystapps.gaf.display
 		/**
 		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code> 
 		 */
-		public function GAFImage(assetTexture: GAFTexture)
+		public function GAFImage(assetTexture: IGAFTexture)
 		{
 			this._assetTexture = assetTexture;
 			
@@ -78,7 +78,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 		
-		public function get assetTexture(): GAFTexture
+		public function get assetTexture(): IGAFTexture
 		{
 			return _assetTexture;
 		}

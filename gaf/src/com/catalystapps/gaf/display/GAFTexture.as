@@ -7,7 +7,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-	public class GAFTexture
+	public class GAFTexture implements IGAFTexture
 	{
 		//--------------------------------------------------------------------------
 		//
