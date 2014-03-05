@@ -5,7 +5,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-	public class GAFImage extends Image
+	public class GAFImage extends Image implements IGAFImage
 	{
 		//--------------------------------------------------------------------------
 		//

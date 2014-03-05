@@ -5,7 +5,7 @@
  This program is free software. You can redistribute and/or modify it in
  accordance with the terms of the accompanying license agreement.
  */
-package com.catalystapps.gaf.data
+package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.display.GAFScale9Texture;
 
@@ -27,7 +27,7 @@ package com.catalystapps.gaf.data
 	import starling.textures.TextureSmoothing;
 	import starling.utils.MatrixUtil;
 
-	public class GAFScale9Image extends Sprite implements IValidating
+	public class GAFScale9Image extends Sprite implements IValidating, IGAFImage
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -497,6 +497,11 @@ package com.catalystapps.gaf.data
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
+
+		public function get assetTexture(): IGAFTexture
+		{
+			return this._textures;
+		}
 
 		/**
 		 * The textures displayed by this image.

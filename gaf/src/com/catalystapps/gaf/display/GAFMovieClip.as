@@ -2,7 +2,7 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
-	import com.catalystapps.gaf.data.GAFScale9Image;
+	import com.catalystapps.gaf.display.GAFScale9Image;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
@@ -136,9 +136,9 @@ package com.catalystapps.gaf.display
 				if (maskInstance)
 				{
 					var maskPivotMatrix: Matrix;
-					if (maskObject is GAFImage)
+					if (maskObject is IGAFImage)
 					{
-						maskPivotMatrix = (maskObject as GAFImage).assetTexture.pivotMatrix;
+						maskPivotMatrix = (maskObject as IGAFImage).assetTexture.pivotMatrix;
 					}
 					else
 					{
@@ -343,9 +343,9 @@ package com.catalystapps.gaf.display
 				for each(var instance: CAnimationFrameInstance in frameConfig.instances)
 				{
 					staticObject = this.staticObjectsDictionary[instance.id];
-					if (staticObject is GAFImage)
+					if (staticObject is IGAFImage)
 					{
-						objectPivotMatrix = (staticObject as GAFImage).assetTexture.pivotMatrix;
+						objectPivotMatrix = (staticObject as IGAFImage).assetTexture.pivotMatrix;
 					}
 					else
 					{
@@ -362,9 +362,9 @@ package com.catalystapps.gaf.display
 
 							if (maskObject)
 							{
-								if (maskObject is GAFImage)
+								if (maskObject is IGAFImage)
 								{
-									maskPivotMatrix = (maskObject as GAFImage).assetTexture.pivotMatrix;
+									maskPivotMatrix = (maskObject as IGAFImage).assetTexture.pivotMatrix;
 								}
 								else
 								{
@@ -493,9 +493,9 @@ package com.catalystapps.gaf.display
 					case "texture":
 						var texture: IGAFTexture = this._gafAsset.textureAtlas.getTexture(animationObjectConfig.staticObjectID,
 						                                                                  this._mappedAssetID);
-						if (texture is GAFScale9Texture)
+						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
 						{
-							staticObject = new GAFScale9Image(texture as GAFScale9Texture);
+							staticObject = new GAFScale9Image(texture as GAFScale9Texture); // TODO investigate working as mask
 						}
 						else
 						{
