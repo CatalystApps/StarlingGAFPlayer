@@ -153,12 +153,12 @@ package com.catalystapps.gaf.display
 		 * left and right regions scale vertically. The center region stretches in
 		 * both directions to fill the remaining space.
 		 */
-		public function GAFScale9Image(textures: GAFScale9Texture)
+		public function GAFScale9Image(textures: GAFScale9Texture, textureScale: Number = 1)
 		{
 			super();
 
 			this.textures = textures;
-			this._textureScale = 1;
+			this._textureScale = textureScale;
 			this._hitArea = new Rectangle();
 			this.readjustSize();
 
@@ -209,10 +209,10 @@ package com.catalystapps.gaf.display
 				helperImage.color = this._color;
 
 				const grid: Rectangle = this._textures.scale9Grid;
-				var scaledLeftWidth: Number = grid.x * this._textureScale;
-				var scaledTopHeight: Number = grid.y * this._textureScale;
-				var scaledRightWidth: Number = (this._frame.width - grid.x - grid.width) * this._textureScale;
-				var scaledBottomHeight: Number = (this._frame.height - grid.y - grid.height) * this._textureScale;
+				var scaledLeftWidth: Number = grid.x * this._textureScale / this.scaleX;
+				var scaledTopHeight: Number = grid.y * this._textureScale / this.scaleY;
+				var scaledRightWidth: Number = (this._frame.width - grid.x - grid.width) * this._textureScale / this.scaleX;
+				var scaledBottomHeight: Number = (this._frame.height - grid.y - grid.height) * this._textureScale / this.scaleY;
 				const scaledCenterWidth: Number = this._width - scaledLeftWidth - scaledRightWidth;
 				const scaledMiddleHeight: Number = this._height - scaledTopHeight - scaledBottomHeight;
 				if (scaledCenterWidth < 0)
@@ -351,8 +351,8 @@ package com.catalystapps.gaf.display
 		 */
 		public function readjustSize(): void
 		{
-			this.width = this._frame.width * this._textureScale;
-			this.height = this._frame.height * this._textureScale;
+			this.width = this._frame.width * this._textureScale / this.scaleX;
+			this.height = this._frame.height * this._textureScale / this.scaleY;
 		}
 
 		//--------------------------------------------------------------------------
@@ -383,6 +383,13 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		override public function set transformationMatrix(matrix: Matrix): void
+		{
+			super.transformationMatrix = matrix;
+			this._layoutChanged = true;
+			this.invalidate();
+		}
 
 		/**
 		 * @private
