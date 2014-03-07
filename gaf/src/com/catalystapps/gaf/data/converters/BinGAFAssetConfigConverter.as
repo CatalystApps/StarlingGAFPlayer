@@ -386,7 +386,7 @@ package com.catalystapps.gaf.data.converters
 
 				if (!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
 				{
-					textureAtlas.contantScaleFactor = item;
+					textureAtlas.contentScaleFactor = item;
 				}
 
 				return item;
@@ -416,9 +416,9 @@ package com.catalystapps.gaf.data.converters
 
 			textureAtlas.allContentScaleFactors = contentScaleFactors;
 
-			if (!textureAtlas.contantScaleFactor && contentScaleFactors.length)
+			if (!textureAtlas.contentScaleFactor && contentScaleFactors.length)
 			{
-				textureAtlas.contantScaleFactor = contentScaleFactors[0];
+				textureAtlas.contentScaleFactor = contentScaleFactors[0];
 			}
 
 			/////////////////////

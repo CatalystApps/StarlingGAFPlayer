@@ -343,17 +343,18 @@ package com.catalystapps.gaf.display
 				for each(var instance: CAnimationFrameInstance in frameConfig.instances)
 				{
 					staticObject = this.staticObjectsDictionary[instance.id];
-					if (staticObject is IGAFImage)
-					{
-						objectPivotMatrix = (staticObject as IGAFImage).assetTexture.pivotMatrix;
-					}
-					else
-					{
-						objectPivotMatrix = new Matrix();
-					}
 
 					if (staticObject)
 					{
+						if (staticObject is IGAFImage)
+						{
+							objectPivotMatrix = (staticObject as IGAFImage).assetTexture.pivotMatrix;
+						}
+						else
+						{
+							objectPivotMatrix = new Matrix();
+						}
+
 						staticObject.alpha = instance.alpha;
 
 						if (instance.maskID)
@@ -496,6 +497,7 @@ package com.catalystapps.gaf.display
 						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
 						{
 							staticObject = new GAFScale9Image(texture as GAFScale9Texture); // TODO investigate working as mask
+							// investigated, transformationMatrix is set to PixelMaskDisplayObject, not to mask, so we cannot get 9-grid scaled mask
 						}
 						else
 						{

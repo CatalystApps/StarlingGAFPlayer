@@ -20,7 +20,7 @@ package com.catalystapps.gaf.data.config
 		private var _scale: Number;
 		
 		private var _allContentScaleFactors: Vector.<CTextureAtlasCSF>;
-		private var _contantScaleFactor: CTextureAtlasCSF;
+		private var _contentScaleFactor: CTextureAtlasCSF;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -104,14 +104,14 @@ package com.catalystapps.gaf.data.config
 			_allContentScaleFactors = allContentScaleFactors;
 		}
 
-		public function get contantScaleFactor(): CTextureAtlasCSF
+		public function get contentScaleFactor(): CTextureAtlasCSF
 		{
-			return _contantScaleFactor;
+			return _contentScaleFactor;
 		}
 
-		public function set contantScaleFactor(contantScaleFactor: CTextureAtlasCSF): void
+		public function set contentScaleFactor(contantScaleFactor: CTextureAtlasCSF): void
 		{
-			_contantScaleFactor = contantScaleFactor;
+			_contentScaleFactor = contantScaleFactor;
 		}
 
 	}
