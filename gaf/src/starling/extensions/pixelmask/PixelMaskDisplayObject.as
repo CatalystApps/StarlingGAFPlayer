@@ -1,7 +1,7 @@
 package starling.extensions.pixelmask
 {
-	import flash.geom.Matrix;
 	import flash.display3D.Context3DBlendFactor;
+	import flash.geom.Matrix;
 	
 	import starling.core.RenderSupport;
 	import starling.core.Starling;
@@ -12,9 +12,6 @@ package starling.extensions.pixelmask
 	import starling.events.Event;
 	import starling.textures.RenderTexture;
 	
-	/**
-	 * @private
-	 */
 	public class PixelMaskDisplayObject extends DisplayObjectContainer
 	{
 		private static const MASK_MODE_NORMAL:String = "mask";
@@ -30,11 +27,14 @@ package starling.extensions.pixelmask
 		private var _superRenderFlag:Boolean = false;
 		private var _inverted:Boolean = false;
 		private var _scaleFactor:Number;
+		private var _isAnimated:Boolean = true;
+		private var _maskRendered:Boolean = false;
 		
-		public function PixelMaskDisplayObject(scaleFactor:Number=-1)
+		public function PixelMaskDisplayObject(scaleFactor:Number=-1, isAnimated:Boolean=true)
 		{
 			super();			
 			
+			_isAnimated = isAnimated;
 			_scaleFactor = scaleFactor;
 			
 			BlendMode.register(MASK_MODE_NORMAL, Context3DBlendFactor.ZERO, Context3DBlendFactor.SOURCE_ALPHA);
@@ -46,6 +46,16 @@ package starling.extensions.pixelmask
 				onContextCreated, false, 0, true);
 		}
 		
+		public function get isAnimated():Boolean
+		{
+			return _isAnimated;
+		}
+
+		public function set isAnimated(value:Boolean):void
+		{
+			_isAnimated = value;
+		}
+
 		override public function dispose():void
 		{
 			clearRenderTextures();
@@ -132,40 +142,65 @@ package starling.extensions.pixelmask
 					_maskImage.blendMode = MASK_MODE_NORMAL;
 				}
 			}
+			_maskRendered = false;
 		}
 		
 		public override function render(support:RenderSupport, parentAlpha:Number):void
 		{
-			if (_superRenderFlag || !_mask) {
-				super.render(support, parentAlpha);
-			} else {			
-				if (_mask) {					 
-					_superRenderFlag = true;
-					_maskRenderTexture.draw(_mask);
-					_renderTexture.drawBundled(drawRenderTextures);				
-					_image.render(support, parentAlpha);
+			if (_isAnimated || (!_isAnimated && !_maskRendered)) {
+				if (_superRenderFlag || !_mask) {
+					super.render(support, parentAlpha);
+				} else {			
+					if (_mask) {					 
+						_maskRenderTexture.draw(_mask);
+						_renderTexture.drawBundled(drawRenderTextures);				
+						_image.render(support, parentAlpha);
+						_maskRendered = true;
+					}
 				}
+			} else {
+				_image.render(support, parentAlpha);
 			}
-			_superRenderFlag = false;
 		}
 		
-		private function drawRenderTextures() : void
+		private static var _a:Number;
+		private static var _b:Number;
+		private static var _c:Number;
+		private static var _d:Number;
+		private static var _tx:Number;
+		private static var _ty:Number;
+		
+		private function drawRenderTextures(object:DisplayObject=null, matrix:Matrix=null, alpha:Number=1.0) : void
 		{
-			// undo scaling and positionig temporarily because its already applied in this execution stack
-			const mtx: Matrix = transformationMatrix.clone();
-						
-			// reset scale/pos for render texture happiness
-			transformationMatrix = new Matrix();
-						
-			_renderTexture.draw(this);			
+			_a = this.transformationMatrix.a;
+			_b = this.transformationMatrix.b;
+			_c = this.transformationMatrix.c;
+			_d = this.transformationMatrix.d;
 			
-			transformationMatrix = mtx;
+			_tx = this.transformationMatrix.tx;
+			_ty = this.transformationMatrix.ty;
+			
+			this.transformationMatrix.a = 1;
+			this.transformationMatrix.b = 0;
+			this.transformationMatrix.c = 0;
+			this.transformationMatrix.d = 1;
+			
+			this.transformationMatrix.tx = 0;
+			this.transformationMatrix.ty = 0;
+			
+			_superRenderFlag = true;			
+			_renderTexture.draw(this);
+			_superRenderFlag = false;
+			
+			this.transformationMatrix.a = _a;
+			this.transformationMatrix.b = _b;
+			this.transformationMatrix.c = _c;
+			this.transformationMatrix.d = _d;
+			
+			this.transformationMatrix.tx = _tx;
+			this.transformationMatrix.ty = _ty;
+			
 			_renderTexture.draw(_maskImage);
-		}
-
-		public function get mask(): DisplayObject
-		{
-			return _mask;
 		}
 	}
 }

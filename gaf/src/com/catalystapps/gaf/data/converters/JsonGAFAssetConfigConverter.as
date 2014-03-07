@@ -26,6 +26,11 @@ package com.catalystapps.gaf.data.converters
 	 */
 	public class JsonGAFAssetConfigConverter
 	{
+		public static const FILTER_BLUR: String = "Fblur";
+		public static const FILTER_COLOR_TRANSFORM: String = "Fctransform";
+		public static const FILTER_DROP_SHADOW: String = "FdropShadowFilter";
+		public static const FILTER_GLOW: String = "FglowFilter";
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
@@ -101,7 +106,7 @@ package com.catalystapps.gaf.data.converters
 
 						if (!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
 						{
-							textureAtlas.contantScaleFactor = item;
+							textureAtlas.contentScaleFactor = item;
 						}
 
 						return item;
@@ -121,9 +126,9 @@ package com.catalystapps.gaf.data.converters
 
 					textureAtlas.allContentScaleFactors = contentScaleFactors;
 
-					if (!textureAtlas.contantScaleFactor && contentScaleFactors.length)
+					if (!textureAtlas.contentScaleFactor && contentScaleFactors.length)
 					{
-						textureAtlas.contantScaleFactor = contentScaleFactors[0];
+						textureAtlas.contentScaleFactor = contentScaleFactors[0];
 					}
 
 					/////////////////////
@@ -294,19 +299,39 @@ package com.catalystapps.gaf.data.converters
 
 							checkAndInitFilter();
 
-							filter.initFilterColorTransform(params);
+							filter.addColorTransform(params);
 						}
 
 						if (state.hasOwnProperty("e"))
 						{
+							var warning: String;
+
 							for each (var filterConfig: Object in state["e"])
 							{
-								if (filterConfig["t"] == "Fblur")
+								switch (filterConfig["t"])
 								{
-									checkAndInitFilter();
-
-									filter.initFilterBlur(filterConfig["x"], filterConfig["y"]);
+									case JsonGAFAssetConfigConverter.FILTER_BLUR:
+										checkAndInitFilter();
+										warning = filter.addBlurFilter(filterConfig["x"], filterConfig["y"]);
+										break;
+									case JsonGAFAssetConfigConverter.FILTER_COLOR_TRANSFORM:
+										checkAndInitFilter();
+										warning = filter.addColorMatrixFilter(filterConfig["matrix"]);
+										break;
+									case JsonGAFAssetConfigConverter.FILTER_DROP_SHADOW:
+										checkAndInitFilter();
+										warning = filter.addDropShadowFilter(filterConfig["x"], filterConfig["y"], filterConfig["color"], filterConfig["alpha"], filterConfig["angle"], filterConfig["distance"]);
+										break;
+									case JsonGAFAssetConfigConverter.FILTER_GLOW:
+										checkAndInitFilter();
+										warning = filter.addGlowFilter(filterConfig["x"], filterConfig["y"], filterConfig["color"], filterConfig["alpha"]);
+										break;
+									default:
+										trace(WarningConstants.UNSUPPORTED_FILTERS);
+										break;
 								}
+
+								result.addWarning(warning);
 							}
 						}
 
@@ -322,9 +347,7 @@ package com.catalystapps.gaf.data.converters
 
 						if (maskID && filter)
 						{
-							result.addWarning("Warning! Animation contains objects with filters under mask!" +
-									                  " Online preview is not able to display filters applied under masks" +
-									                  " (flash player technical limitation). All other runtimes will display this correctly.");
+							result.addWarning(WarningConstants.FILTERS_UNDER_MASK);
 						}
 
 						currentFrame.addInstance(instance);

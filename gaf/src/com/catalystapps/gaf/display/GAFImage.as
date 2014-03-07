@@ -20,7 +20,7 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 		
 		private var _assetTexture: IGAFTexture;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -33,7 +33,7 @@ package com.catalystapps.gaf.display
 		public function GAFImage(assetTexture: IGAFTexture)
 		{
 			this._assetTexture = assetTexture;
-			
+
 			super(this._assetTexture.texture);
 		}
 

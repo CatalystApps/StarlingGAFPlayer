@@ -89,7 +89,7 @@ package com.catalystapps.gaf.data
 					return;
 					
 				case CONTENT_DEFAULT:
-					csfConfig = this._config.textureAtlas.contantScaleFactor;
+					csfConfig = this._config.textureAtlas.contentScaleFactor;
 
 					if (csfConfig == null) return;
 
@@ -138,8 +138,8 @@ package com.catalystapps.gaf.data
 				
 				case CONTENT_DEFAULT:
 					this._gafgfxData.disposeTextures(this.scale, this.contentScaleFactor);
-					this._config.textureAtlas.contantScaleFactor.atlas.dispose();
-					this._config.textureAtlas.contantScaleFactor.atlas = null;
+					this._config.textureAtlas.contentScaleFactor.atlas.dispose();
+					this._config.textureAtlas.contentScaleFactor.atlas = null;
 					return;
 				
 				case CONTENT_SPECIFY:
@@ -217,12 +217,12 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function get textureAtlas(): CTextureAtlas
 		{
-			if(!this._config.textureAtlas.contantScaleFactor.atlas)
+			if(!this._config.textureAtlas.contentScaleFactor.atlas)
 			{
 				this.loadInVideoMemory(CONTENT_DEFAULT);
 			}
 			
-			return this._config.textureAtlas.contantScaleFactor.atlas;
+			return this._config.textureAtlas.contentScaleFactor.atlas;
 		}
 		
 		/** @private */
@@ -252,7 +252,7 @@ package com.catalystapps.gaf.data
 				
 				if(taCSF)
 				{
-					_config.textureAtlas.contantScaleFactor = taCSF;
+					_config.textureAtlas.contentScaleFactor = taCSF;
 				}
 				else
 				{
@@ -281,7 +281,7 @@ package com.catalystapps.gaf.data
 			
 			if(taCSF)
 			{
-				_config.textureAtlas.contantScaleFactor = taCSF;
+				_config.textureAtlas.contentScaleFactor = taCSF;
 			}
 			else
 			{
@@ -291,7 +291,7 @@ package com.catalystapps.gaf.data
 		
 		public function get contentScaleFactor(): Number
 		{
-			return this._config.textureAtlas.contantScaleFactor.csf;
+			return this._config.textureAtlas.contentScaleFactor.csf;
 		}
 		
 		/**
