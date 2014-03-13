@@ -20,7 +20,9 @@ package com.catalystapps.gaf.data.converters
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
+	import flash.text.TextFormatAlign;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 
@@ -44,6 +46,7 @@ package com.catalystapps.gaf.data.converters
 		private static const TAG_DEFINE_NAMED_PARTS: uint = 5;
 		private static const TAG_DEFINE_SEQUENCES: uint = 6;
 		private static const TAG_DEFINE_TEXT_FIELDS: uint = 7;
+		private static const TAG_DEFINE_ATLAS2: uint = 8;
 
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
@@ -57,8 +60,8 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------	
 
-		public static function convert(bytes: ByteArray, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfig
+		public static function convert(configID: String, bytes: ByteArray, defaultScale: Number = NaN,
+		                               defaultContentScaleFactor: Number = NaN): Vector.<GAFAssetConfig>
 		{
 			bytes.endian = Endian.LITTLE_ENDIAN;
 
@@ -87,7 +90,7 @@ package com.catalystapps.gaf.data.converters
 				result.textureAtlas = result.allTextureAtlases[0];
 			}
 
-			return result;
+			return new <GAFAssetConfig>[result];
 		}
 
 		//--------------------------------------------------------------------------
@@ -109,7 +112,8 @@ package com.catalystapps.gaf.data.converters
 			switch (tagID)
 			{
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
-					readTextureAtlasConfig(tagContent, config, defaultScale, defaultContentScaleFactor);
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
+					readTextureAtlasConfig(tagContent, config, defaultScale, defaultContentScaleFactor, tagID);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
 					readAnimationMasks(tagContent, config);
@@ -218,7 +222,8 @@ package com.catalystapps.gaf.data.converters
 
 					if (hasColorTransform)
 					{
-						var params: Array = [tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat()];
+						var params: Array = [tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
+							tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat()];
 
 						checkAndInitFilter();
 
@@ -353,7 +358,8 @@ package com.catalystapps.gaf.data.converters
 
 		private static function readTextureAtlasConfig(tagContent: ByteArray, config: GAFAssetConfig,
 		                                               defaultScale: Number = NaN,
-		                                               defaultContentScaleFactor: Number = NaN): void
+		                                               defaultContentScaleFactor: Number = NaN,
+		                                               tagID: uint = BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS): void
 		{
 			var i: uint;
 			var j: uint;
@@ -373,7 +379,7 @@ package com.catalystapps.gaf.data.converters
 			{
 				var item: CTextureAtlasCSF;
 
-				for each(item in contentScaleFactors)
+				for each (item in contentScaleFactors)
 				{
 					if (item.csf == csf)
 					{
@@ -438,21 +444,25 @@ package com.catalystapps.gaf.data.converters
 
 			for (i = 0; i < elementsLength; i++)
 			{
-				hasScale9Grid = tagContent.readBoolean();
 				pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
 				topLeft = new Point(tagContent.readFloat(), tagContent.readFloat());
 				elementScale = tagContent.readFloat();
 				elementWidth = tagContent.readFloat();
 				elementHeight = tagContent.readFloat();
-				if (hasScale9Grid)
-				{
-					scale9Grid = new Rectangle(
-							tagContent.readFloat(), tagContent.readFloat(),
-							tagContent.readFloat(), tagContent.readFloat()
-					);
-				}
 				atlasID = tagContent.readUnsignedInt();
 				elementAtlasID = tagContent.readUnsignedInt();
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2)
+				{
+					hasScale9Grid = tagContent.readBoolean();
+					if (hasScale9Grid)
+					{
+						scale9Grid = new Rectangle(
+								tagContent.readFloat(), tagContent.readFloat(),
+								tagContent.readFloat(), tagContent.readFloat()
+						);
+					}
+				}
+
 
 				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "",
 				                                   new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth,
@@ -463,7 +473,7 @@ package com.catalystapps.gaf.data.converters
 				elements.addElement(element);
 			}
 
-			for each(contentScaleFactor in contentScaleFactors)
+			for each (contentScaleFactor in contentScaleFactors)
 			{
 				contentScaleFactor.elements = elements;
 			}
@@ -536,60 +546,121 @@ package com.catalystapps.gaf.data.converters
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var textFieldID: int;
-			var text: String;
 			var width: Number;
 			var height: Number;
+			var text: String;
+			var embedFonts: Boolean;
+			var multiline: Boolean;
+			var wordWrap: Boolean;
+			var restrict: String;
+			var editable: Boolean;
+			var selectable: Boolean;
+			var displayAsPassword: Boolean;
+			var maxChars: uint;
+
 			var textFormat: TextFormat;
 
 			for (var i: uint = 0; i < length; i++)
 			{
 				textFieldID = tagContent.readUnsignedInt();
-				var l: uint = tagContent.readShort();
-				text = tagContent.readUTFBytes(l);
-
 				width = tagContent.readFloat();
 				height = tagContent.readFloat();
 
+				var l: uint = tagContent.readShort();
+				text = tagContent.readUTFBytes(l);
+
+				embedFonts = tagContent.readBoolean();
+				multiline = tagContent.readBoolean();
+				wordWrap = tagContent.readBoolean();
+
+				var hasRestrict: Boolean = tagContent.readBoolean();
+				if (hasRestrict)
+				{
+					l = tagContent.readShort();
+					restrict = tagContent.readUTFBytes(l);
+				}
+
+				editable = tagContent.readBoolean();
+				selectable = tagContent.readBoolean();
+				displayAsPassword = tagContent.readBoolean();
+				maxChars = tagContent.readUnsignedInt();
+
 				// read textFormat
+				var alignFlag: uint = tagContent.readUnsignedInt();
+				var align: String;
+				switch (alignFlag)
+				{
+					case 0:
+						align = TextFormatAlign.LEFT;
+						break;
+					case 1:
+						align = TextFormatAlign.RIGHT;
+						break;
+					case 2:
+						align = TextFormatAlign.CENTER;
+						break;
+					case 3:
+						align = TextFormatAlign.JUSTIFY;
+						break;
+					case 4:
+						align = TextFormatAlign.START;
+						break;
+					case 5:
+						align = TextFormatAlign.END;
+						break;
+				}
+
+				var blockIndent: Number = tagContent.readUnsignedInt();
+				var bold: Boolean = tagContent.readBoolean();
+				var bullet: Boolean = tagContent.readBoolean();
+				var color: uint = tagContent.readUnsignedInt();
+
 				l = tagContent.readShort();
 				var font: String = tagContent.readUTFBytes(l);
-				var size: int = tagContent.readInt();
-				var color: uint = tagContent.readUnsignedInt();
-				var bold: Boolean = tagContent.readBoolean();
+				var indent: uint = tagContent.readUnsignedInt();
 				var italic: Boolean = tagContent.readBoolean();
-				var underline: Boolean = tagContent.readBoolean();
-				var bullet: Boolean = tagContent.readBoolean();
 				var kerning: Boolean = tagContent.readBoolean();
-
-				l = tagContent.readShort();
-				var url: String = tagContent.readUTFBytes(l);
-				l = tagContent.readShort();
-				var target: String = tagContent.readUTFBytes(l);
-				l = tagContent.readShort();
-				var align: String = tagContent.readUTFBytes(l);
-				l = tagContent.readShort();
-				var display: String = tagContent.readUTFBytes(l);
-				var leftMargin: Number = tagContent.readFloat();
-				var rightMargin: Number = tagContent.readFloat();
-				var blockIndent: Number = tagContent.readFloat();
+				var leading: int = tagContent.readUnsignedInt();
+				var leftMargin: Number = tagContent.readUnsignedInt();
 				var letterSpacing: Number = tagContent.readFloat();
-				var leading: int = tagContent.readInt();
+				var rightMargin: Number = tagContent.readUnsignedInt();
+				var size: int = tagContent.readUnsignedInt();
 
-				l = tagContent.readShort();
+				l = tagContent.readUnsignedInt();
 				var tabStops: Array = [];
 				for (var j: uint = 0; j < l; j++)
 				{
 					tabStops.push(tagContent.readUnsignedInt());
 				}
 
+				l = tagContent.readShort();
+				var target: String = tagContent.readUTFBytes(l);
+				var underline: Boolean = tagContent.readBoolean();
+				l = tagContent.readShort();
+				var url: String = tagContent.readUTFBytes(l);
+
+				/*l = tagContent.readShort();
+				var display: String = tagContent.readUTFBytes(l);*/
+
 				textFormat = new TextFormat(font, size, color, bold, italic, underline, url, target, align, leftMargin, rightMargin, blockIndent, leading);
 				textFormat.bullet = bullet;
 				textFormat.kerning = kerning;
-				textFormat.display = display;
+				//textFormat.display = display;
 				textFormat.letterSpacing = letterSpacing;
 				textFormat.tabStops = tabStops;
+				textFormat.indent = indent;
 
-				config.textFields.addTextFieldObject(new CTextFieldObject(textFieldID.toString(), text, textFormat, width, height));
+				var textFieldObject: CTextFieldObject = new CTextFieldObject(textFieldID.toString(), text, textFormat,
+				                                                             width, height);
+				textFieldObject.embedFonts = embedFonts;
+				textFieldObject.multiline = multiline;
+				textFieldObject.wordWrap = wordWrap;
+				textFieldObject.restrict = restrict;
+				textFieldObject.editable = editable;
+				textFieldObject.selectable = selectable;
+				textFieldObject.displayAsPassword = displayAsPassword;
+				textFieldObject.maxChars = maxChars;
+				config.textFields.addTextFieldObject(textFieldObject);
 			}
 		}
 	}

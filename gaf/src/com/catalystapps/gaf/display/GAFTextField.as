@@ -3,9 +3,17 @@
  */
 package com.catalystapps.gaf.display
 {
+	import feathers.controls.text.TextFieldTextEditor;
+
+	import flash.geom.Matrix;
+	import flash.text.TextFormat;
+
 	import starling.text.TextField;
 
-	public class GAFTextField extends TextField
+	/**
+	 * @private
+	 */
+	public class GAFTextField extends TextFieldTextEditor
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -25,10 +33,18 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		public function GAFTextField(width: int, height: int, text: String, fontName: String = "Verdana",
-		                             fontSize: Number = 12, color: uint = 0, bold: Boolean = false)
+		public function GAFTextField(width: int = NaN, height: int = NaN)
 		{
-			super(width, height, text, fontName, fontSize, color, bold);
+			super();
+			if (!isNaN(width))
+			{
+				this.width = width;
+			}
+
+			if (!isNaN(height))
+			{
+				this.height = height;
+			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -48,6 +64,13 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		override public function set transformationMatrix(matrix: Matrix): void
+		{
+			super.transformationMatrix = matrix;
+
+			this.invalidate(INVALIDATION_FLAG_SIZE);
+		}
 
 		//--------------------------------------------------------------------------
 		//

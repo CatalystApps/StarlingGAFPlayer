@@ -26,9 +26,11 @@ package com.catalystapps.gaf.display
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
-		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code> 
+		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code>
+		 * @param assetTexture The texture displayed by this image.
+		 * @see com.catalystapps.gaf.display.GAFScale9Image
 		 */
 		public function GAFImage(assetTexture: IGAFTexture)
 		{

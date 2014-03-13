@@ -23,6 +23,14 @@ package com.catalystapps.gaf.data.config
 		private var _width: Number;
 		private var _height: Number;
 		private var _text: String;
+		private var _embedFonts: Boolean;
+		private var _multiline: Boolean;
+		private var _wordWrap: Boolean;
+		private var _restrict: String;
+		private var _editable: Boolean;
+		private var _selectable: Boolean;
+		private var _displayAsPassword: Boolean;
+		private var _maxChars: int;
 		private var _textFormat: TextFormat;
 
 		//--------------------------------------------------------------------------
@@ -126,5 +134,85 @@ package com.catalystapps.gaf.data.config
 		//  STATIC METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		public function get embedFonts(): Boolean
+		{
+			return _embedFonts;
+		}
+
+		public function set embedFonts(value: Boolean): void
+		{
+			_embedFonts = value;
+		}
+
+		public function get multiline(): Boolean
+		{
+			return _multiline;
+		}
+
+		public function set multiline(value: Boolean): void
+		{
+			_multiline = value;
+		}
+
+		public function get wordWrap(): Boolean
+		{
+			return _wordWrap;
+		}
+
+		public function set wordWrap(value: Boolean): void
+		{
+			_wordWrap = value;
+		}
+
+		public function get restrict(): String
+		{
+			return _restrict;
+		}
+
+		public function set restrict(value: String): void
+		{
+			_restrict = value;
+		}
+
+		public function get editable(): Boolean
+		{
+			return _editable;
+		}
+
+		public function set editable(value: Boolean): void
+		{
+			_editable = value;
+		}
+
+		public function get selectable(): Boolean
+		{
+			return _selectable;
+		}
+
+		public function set selectable(value: Boolean): void
+		{
+			_selectable = value;
+		}
+
+		public function get displayAsPassword(): Boolean
+		{
+			return _displayAsPassword;
+		}
+
+		public function set displayAsPassword(value: Boolean): void
+		{
+			_displayAsPassword = value;
+		}
+
+		public function get maxChars(): int
+		{
+			return _maxChars;
+		}
+
+		public function set maxChars(value: int): void
+		{
+			_maxChars = value;
+		}
 	}
 }

@@ -8,6 +8,9 @@ package com.catalystapps.gaf.display
 
 	import starling.textures.Texture;
 
+	/**
+	 * @private
+	 */
 	public class GAFScale9Texture implements IGAFTexture
 	{
 		//--------------------------------------------------------------------------

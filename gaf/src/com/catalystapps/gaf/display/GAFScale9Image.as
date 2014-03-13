@@ -27,6 +27,9 @@ package com.catalystapps.gaf.display
 	import starling.textures.TextureSmoothing;
 	import starling.utils.MatrixUtil;
 
+	/**
+	 * @private
+	 */
 	public class GAFScale9Image extends Sprite implements IValidating, IGAFImage
 	{
 		//--------------------------------------------------------------------------
@@ -148,10 +151,14 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		/**
+		 * GAFScale9Image represents display object that is part of the <code>GAFMovieClip</code>
 		 * Scales an image with nine regions to maintain the aspect ratio of the
 		 * corners regions. The top and bottom regions stretch horizontally, and the
 		 * left and right regions scale vertically. The center region stretches in
 		 * both directions to fill the remaining space.
+		 * @param textures  The textures displayed by this image.
+		 * @param textureScale The amount to scale the texture. Useful for DPI changes.
+		 * @see com.catalystapps.gaf.display.GAFImage
 		 */
 		public function GAFScale9Image(textures: GAFScale9Texture, textureScale: Number = 1)
 		{

@@ -7,6 +7,9 @@ package com.catalystapps.gaf.display
 
 	import starling.textures.Texture;
 
+	/**
+	 * @private
+	 */
 	public interface IGAFTexture
 	{
 		function get texture(): Texture;

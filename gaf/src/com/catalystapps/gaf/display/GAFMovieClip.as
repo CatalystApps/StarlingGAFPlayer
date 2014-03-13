@@ -2,18 +2,17 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
-	import com.catalystapps.gaf.data.config.CFilter;
-	import com.catalystapps.gaf.display.GAFScale9Image;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
+	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
-	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
 	import com.catalystapps.gaf.event.SequenceEvent;
 	import com.catalystapps.gaf.filter.GAFFilter;
 
 	import flash.geom.Matrix;
+	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
 
 	import starling.display.DisplayObject;
@@ -495,8 +494,7 @@ package com.catalystapps.gaf.display
 						                                                                  this._mappedAssetID);
 						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
 						{
-							staticObject = new GAFScale9Image(texture as GAFScale9Texture); // TODO investigate working as mask
-							// investigated, transformationMatrix is set to PixelMaskDisplayObject, not to mask, so we cannot get 9-grid scaled mask
+							staticObject = new GAFScale9Image(texture as GAFScale9Texture);
 						}
 						else
 						{
@@ -506,20 +504,23 @@ package com.catalystapps.gaf.display
 						staticObject.name = animationObjectConfig.instanceID;
 						break;
 					case "textField":
-						//tf = new GAFTextField(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.staticObjectID, this._mappedAssetID));
 						var tfObj: CTextFieldObject = this._gafAsset.config.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
-						staticObject = new GAFTextField(tfObj.width, tfObj.height, tfObj.text, tfObj.textFormat.font,
-						                                Number(tfObj.textFormat.size), uint(tfObj.textFormat.color),
-						                                tfObj.textFormat.bold);
+						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
+						tf.name = animationObjectConfig.instanceID;
+						tf.textFormat = tfObj.textFormat;
+						tf.text = tfObj.text;
+						tf.embedFonts = tfObj.embedFonts;
+						tf.multiline = tfObj.multiline;
+						tf.wordWrap = tfObj.wordWrap;
+						tf.restrict = tfObj.restrict;
+						tf.isEditable = tfObj.editable;
+						tf.displayAsPassword = tfObj.displayAsPassword;
+						tf.maxChars = tfObj.maxChars;
+						staticObject = tf;
+						break;
+					case "animation":
+						staticObject = new GAFMovieClip(this._gafAsset.gafBundle.getGAFassetByID(animationObjectConfig.staticObjectID));
 						staticObject.name = animationObjectConfig.instanceID;
-						if (tfObj.textFormat.align = TextFormatAlign.JUSTIFY)
-						{
-							(staticObject as GAFTextField).hAlign = HAlign.LEFT;
-						}
-						else
-						{
-							(staticObject as GAFTextField).hAlign = tfObj.textFormat.align;
-						}
 						break;
 				}
 

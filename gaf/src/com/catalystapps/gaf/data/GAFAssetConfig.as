@@ -22,6 +22,8 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		private var _version: String;
+
+		private var _id: String;
 		
 		private var _allTextureAtlases: Vector.<CTextureAtlasScale>;
 		private var _textureAtlas: CTextureAtlasScale;
@@ -195,6 +197,15 @@ package com.catalystapps.gaf.data
 		{
 			return _warnings;
 		}
-		
+
+		public function get id(): String
+		{
+			return _id;
+		}
+
+		public function set id(value: String): void
+		{
+			_id = value;
+		}
 	}
 }

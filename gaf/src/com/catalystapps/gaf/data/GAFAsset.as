@@ -30,6 +30,7 @@ package com.catalystapps.gaf.data
 		private var _config: GAFAssetConfig;
 		
 		private var _gafgfxData: GAFGFXData;
+		private var _gafBundle: GAFBundle;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -305,6 +306,18 @@ package com.catalystapps.gaf.data
 		public function get gafgfxData(): GAFGFXData
 		{
 			return _gafgfxData;
+		}
+
+		/** @private */
+		public function get gafBundle(): GAFBundle
+		{
+			return _gafBundle;
+		}
+
+		/** @private */
+		public function set gafBundle(gafBundle: GAFBundle): void
+		{
+			_gafBundle = gafBundle;
 		}
 
 		//--------------------------------------------------------------------------

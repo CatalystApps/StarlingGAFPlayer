@@ -20,6 +20,9 @@ package
 	 */
 	public class UIGame extends Sprite
 	{
+		[Embed(source="C:/Windows/Fonts/times.ttf", fontName="Times New Roman", embedAsCFF="false", mimeType="application/x-font")]
+		private var timesNewRoman: Class;
+
 		public function UIGame()
 		{
 			this.loadZip();

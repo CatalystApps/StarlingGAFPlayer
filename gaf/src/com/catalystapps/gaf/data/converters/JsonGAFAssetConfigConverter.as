@@ -37,22 +37,17 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		public static function convert(json: String, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfig
+		private static function convertConfig(config: GAFAssetConfig, jsonObject: Object,
+		                                     defaultScale: Number = NaN,
+				                             defaultContentScaleFactor: Number = NaN): GAFAssetConfig
 		{
-			var jsonObject: Object = JSON.parse(json);
-
-			var result: GAFAssetConfig = new GAFAssetConfig(jsonObject.version);
-
-			///////////////////////////////////////////////////////////////
-
 			var allTextureAtlases: Vector.<CTextureAtlasScale> = new Vector.<CTextureAtlasScale>();
 
 			if (jsonObject.textureAtlas)
 			{
 				var textureAtlas: CTextureAtlasScale;
 
-				for each(var ta: Object in jsonObject.textureAtlas)
+				for each (var ta: Object in jsonObject.textureAtlas)
 				{
 					var scale: Number = ta.scale;
 
@@ -63,7 +58,7 @@ package com.catalystapps.gaf.data.converters
 
 					var elements: CTextureAtlasElements = new CTextureAtlasElements();
 
-					for each(var e: Object in ta.elements)
+					for each (var e: Object in ta.elements)
 					{
 						var element: CTextureAtlasElement = new CTextureAtlasElement(e.name, e.atlasID,
 						                                                             new Rectangle(int(e.x), int(e.y),
@@ -91,7 +86,7 @@ package com.catalystapps.gaf.data.converters
 					{
 						var item: CTextureAtlasCSF;
 
-						for each(item in contentScaleFactors)
+						for each (item in contentScaleFactors)
 						{
 							if (item.csf == csf)
 							{
@@ -114,9 +109,9 @@ package com.catalystapps.gaf.data.converters
 
 					/////////////////////
 
-					for each(var at: Object in ta.atlases)
+					for each (var at: Object in ta.atlases)
 					{
-						for each(var atSource: Object in at.sources)
+						for each (var atSource: Object in at.sources)
 						{
 							contentScaleFactor = getContentScaleFactor(atSource.csf);
 
@@ -137,16 +132,16 @@ package com.catalystapps.gaf.data.converters
 
 					if (!isNaN(defaultScale) && defaultScale == scale)
 					{
-						result.textureAtlas = textureAtlas;
+						config.textureAtlas = textureAtlas;
 					}
 				}
 			}
 
-			result.allTextureAtlases = allTextureAtlases;
+			config.allTextureAtlases = allTextureAtlases;
 
-			if (!result.textureAtlas && allTextureAtlases.length)
+			if (!config.textureAtlas && allTextureAtlases.length)
 			{
-				result.textureAtlas = allTextureAtlases[0];
+				config.textureAtlas = allTextureAtlases[0];
 			}
 
 			///////////////////////////////////////////////////////////////
@@ -173,7 +168,7 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			result.animationObjects = animationObjects;
+			config.animationObjects = animationObjects;
 
 			///////////////////////////////////////////////////////////////
 
@@ -187,7 +182,7 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			result.animationSequences = animationSequences;
+			config.animationSequences = animationSequences;
 
 			///////////////////////////////////////////////////////////////
 
@@ -214,15 +209,25 @@ package com.catalystapps.gaf.data.converters
 							textFormatObj.leading
 					);
 					textFormat.bullet = textFormatObj.bullet;
+					textFormat.blockIndent = textFormatObj.blockIndent;
 					textFormat.kerning = textFormatObj.kerning;
 					textFormat.display = textFormatObj.display;
 					textFormat.letterSpacing = textFormatObj.letterSpacing;
 					textFormat.tabStops = textFormatObj.tabStops;
-					textFieldObjects.addTextFieldObject(new CTextFieldObject(tf.id, tf.text, textFormat, tf.width, tf.height));
+					var textFieldObject: CTextFieldObject = new CTextFieldObject(tf.id, tf.text, textFormat, tf.width, tf.height);
+					textFieldObject.embedFonts = tf.embedFonts;
+					textFieldObject.multiline = tf.multiline;
+					textFieldObject.wordWrap = tf.wordWrap;
+					textFieldObject.restrict = tf.restrict;
+					textFieldObject.editable = tf.editable;
+					textFieldObject.selectable = tf.selectable;
+					textFieldObject.displayAsPassword = tf.displayAsPassword;
+					textFieldObject.maxChars = tf.maxChars;
+					textFieldObjects.addTextFieldObject(textFieldObject);
 				}
 			}
 
-			result.textFields = textFieldObjects;
+			config.textFields = textFieldObjects;
 
 			///////////////////////////////////////////////////////////////
 
@@ -331,7 +336,7 @@ package com.catalystapps.gaf.data.converters
 										break;
 								}
 
-								result.addWarning(warning);
+								config.addWarning(warning);
 							}
 						}
 
@@ -347,7 +352,7 @@ package com.catalystapps.gaf.data.converters
 
 						if (maskID && filter)
 						{
-							result.addWarning(WarningConstants.FILTERS_UNDER_MASK);
+							config.addWarning(WarningConstants.FILTERS_UNDER_MASK);
 						}
 
 						currentFrame.addInstance(instance);
@@ -366,14 +371,14 @@ package com.catalystapps.gaf.data.converters
 				animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 			}
 
-			result.animationConfigFrames = animationConfigFrames;
+			config.animationConfigFrames = animationConfigFrames;
 
 			///////////////////////////////////////////////////////////////
 
 			//debug info reading
 
 //			var debugRegion: GAFDebugInformation;
-//			
+//
 //			if (jsonObject.pivotPoint)
 //			{
 //				debugRegion = new GAFDebugInformation();
@@ -381,9 +386,9 @@ package com.catalystapps.gaf.data.converters
 //				debugRegion.point = new Point(jsonObject.pivotPoint.x, jsonObject.pivotPoint.y);
 //				debugRegion.color = 0xff0000;
 //				debugRegion.alpha = 0.8;
-//				result.debugRegions.push(debugRegion);
+//				config.debugRegions.push(debugRegion);
 //			}
-//			
+//
 //			if (jsonObject.boundingBox)
 //			{
 //				debugRegion = new GAFDebugInformation();
@@ -391,10 +396,43 @@ package com.catalystapps.gaf.data.converters
 //				debugRegion.rect = new Rectangle(jsonObject.boundingBox.x, jsonObject.boundingBox.y, jsonObject.boundingBox.width, jsonObject.boundingBox.height);
 //				debugRegion.color = 0x00ff00;
 //				debugRegion.alpha = 0.3;
-//				result.debugRegions.push(debugRegion);
+//				config.debugRegions.push(debugRegion);
 //			}
 
-			return result;
+			return config;
+		}
+
+		public static function convert(configID: String, json: String, defaultScale: Number = NaN,
+		                               defaultContentScaleFactor: Number = NaN): Vector.<GAFAssetConfig>
+		{
+			var jsonObject: Object = JSON.parse(json);
+
+			var configs: Vector.<GAFAssetConfig> = new <GAFAssetConfig>[];
+
+			var config: GAFAssetConfig;
+
+			if (jsonObject.animations)
+			{
+				for each (var configObject: Object in jsonObject.animations)
+				{
+					config = new GAFAssetConfig(jsonObject.version);
+					config.id = configObject.id;
+					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor);
+					configs.push(config);
+				}
+			}
+			else
+			{
+				config = new GAFAssetConfig(jsonObject.version);
+				config.id = configID;
+				convertConfig(config, jsonObject, defaultScale, defaultContentScaleFactor);
+				configs.push(config);
+			}
+
+
+			///////////////////////////////////////////////////////////////
+
+			return configs;
 		}
 	}
 }

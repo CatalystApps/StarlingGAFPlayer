@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data
 {
 	/**
-	 * GAFBundle is utility class that used to save all converted GAFAssets from bundle in one place with easy access after convertation complete
+	 * GAFBundle is utility class that used to save all converted GAFAssets from bundle in one place with easy access after conversion complete
 	 */
 	public class GAFBundle
 	{
@@ -44,7 +44,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			for each(var asset: GAFAsset in this._assets)
+			for each (var asset: GAFAsset in this._assets)
 			{
 				asset.dispose();
 			}
@@ -53,7 +53,7 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function addGAFAsset(gafAsset: GAFAsset): void
 		{
-			if(!this._assetsDictionary[gafAsset.id])
+			if (!this._assetsDictionary[gafAsset.id])
 			{
 				this._assetsDictionary[gafAsset.id] = gafAsset;
 				this._assets.push(gafAsset);
