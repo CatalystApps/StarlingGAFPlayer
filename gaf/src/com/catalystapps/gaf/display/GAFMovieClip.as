@@ -518,7 +518,7 @@ package com.catalystapps.gaf.display
 						tf.maxChars = tfObj.maxChars;
 						staticObject = tf;
 						break;
-					case "animation":
+					case "timeline":
 						staticObject = new GAFMovieClip(this._gafAsset.gafBundle.getGAFassetByID(animationObjectConfig.staticObjectID));
 						staticObject.name = animationObjectConfig.instanceID;
 						break;

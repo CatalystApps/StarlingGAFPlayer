@@ -6,9 +6,6 @@ package com.catalystapps.gaf.display
 	import feathers.controls.text.TextFieldTextEditor;
 
 	import flash.geom.Matrix;
-	import flash.text.TextFormat;
-
-	import starling.text.TextField;
 
 	/**
 	 * @private

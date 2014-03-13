@@ -37,9 +37,9 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		private static function convertConfig(config: GAFAssetConfig, jsonObject: Object,
-		                                     defaultScale: Number = NaN,
-				                             defaultContentScaleFactor: Number = NaN): GAFAssetConfig
+		private static function convertConfig(config: GAFAssetConfig, jsonObject: Object, defaultScale: Number = NaN,
+		                                      defaultContentScaleFactor: Number = NaN, scales: Array = null,
+		                                      csfs: Array = null): GAFAssetConfig
 		{
 			var allTextureAtlases: Vector.<CTextureAtlasScale> = new Vector.<CTextureAtlasScale>();
 
@@ -136,6 +136,44 @@ package com.catalystapps.gaf.data.converters
 					}
 				}
 			}
+			else if (scales != null && csfs != null)
+			{
+				for each (var scale: Number in scales)
+				{
+					textureAtlas = new CTextureAtlasScale();
+					if (!isNaN(defaultScale))
+					{
+						if (defaultScale == scale)
+						{
+							textureAtlas.scale = scale;
+						}
+					}
+					else if (isNaN(textureAtlas.scale))
+					{
+						textureAtlas.scale = scale;
+					}
+					textureAtlas.allContentScaleFactors = new <CTextureAtlasCSF>[];
+					for each (var csf: Number in csfs)
+					{
+						var item: CTextureAtlasCSF;
+						item = new CTextureAtlasCSF(csf, scale);
+						textureAtlas.allContentScaleFactors.push(item);
+						if (!isNaN(defaultContentScaleFactor))
+						{
+							if (defaultContentScaleFactor == csf)
+							{
+								textureAtlas.contentScaleFactor = item;
+							}
+
+						}
+						else if (!textureAtlas.contentScaleFactor)
+						{
+							textureAtlas.contentScaleFactor = item;
+						}
+					}
+				}
+				config.textureAtlas = textureAtlas;
+			}
 
 			config.allTextureAtlases = allTextureAtlases;
 
@@ -214,6 +252,7 @@ package com.catalystapps.gaf.data.converters
 					textFormat.display = textFormatObj.display;
 					textFormat.letterSpacing = textFormatObj.letterSpacing;
 					textFormat.tabStops = textFormatObj.tabStops;
+
 					var textFieldObject: CTextFieldObject = new CTextFieldObject(tf.id, tf.text, textFormat, tf.width, tf.height);
 					textFieldObject.embedFonts = tf.embedFonts;
 					textFieldObject.multiline = tf.multiline;
@@ -325,11 +364,16 @@ package com.catalystapps.gaf.data.converters
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_DROP_SHADOW:
 										checkAndInitFilter();
-										warning = filter.addDropShadowFilter(filterConfig["x"], filterConfig["y"], filterConfig["color"], filterConfig["alpha"], filterConfig["angle"], filterConfig["distance"]);
+										warning = filter.addDropShadowFilter(filterConfig["x"], filterConfig["y"],
+										                                     filterConfig["color"],
+										                                     filterConfig["alpha"],
+										                                     filterConfig["angle"],
+										                                     filterConfig["distance"]);
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_GLOW:
 										checkAndInitFilter();
-										warning = filter.addGlowFilter(filterConfig["x"], filterConfig["y"], filterConfig["color"], filterConfig["alpha"]);
+										warning = filter.addGlowFilter(filterConfig["x"], filterConfig["y"],
+										                               filterConfig["color"], filterConfig["alpha"]);
 										break;
 									default:
 										trace(WarningConstants.UNSUPPORTED_FILTERS);
@@ -417,7 +461,8 @@ package com.catalystapps.gaf.data.converters
 				{
 					config = new GAFAssetConfig(jsonObject.version);
 					config.id = configObject.id;
-					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor);
+					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale,
+					              jsonObject.csf);
 					configs.push(config);
 				}
 			}
@@ -428,7 +473,6 @@ package com.catalystapps.gaf.data.converters
 				convertConfig(config, jsonObject, defaultScale, defaultContentScaleFactor);
 				configs.push(config);
 			}
-
 
 			///////////////////////////////////////////////////////////////
 

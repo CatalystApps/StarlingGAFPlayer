@@ -73,6 +73,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
 		{
+			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
+			{
+				return;
+			}
+
 			var csfConfig: CTextureAtlasCSF;
 			
 			switch(content)

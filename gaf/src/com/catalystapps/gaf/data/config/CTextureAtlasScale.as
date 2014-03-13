@@ -109,9 +109,9 @@ package com.catalystapps.gaf.data.config
 			return _contentScaleFactor;
 		}
 
-		public function set contentScaleFactor(contantScaleFactor: CTextureAtlasCSF): void
+		public function set contentScaleFactor(contentScaleFactor: CTextureAtlasCSF): void
 		{
-			_contentScaleFactor = contantScaleFactor;
+			_contentScaleFactor = contentScaleFactor;
 		}
 
 	}
