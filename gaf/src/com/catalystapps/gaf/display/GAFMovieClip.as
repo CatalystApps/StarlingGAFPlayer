@@ -11,16 +11,16 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.event.SequenceEvent;
 	import com.catalystapps.gaf.filter.GAFFilter;
 
+	import feathers.core.FeathersControl;
+
 	import flash.geom.Matrix;
-	import flash.text.TextFormat;
-	import flash.text.TextFormatAlign;
+	import flash.geom.Point;
 
 	import starling.display.DisplayObject;
 	import starling.display.Quad;
 	import starling.display.Sprite;
 	import starling.events.Event;
 	import starling.extensions.pixelmask.PixelMaskDisplayObject;
-	import starling.utils.HAlign;
 
 	/** Dispatched when playhead reached first frame of sequence */
 	[Event(name="typeSequenceStart", type="com.catalystapps.gaf.event.SequenceEvent")]
@@ -33,7 +33,7 @@ package com.catalystapps.gaf.display
 	 * all controls for animation familiar from standard MovieClip (<code>play</code>, <code>stop</code>, <code>gotoAndPlay,</code> etc.)
 	 * and some more like <code>loop</code>, <code>nPlay</code>, <code>setSequence</code> that helps manage playback
 	 */
-	public class GAFMovieClip extends Sprite
+	dynamic public class GAFMovieClip extends Sprite
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -330,7 +330,7 @@ package com.catalystapps.gaf.display
 
 		private function draw(): void
 		{
-			this.clearDisplayList();
+			this.clearDisplayList(); // TODO optimize
 
 			var staticObject: DisplayObject;
 			var objectPivotMatrix: Matrix;
@@ -380,18 +380,15 @@ package com.catalystapps.gaf.display
 
 								if (maskInstance)
 								{
-									var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix,
-									                                                                  this.scale).clone();
-									var imageTransformMatrix: Matrix = instance.getTransformMatrix(objectPivotMatrix,
-									                                                               this.scale).clone();
+									var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix, this.scale).clone();
+									var imageTransformMatrix: Matrix = instance.getTransformMatrix(objectPivotMatrix, this.scale).clone();
 
 									maskTransformMatrix.invert();
 									imageTransformMatrix.concat(maskTransformMatrix);
 
 									staticObject.transformationMatrix = imageTransformMatrix;
 
-									pixelMaskDisplayObject.transformationMatrix = maskInstance.getTransformMatrix(maskPivotMatrix,
-									                                                                              this.scale);
+									pixelMaskDisplayObject.transformationMatrix = maskInstance.getTransformMatrix(maskPivotMatrix, this.scale);
 								}
 								else
 								{
@@ -413,8 +410,7 @@ package com.catalystapps.gaf.display
 						}
 						else
 						{
-							staticObject.transformationMatrix = instance.getTransformMatrix(objectPivotMatrix,
-							                                                                this.scale);
+							staticObject.transformationMatrix = instance.getTransformMatrix(objectPivotMatrix, this.scale);
 							this.updateFilter(staticObject, instance, this.scale);
 
 							this.addChild(staticObject);
@@ -519,8 +515,9 @@ package com.catalystapps.gaf.display
 						staticObject = tf;
 						break;
 					case "timeline":
-						staticObject = new GAFMovieClip(this._gafAsset.gafBundle.getGAFassetByID(animationObjectConfig.staticObjectID));
-						staticObject.name = animationObjectConfig.instanceID;
+						var mc: GAFMovieClip = new GAFMovieClip(this._gafAsset.gafBundle.getGAFassetByID(animationObjectConfig.staticObjectID));
+						mc.name = animationObjectConfig.instanceID;
+						staticObject = mc;
 						break;
 				}
 
@@ -536,6 +533,12 @@ package com.catalystapps.gaf.display
 				else
 				{
 					this.staticObjectsDictionary[animationObjectConfig.instanceID] = staticObject;
+				}
+
+				var instanceName: String = this._gafAsset.config.namedParts[animationObjectConfig.instanceID];
+				if (instanceName != null && !this.hasOwnProperty(instanceName))
+				{
+					this[this._gafAsset.config.namedParts[animationObjectConfig.instanceID]] = staticObject;
 				}
 			}
 		}
@@ -576,6 +579,24 @@ package com.catalystapps.gaf.display
 			}
 
 			super.dispose();
+		}
+
+		/**
+		 * Invalidates textfields to correct display size
+		 * @param matrix
+		 */
+		override public function set transformationMatrix(matrix: Matrix): void
+		{
+			super.transformationMatrix = matrix;
+
+			for (var i: uint = 0; i < this.numChildren; i++)
+			{
+				var child: GAFTextField = this.getChildAt(i) as GAFTextField;
+				if (child)
+				{
+					child.invalidate(FeathersControl.INVALIDATION_FLAG_SIZE);
+				}
+			}
 		}
 
 		//--------------------------------------------------------------------------

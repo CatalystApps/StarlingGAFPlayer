@@ -18,6 +18,8 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 
 	import flash.geom.Matrix;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.geom.Rectangle;
 	import flash.text.TextFormat;
 
@@ -267,6 +269,18 @@ package com.catalystapps.gaf.data.converters
 			}
 
 			config.textFields = textFieldObjects;
+
+			///////////////////////////////////////////////////////////////
+
+			config.namedParts = {};
+
+			if (jsonObject.namedParts)
+			{
+				for (var id: String in jsonObject.namedParts)
+				{
+					config.namedParts[id] = jsonObject.namedParts[id];
+				}
+			}
 
 			///////////////////////////////////////////////////////////////
 

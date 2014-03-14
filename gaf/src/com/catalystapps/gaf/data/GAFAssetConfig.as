@@ -5,6 +5,11 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+
+	import flash.geom.Point;
+
+	import flash.geom.Rectangle;
+
 	/**
 	 * @private
 	 */
@@ -33,6 +38,8 @@ package com.catalystapps.gaf.data
 		private var _animationSequences: CAnimationSequences;
 		private var _textFields: CTextFieldObjects;
 
+		private var _namedParts: Object;
+
 		private var _debugRegions: Vector.<GAFDebugInformation>;
 		
 		private var _warnings: Vector.<String>;
@@ -46,6 +53,8 @@ package com.catalystapps.gaf.data
 		public function GAFAssetConfig(version: String)
 		{
 			this._version = version;
+
+			_namedParts = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -206,6 +215,16 @@ package com.catalystapps.gaf.data
 		public function set id(value: String): void
 		{
 			_id = value;
+		}
+
+		public function get namedParts(): Object
+		{
+			return _namedParts;
+		}
+
+		public function set namedParts(value: Object): void
+		{
+			_namedParts = value;
 		}
 	}
 }

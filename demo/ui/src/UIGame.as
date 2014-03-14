@@ -6,14 +6,12 @@ package
 
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
-	import flash.geom.Matrix;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 
 	import starling.display.Sprite;
-	import starling.text.TextField;
 
 	/**
 	 * @author mitvad
@@ -22,6 +20,8 @@ package
 	{
 		[Embed(source="C:/Windows/Fonts/times.ttf", fontName="Times New Roman", embedAsCFF="false", mimeType="application/x-font")]
 		private var timesNewRoman: Class;
+		[Embed(source="C:/Windows/Fonts/Play-Regular.ttf", fontName="Play", embedAsCFF="false", mimeType="application/x-font")]
+		private var playRegular: Class;
 
 		public function UIGame()
 		{
@@ -48,10 +48,10 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var gafAsset: GAFAsset = (event.target as ZipToGAFAssetConverter).gafAsset;
+			var gafAsset: GAFAsset = (event.target as ZipToGAFAssetConverter).gafBundle.getGAFassetByID("0");
 			
 			var mc: GAFMovieClip = new GAFMovieClip(gafAsset);
-			
+
 			this.addChild(mc);
 			
 			mc.play();

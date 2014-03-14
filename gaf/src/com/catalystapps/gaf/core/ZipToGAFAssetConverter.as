@@ -103,7 +103,7 @@ package com.catalystapps.gaf.core
 
 		private var gfxData: GAFGFXData;
 
-		private var _gafAsset: GAFAsset;
+		//private var _gafAsset: GAFAsset;
 		private var _gafBundle: GAFBundle;
 
 		private var _defaultScale: Number;
@@ -235,8 +235,8 @@ package com.catalystapps.gaf.core
 				assets.push(this.createAsset(config));
 			}
 
-			if (this.gafAssetsIDs.length > 1 || assets.length > 1)
-			{
+			/*if (this.gafAssetsIDs.length > 1 || assets.length > 1)
+			{*/
 				if (!this._gafBundle)
 				{
 					this._gafBundle = new GAFBundle();
@@ -247,11 +247,11 @@ package com.catalystapps.gaf.core
 					this._gafBundle.addGAFAsset(asset);
 					asset.gafBundle = this._gafBundle;
 				}
-			}
+			/*}
 			else
 			{
 				this._gafAsset = assets[0];
-			}
+			}*/
 
 			this.currentConfigIndex++;
 
@@ -388,10 +388,10 @@ package com.catalystapps.gaf.core
 		/**
 		 * Return converted <code>GAFAsset</code>. If GAF asset file created as Bundle - returns null.
 		 */
-		public function get gafAsset(): GAFAsset
+		/*public function get gafAsset(): GAFAsset
 		{
 			return _gafAsset;
-		}
+		}*/
 
 		/**
 		 * Return converted <code>GAFBundle</code>. If GAF asset file created as single animation - returns null.
