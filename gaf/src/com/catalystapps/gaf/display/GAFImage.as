@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.display
 {
+	import starling.textures.TextureSmoothing;
 	import starling.display.Image;
 
 	/**
@@ -32,9 +33,11 @@ package com.catalystapps.gaf.display
 		 */
 		public function GAFImage(assetTexture: GAFTexture)
 		{
-			this._assetTexture = assetTexture;
+			this._assetTexture = assetTexture;			
 			
 			super(this._assetTexture.texture);
+			
+			this.smoothing = TextureSmoothing.NONE;
 		}
 
 		//--------------------------------------------------------------------------
