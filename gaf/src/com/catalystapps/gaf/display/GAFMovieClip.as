@@ -11,10 +11,17 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.event.SequenceEvent;
 	import com.catalystapps.gaf.filter.GAFFilter;
 
+	import feathers.controls.text.TextFieldTextEditor;
+
 	import feathers.core.FeathersControl;
+	import feathers.core.ITextEditor;
+
+	import flash.display.Stage;
 
 	import flash.geom.Matrix;
 	import flash.geom.Point;
+
+	import starling.core.Starling;
 
 	import starling.display.DisplayObject;
 	import starling.display.Quad;
@@ -320,17 +327,17 @@ package com.catalystapps.gaf.display
 
 		private function clearDisplayList(): void
 		{
-			this.removeChildren();
+			//this.removeChildren();
 
-			for each(var pixelMaskimage: PixelMaskDisplayObject in this.maskedImagesDictionary)
+			for each (var pixelMaskImage: PixelMaskDisplayObject in this.maskedImagesDictionary)
 			{
-				pixelMaskimage.removeChildren();
+				pixelMaskImage.removeChildren();
 			}
 		}
 
 		private function draw(): void
 		{
-			this.clearDisplayList(); // TODO optimize
+			this.clearDisplayList();
 
 			var staticObject: DisplayObject;
 			var objectPivotMatrix: Matrix;
@@ -339,13 +346,20 @@ package com.catalystapps.gaf.display
 			if (this._gafAsset.config.animationConfigFrames.frames.length > this._currentFrame)
 			{
 				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
-
-				for each(var instance: CAnimationFrameInstance in frameConfig.instances)
+				var firstStaticObject: DisplayObject;
+				var instances: Vector.<CAnimationFrameInstance> = frameConfig.instances;
+				var l: uint = instances.length;
+				for (var i: int = 0; i < l; i++)
 				{
+					var instance: CAnimationFrameInstance = instances[i];
 					staticObject = this.staticObjectsDictionary[instance.id];
 
 					if (staticObject)
 					{
+						if (firstStaticObject == null)
+						{
+							firstStaticObject = staticObject;
+						}
 						if (staticObject is IGAFImage)
 						{
 							objectPivotMatrix = (staticObject as IGAFImage).assetTexture.pivotMatrix;
@@ -415,6 +429,21 @@ package com.catalystapps.gaf.display
 
 							this.addChild(staticObject);
 						}
+					}
+				}
+				if (firstStaticObject != null)
+				{
+					var firstStaticObjectIndex: int = this.getChildIndex(firstStaticObject);
+					while (firstStaticObjectIndex > 0)
+					{
+						var child: DisplayObject = this.getChildAt(0);
+						if (child is GAFTextField)
+						{
+							(child as GAFTextField).clearFocus();
+						}
+						this.removeChild(child);
+
+						firstStaticObjectIndex--;
 					}
 				}
 			}
@@ -503,15 +532,23 @@ package com.catalystapps.gaf.display
 						var tfObj: CTextFieldObject = this._gafAsset.config.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
 						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
 						tf.name = animationObjectConfig.instanceID;
-						tf.textFormat = tfObj.textFormat;
+						tf.prompt = tfObj.text
 						tf.text = tfObj.text;
-						tf.embedFonts = tfObj.embedFonts;
-						tf.multiline = tfObj.multiline;
-						tf.wordWrap = tfObj.wordWrap;
 						tf.restrict = tfObj.restrict;
 						tf.isEditable = tfObj.editable;
 						tf.displayAsPassword = tfObj.displayAsPassword;
 						tf.maxChars = tfObj.maxChars;
+						tf.textEditorFactory = function(): ITextEditor
+						{
+							var editor: TextFieldTextEditor = new TextFieldTextEditor();
+							editor.width = tfObj.width;
+							editor.height = tfObj.height;
+							editor.textFormat = tfObj.textFormat;
+							editor.embedFonts = tfObj.embedFonts;
+							editor.multiline = tfObj.multiline;
+							editor.wordWrap = tfObj.wordWrap;
+							return editor;
+						};
 						staticObject = tf;
 						break;
 					case "timeline":
@@ -594,7 +631,7 @@ package com.catalystapps.gaf.display
 				var child: GAFTextField = this.getChildAt(i) as GAFTextField;
 				if (child)
 				{
-					child.invalidate(FeathersControl.INVALIDATION_FLAG_SIZE);
+					child.invalidateSize();
 				}
 			}
 		}

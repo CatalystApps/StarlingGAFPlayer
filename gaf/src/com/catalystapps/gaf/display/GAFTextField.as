@@ -1,16 +1,14 @@
 /**
- * Created by Nazar on 03.03.14.
+ * Created by Nazar on 17.03.2014.
  */
 package com.catalystapps.gaf.display
 {
+	import feathers.controls.TextInput;
 	import feathers.controls.text.TextFieldTextEditor;
 
 	import flash.geom.Matrix;
 
-	/**
-	 * @private
-	 */
-	public class GAFTextField extends TextFieldTextEditor
+	public class GAFTextField extends TextInput
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -33,6 +31,7 @@ package com.catalystapps.gaf.display
 		public function GAFTextField(width: int = NaN, height: int = NaN)
 		{
 			super();
+
 			if (!isNaN(width))
 			{
 				this.width = width;
@@ -50,6 +49,15 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		public function invalidateSize(): void
+		{
+			if (this.textEditor)
+			{
+				(this.textEditor as TextFieldTextEditor).invalidate(INVALIDATION_FLAG_SIZE);
+			}
+			this.invalidate(INVALIDATION_FLAG_SIZE);
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
@@ -66,7 +74,7 @@ package com.catalystapps.gaf.display
 		{
 			super.transformationMatrix = matrix;
 
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			this.invalidateSize();
 		}
 
 		//--------------------------------------------------------------------------
@@ -78,6 +86,12 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
+		//
+		//--------------------------------------------------------------------------
+
+		//--------------------------------------------------------------------------
+		//
+		//  STATIC METHODS
 		//
 		//--------------------------------------------------------------------------
 	}
