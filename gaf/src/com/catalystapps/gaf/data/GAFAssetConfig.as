@@ -53,8 +53,6 @@ package com.catalystapps.gaf.data
 		public function GAFAssetConfig(version: String)
 		{
 			this._version = version;
-
-			_namedParts = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -129,102 +127,102 @@ package com.catalystapps.gaf.data
 		
 		public function get textureAtlas(): CTextureAtlasScale
 		{
-			return _textureAtlas;
+			return this._textureAtlas;
 		}
 
 		public function set textureAtlas(textureAtlas: CTextureAtlasScale): void
 		{
-			_textureAtlas = textureAtlas;
+			this._textureAtlas = textureAtlas;
 		}
 
 		public function get animationObjects(): CAnimationObjects
 		{
-			return _animationObjects;
+			return this._animationObjects;
 		}
 
 		public function set animationObjects(animationObjects: CAnimationObjects): void
 		{
-			_animationObjects = animationObjects;
+			this._animationObjects = animationObjects;
 		}
 
 		public function get animationConfigFrames(): CAnimationFrames
 		{
-			return _animationConfigFrames;
+			return this._animationConfigFrames;
 		}
 
 		public function set animationConfigFrames(animationConfigFrames: CAnimationFrames): void
 		{
-			_animationConfigFrames = animationConfigFrames;
+			this._animationConfigFrames = animationConfigFrames;
 		}
 
 		public function get animationSequences(): CAnimationSequences
 		{
-			return _animationSequences;
+			return this._animationSequences;
 		}
 
 		public function set animationSequences(animationSequences: CAnimationSequences): void
 		{
-			_animationSequences = animationSequences;
+			this._animationSequences = animationSequences;
 		}
 
 		public function get textFields(): CTextFieldObjects
 		{
-			return _textFields;
+			return this._textFields;
 		}
 
 		public function set textFields(textFields: CTextFieldObjects): void
 		{
-			_textFields = textFields;
+			this._textFields = textFields;
 		}
 
 		public function get allTextureAtlases(): Vector.<CTextureAtlasScale>
 		{
-			return _allTextureAtlases;
+			return this._allTextureAtlases;
 		}
 
 		public function set allTextureAtlases(allTextureAtlases: Vector.<CTextureAtlasScale>): void
 		{
-			_allTextureAtlases = allTextureAtlases;
+			this._allTextureAtlases = allTextureAtlases;
 		}
 
 		public function get version(): String
 		{
-			return _version;
+			return this._version;
 		}
 
 		public function get debugRegions(): Vector.<GAFDebugInformation>
 		{
-			return _debugRegions;
+			return this._debugRegions;
 		}
 
 		public function set debugRegions(debugRegions: Vector.<GAFDebugInformation>): void
 		{
-			_debugRegions = debugRegions;
+			this._debugRegions = debugRegions;
 		}
 		
 		public function get warnings(): Vector.<String>
 		{
-			return _warnings;
+			return this._warnings;
 		}
 
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function set id(value: String): void
 		{
-			_id = value;
+			this._id = value;
 		}
 
 		public function get namedParts(): Object
 		{
-			return _namedParts;
+			return this._namedParts;
 		}
 
 		public function set namedParts(value: Object): void
 		{
-			_namedParts = value;
+			this._namedParts = value;
 		}
 	}
 }

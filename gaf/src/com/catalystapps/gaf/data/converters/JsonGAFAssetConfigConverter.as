@@ -1,6 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
 	import com.catalystapps.gaf.data.GAFAssetConfig;
+	import com.catalystapps.gaf.data.GAFAssetConfigs;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
@@ -187,14 +188,26 @@ package com.catalystapps.gaf.data.converters
 			///////////////////////////////////////////////////////////////
 
 			var animationObjects: CAnimationObjects = new CAnimationObjects();
+			var animObject: Object;
 
 			if (jsonObject.animationObjects)
 			{
+
 				for (var ao: String in jsonObject.animationObjects)
 				{
-					animationObjects.addAnimationObject(new CAnimationObject(ao, jsonObject.animationObjects[ao].id,
-					                                                         jsonObject.animationObjects[ao].type,
-					                                                         false));
+					animObject = jsonObject.animationObjects[ao];
+					if (animObject is String) // old version
+					{
+						animationObjects.addAnimationObject(new CAnimationObject(ao, animObject as String,
+						                                                         "texture",
+						                                                         false));
+					}
+					else
+					{
+						animationObjects.addAnimationObject(new CAnimationObject(ao, jsonObject.animationObjects[ao].id,
+						                                                         jsonObject.animationObjects[ao].type,
+						                                                         false));
+					}
 				}
 			}
 
@@ -202,9 +215,20 @@ package com.catalystapps.gaf.data.converters
 			{
 				for (var am: String in jsonObject.animationMasks)
 				{
-					animationObjects.addAnimationObject(new CAnimationObject(am, jsonObject.animationMasks[am].id,
-					                                                         jsonObject.animationMasks[am].type,
-					                                                         true));
+					animObject = jsonObject.animationMasks[am];
+					if (animObject is String) // old version
+					{
+						animationObjects.addAnimationObject(new CAnimationObject(am, animObject as String,
+						                                                         "texture",
+						                                                         true));
+					}
+					else
+					{
+						animationObjects.addAnimationObject(new CAnimationObject(am, jsonObject.animationMasks[am].id,
+						                                                         jsonObject.animationMasks[am].type,
+						                                                         true));
+					}
+
 				}
 			}
 
@@ -299,7 +323,7 @@ package com.catalystapps.gaf.data.converters
 			var missedFrameNumber: uint;
 			var io: Array;
 
-			if (jsonObject.animationConfigFrames)
+			if (jsonObject.animationConfigFrames && jsonObject.animationConfigFrames.length)
 			{
 				for each(f in jsonObject.animationConfigFrames)
 				{
@@ -422,11 +446,10 @@ package com.catalystapps.gaf.data.converters
 
 					prevFrame = currentFrame;
 				}
-			}
-
-			for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
-			{
-				animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
+				{
+					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+				}
 			}
 
 			config.animationConfigFrames = animationConfigFrames;
@@ -461,11 +484,19 @@ package com.catalystapps.gaf.data.converters
 		}
 
 		public static function convert(configID: String, json: String, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): Vector.<GAFAssetConfig>
+		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfigs
 		{
 			var jsonObject: Object = JSON.parse(json);
 
-			var configs: Vector.<GAFAssetConfig> = new <GAFAssetConfig>[];
+			var configs: GAFAssetConfigs = new GAFAssetConfigs();
+
+			if (jsonObject.linkages)
+			{
+				for (var id: String in jsonObject.linkages)
+				{
+					configs.linkages[id] = jsonObject.linkages[id];
+				}
+			}
 
 			var config: GAFAssetConfig;
 
@@ -477,7 +508,7 @@ package com.catalystapps.gaf.data.converters
 					config.id = configObject.id;
 					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale,
 					              jsonObject.csf);
-					configs.push(config);
+					configs.configs.push(config);
 				}
 			}
 			else
@@ -485,7 +516,7 @@ package com.catalystapps.gaf.data.converters
 				config = new GAFAssetConfig(jsonObject.version);
 				config.id = configID;
 				convertConfig(config, jsonObject, defaultScale, defaultContentScaleFactor);
-				configs.push(config);
+				configs.configs.push(config);
 			}
 
 			///////////////////////////////////////////////////////////////

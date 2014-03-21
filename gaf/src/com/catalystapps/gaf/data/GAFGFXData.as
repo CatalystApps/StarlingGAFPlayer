@@ -1,10 +1,15 @@
 package com.catalystapps.gaf.data
 {
-	import starling.textures.Texture;
-
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
+	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import flash.display.BitmapData;
+	import flash.filters.ColorMatrixFilter;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+
+	import starling.textures.Texture;
+
 	/**
 	 * Graphical data storage that used by <code>GAFAsset</code>. It contain all created textures and all
 	 * saved images as <code>BitmapData</code> (in case when <code>ZipToGAFAssetConverter.keepImagesInRAM = true</code> was set before asset conversion).
@@ -51,17 +56,17 @@ package com.catalystapps.gaf.data
 		 */
 		public function addImage(scale: Number, csf: Number, imageID: String, image: BitmapData): void
 		{
-			if(!this._imagesDictionary[scale])
+			if (!this._imagesDictionary[scale])
 			{
 				this._imagesDictionary[scale] = new Object();
 			}
 			
-			if(!this._imagesDictionary[scale][csf])
+			if (!this._imagesDictionary[scale][csf])
 			{
 				this._imagesDictionary[scale][csf] = new Object();
 			}
 			
-			if(!this._imagesDictionary[scale][csf][imageID])
+			if (!this._imagesDictionary[scale][csf][imageID])
 			{
 				this._imagesDictionary[scale][csf][imageID] = image;
 			}
@@ -72,11 +77,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function getImage(scale: Number, csf: Number, imageID: String): BitmapData
 		{
-			if(this._imagesDictionary)
+			if (this._imagesDictionary)
 			{
-				if(this._imagesDictionary[scale])
+				if (this._imagesDictionary[scale])
 				{
-					if(this._imagesDictionary[scale][csf])
+					if (this._imagesDictionary[scale][csf])
 					{
 						return this._imagesDictionary[scale][csf][imageID];
 					}
@@ -91,9 +96,9 @@ package com.catalystapps.gaf.data
 		 */
 		public function getImages(scale: Number, csf: Number): Object
 		{
-			if(this._imagesDictionary)
+			if (this._imagesDictionary)
 			{
-				if(this._imagesDictionary[scale])
+				if (this._imagesDictionary[scale])
 				{
 					return this._imagesDictionary[scale][csf];
 				}
@@ -107,19 +112,19 @@ package com.catalystapps.gaf.data
 		 */
 		public function removeImages(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
 		{
-			if(isNaN(scale))
+			if (isNaN(scale))
 			{
 				this._imagesDictionary = null;
 			}
 			else
 			{
-				if(isNaN(csf))
+				if (isNaN(csf))
 				{
 					delete this._imagesDictionary[scale];
 				}
 				else
 				{
-					if(imageID)
+					if (imageID)
 					{
 						delete this._imagesDictionary[scale][csf][imageID];
 					}
@@ -140,36 +145,54 @@ package com.catalystapps.gaf.data
 			
 			function createMissedObjects(dictionary: Object): void
 			{
-				if(!dictionary[scale])
+				if (!dictionary[scale])
 				{
 					dictionary[scale] = new Object();
 				}
 				
-				if(!dictionary[scale][csf])
+				if (!dictionary[scale][csf])
 				{
 					dictionary[scale][csf] = new Object();
 				}
 			}
 			
-			function addTexture(dictionary: Object, img: BitmapData, imageAtlasID: String): void
+			function addTexture(dictionary: Object, img: BitmapData, imageAtlasID: String, debug: Boolean = false): void
 			{
-				if(!dictionary[scale][csf][imageAtlasID])
+				if (debug)
+				{
+					var img: BitmapData = setGrayScale(img.clone());
+				}
+				if (!dictionary[scale][csf][imageAtlasID])
 				{
 					dictionary[scale][csf][imageAtlasID] = CTextureAtlas.textureFromImg(img, csf);
 				}
 			}
+
+			function setGrayScale(obj: BitmapData): BitmapData
+			{
+				var matrix: Array = [
+					0.26231,    0.51799, 0.0697, 0,  81.775,
+					0.26231,    0.51799, 0.0697, 0,  81.775,
+					0.26231,    0.51799, 0.0697, 0,  81.775,
+					0,          0,       0,      1,  0];
+
+				var filter: ColorMatrixFilter = new ColorMatrixFilter(matrix);
+				obj.applyFilter(obj, new Rectangle(0, 0, obj.width, obj.height), new Point(0, 0), filter);
+
+				return obj;
+			}
 			
 			////////////////////////////////////
 			
-			if(imageID)
+			if (imageID)
 			{
 				image = this.getImage(scale, csf, imageID);
 				
-				if(image)
+				if (image)
 				{
 					createMissedObjects(this._texturesDictionary);
 					
-					addTexture(this._texturesDictionary, image, imageID);
+					addTexture(this._texturesDictionary, image, imageID, DebugUtility.RENDERING_DEBUG);
 					
 					return true;
 				}
@@ -180,15 +203,15 @@ package com.catalystapps.gaf.data
 			{
 				var images: Object = this.getImages(scale, csf);
 				
-				if(images)
+				if (images)
 				{
 					createMissedObjects(this._texturesDictionary);
 					
-					for(var imageAtlasID: String in images)
+					for (var imageAtlasID: String in images)
 					{
 						image = images[imageAtlasID];
 						
-						addTexture(this._texturesDictionary, image, imageAtlasID);
+						addTexture(this._texturesDictionary, image, imageAtlasID, DebugUtility.RENDERING_DEBUG);
 					}
 					
 					return true;
@@ -203,13 +226,13 @@ package com.catalystapps.gaf.data
 		 */
 		public function getTexture(scale: Number, csf: Number, imageID: String): Texture
 		{
-			if(this._texturesDictionary)
+			if (this._texturesDictionary)
 			{
-				if(this._texturesDictionary[scale])
+				if (this._texturesDictionary[scale])
 				{
-					if(this._texturesDictionary[scale][csf])
+					if (this._texturesDictionary[scale][csf])
 					{
-						if(this._texturesDictionary[scale][csf][imageID])
+						if (this._texturesDictionary[scale][csf][imageID])
 						{
 							return this._texturesDictionary[scale][csf][imageID];
 						}
@@ -219,7 +242,7 @@ package com.catalystapps.gaf.data
 			
 			// in case when there is no texture created
 			// creare texture and check if it successfully created
-			if(this.createTextures(scale, csf, imageID))
+			if (this.createTextures(scale, csf, imageID))
 			{
 				return this._texturesDictionary[scale][csf][imageID];
 			}
@@ -232,9 +255,9 @@ package com.catalystapps.gaf.data
 		 */
 		public function getTextures(scale: Number, csf: Number): Object
 		{
-			if(this._texturesDictionary)
+			if (this._texturesDictionary)
 			{
-				if(this._texturesDictionary[scale])
+				if (this._texturesDictionary[scale])
 				{
 					return this._texturesDictionary[scale][csf];
 				}
@@ -248,9 +271,9 @@ package com.catalystapps.gaf.data
 		 */
 		public function disposeTextures(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
 		{
-			if(isNaN(scale))
+			if (isNaN(scale))
 			{
-				for(var scaleToDispose: String in this._texturesDictionary)
+				for (var scaleToDispose: String in this._texturesDictionary)
 				{
 					this.disposeTextures(Number(scaleToDispose));
 				}
@@ -259,9 +282,9 @@ package com.catalystapps.gaf.data
 			}
 			else
 			{
-				if(isNaN(csf))
+				if (isNaN(csf))
 				{
-					for(var csfToDispose: String in this._texturesDictionary[scale])
+					for (var csfToDispose: String in this._texturesDictionary[scale])
 					{
 						this.disposeTextures(scale, Number(csfToDispose));
 					}
@@ -270,7 +293,7 @@ package com.catalystapps.gaf.data
 				}
 				else
 				{
-					if(imageID)
+					if (imageID)
 					{
 						(this._texturesDictionary[scale][csf][imageID] as Texture).dispose();
 						
@@ -278,7 +301,7 @@ package com.catalystapps.gaf.data
 					}
 					else
 					{
-						for(var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
+						for (var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
 						{
 							this.disposeTextures(scale, csf, atlasIDToDispose);
 						}

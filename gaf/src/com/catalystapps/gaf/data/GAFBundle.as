@@ -19,6 +19,8 @@ package com.catalystapps.gaf.data
 		
 		private var _assets: Vector.<GAFAsset>;
 		private var _assetsDictionary: Object;
+
+		private var _assetsByLinkage: Object;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -31,6 +33,7 @@ package com.catalystapps.gaf.data
 		{
 			this._assets = new Vector.<GAFAsset>();
 			this._assetsDictionary = new Object();
+			this._assetsByLinkage = new Object();
 		}
 		
 		//--------------------------------------------------------------------------
@@ -51,12 +54,17 @@ package com.catalystapps.gaf.data
 		}
 		
 		/** @private */
-		public function addGAFAsset(gafAsset: GAFAsset): void
+		public function addGAFAsset(gafAsset: GAFAsset, linkage: String = null): void
 		{
 			if (!this._assetsDictionary[gafAsset.id])
 			{
 				this._assetsDictionary[gafAsset.id] = gafAsset;
 				this._assets.push(gafAsset);
+
+				if (linkage)
+				{
+					this._assetsByLinkage[linkage] = gafAsset;
+				}
 			}
 			else
 			{
@@ -67,9 +75,17 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns <code>GAFAsset</code> from bundle by ID
 		 */
-		public function getGAFassetByID(id: String): GAFAsset
+		public function getGAFAssetByID(id: String): GAFAsset
 		{
 			return this._assetsDictionary[id];
+		}
+
+		/**
+		 * Returns <code>GAFAsset</code> from bundle by ID
+		 */
+		public function getGAFAssetByLinkage(id: String): GAFAsset
+		{
+			return this._assetsByLinkage[id];
 		}
 
 		//--------------------------------------------------------------------------

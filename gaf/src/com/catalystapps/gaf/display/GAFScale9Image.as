@@ -7,8 +7,6 @@
  */
 package com.catalystapps.gaf.display
 {
-	import com.catalystapps.gaf.display.GAFScale9Texture;
-
 	import feathers.core.IValidating;
 	import feathers.core.ValidationQueue;
 	import feathers.utils.display.getDisplayObjectDepthFromStage;
@@ -30,7 +28,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-	public class GAFScale9Image extends Sprite implements IValidating, IGAFImage
+	public class GAFScale9Image extends Sprite implements IValidating, IGAFImage, IGAFDebug
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -144,6 +142,9 @@ package com.catalystapps.gaf.display
 		 */
 		private var _depth: int = -1;
 
+		private var _debugColors: Vector.<uint>;
+		private var _debugAlphas: Vector.<Number>;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -183,6 +184,63 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		public function set debugColors(value: Vector.<uint>): void
+		{
+			this._debugColors = new Vector.<uint>(4);
+			this._debugAlphas = new Vector.<Number>(4);
+
+			var alpha0: Number;
+			var alpha1: Number;
+
+			switch (value.length)
+			{
+				case 1:
+					this._debugColors[0] = value[0];
+					this._debugColors[1] = value[0];
+					this._debugColors[2] = value[0];
+					this._debugColors[3] = value[0];
+					alpha0 = (value[0] >>> 24) / 255;
+					this._debugAlphas[0] = alpha0;
+					this._debugAlphas[1] = alpha0;
+					this._debugAlphas[2] = alpha0;
+					this._debugAlphas[3] = alpha0;
+					break;
+				case 2:
+					this._debugColors[0] = value[0];
+					this._debugColors[1] = value[0];
+					this._debugColors[2] = value[1];
+					this._debugColors[3] = value[1];
+					alpha0 = (value[0] >>> 24) / 255;
+					alpha1 = (value[1] >>> 24) / 255;
+					this._debugAlphas[0] = alpha0;
+					this._debugAlphas[1] = alpha0;
+					this._debugAlphas[2] = alpha1;
+					this._debugAlphas[3] = alpha1;
+					break;
+				case 3:
+					this._debugColors[0] = value[0];
+					this._debugColors[1] = value[0];
+					this._debugColors[2] = value[1];
+					this._debugColors[3] = value[2];
+					alpha0 = (value[0] >>> 24) / 255;
+					this._debugAlphas[0] = alpha0;
+					this._debugAlphas[1] = alpha0;
+					this._debugAlphas[2] = (value[1] >>> 24) / 255;
+					this._debugAlphas[3] = (value[2] >>> 24) / 255;
+					break;
+				case 4:
+					this._debugColors[0] = value[0];
+					this._debugColors[1] = value[1];
+					this._debugColors[2] = value[2];
+					this._debugColors[3] = value[3];
+					this._debugAlphas[0] = (value[0] >>> 24) / 255;
+					this._debugAlphas[1] = (value[1] >>> 24) / 255;
+					this._debugAlphas[2] = (value[2] >>> 24) / 255;
+					this._debugAlphas[3] = (value[3] >>> 24) / 255;
+					break;
+			}
+		}
+
 		/**
 		 * @copy feathers.core.IValidating#validate()
 		 */
@@ -213,7 +271,22 @@ package com.catalystapps.gaf.display
 					helperImage = new Image(this._textures.middleCenter);
 				}
 				helperImage.smoothing = this._smoothing;
-				helperImage.color = this._color;
+				if (this._debugColors)
+				{
+					helperImage.setVertexColor(0, this._debugColors[0]);
+					helperImage.setVertexColor(1, this._debugColors[1]);
+					helperImage.setVertexColor(2, this._debugColors[2]);
+					helperImage.setVertexColor(3, this._debugColors[3]);
+
+					helperImage.setVertexAlpha(0, this._debugAlphas[0]);
+					helperImage.setVertexAlpha(1, this._debugAlphas[1]);
+					helperImage.setVertexAlpha(2, this._debugAlphas[2]);
+					helperImage.setVertexAlpha(3, this._debugAlphas[3]);
+				}
+				else
+				{
+					helperImage.color = this._color;
+				}
 
 				const grid: Rectangle = this._textures.scale9Grid;
 				var scaledLeftWidth: Number = grid.x * this._textureScale / this.scaleX;
@@ -239,6 +312,11 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.color = this._debugColors[0];
+							helperImage.alpha = this._debugAlphas[0];
+						}
 						helperImage.texture = this._textures.topLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -250,6 +328,18 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.setVertexColor(0, this._debugColors[0]);
+							helperImage.setVertexColor(1, this._debugColors[1]);
+							helperImage.setVertexColor(2, this._debugColors[0]);
+							helperImage.setVertexColor(3, this._debugColors[1]);
+
+							helperImage.setVertexAlpha(0, this._debugAlphas[0]);
+							helperImage.setVertexAlpha(1, this._debugAlphas[1]);
+							helperImage.setVertexAlpha(2, this._debugAlphas[0]);
+							helperImage.setVertexAlpha(3, this._debugAlphas[1]);
+						}
 						helperImage.texture = this._textures.topCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -261,6 +351,11 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.color = this._debugColors[1];
+							helperImage.alpha = this._debugAlphas[1];
+						}
 						helperImage.texture = this._textures.topRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;
@@ -275,6 +370,18 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.setVertexColor(0, this._debugColors[0]);
+							helperImage.setVertexColor(1, this._debugColors[0]);
+							helperImage.setVertexColor(2, this._debugColors[2]);
+							helperImage.setVertexColor(3, this._debugColors[2]);
+
+							helperImage.setVertexAlpha(0, this._debugAlphas[0]);
+							helperImage.setVertexAlpha(1, this._debugAlphas[0]);
+							helperImage.setVertexAlpha(2, this._debugAlphas[2]);
+							helperImage.setVertexAlpha(3, this._debugAlphas[2]);
+						}
 						helperImage.texture = this._textures.middleLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -286,6 +393,18 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.setVertexColor(0, this._debugColors[0]);
+							helperImage.setVertexColor(1, this._debugColors[1]);
+							helperImage.setVertexColor(2, this._debugColors[2]);
+							helperImage.setVertexColor(3, this._debugColors[3]);
+
+							helperImage.setVertexAlpha(0, this._debugAlphas[0]);
+							helperImage.setVertexAlpha(1, this._debugAlphas[1]);
+							helperImage.setVertexAlpha(2, this._debugAlphas[2]);
+							helperImage.setVertexAlpha(3, this._debugAlphas[3]);
+						}
 						helperImage.texture = this._textures.middleCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -297,6 +416,18 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.setVertexColor(0, this._debugColors[1]);
+							helperImage.setVertexColor(1, this._debugColors[1]);
+							helperImage.setVertexColor(2, this._debugColors[3]);
+							helperImage.setVertexColor(3, this._debugColors[3]);
+
+							helperImage.setVertexAlpha(0, this._debugAlphas[1]);
+							helperImage.setVertexAlpha(1, this._debugAlphas[1]);
+							helperImage.setVertexAlpha(2, this._debugAlphas[3]);
+							helperImage.setVertexAlpha(3, this._debugAlphas[3]);
+						}
 						helperImage.texture = this._textures.middleRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;
@@ -311,6 +442,11 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.color = this._debugColors[2];
+							helperImage.alpha = this._debugAlphas[2];
+						}
 						helperImage.texture = this._textures.bottomLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -322,6 +458,18 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.setVertexColor(0, this._debugColors[2]);
+							helperImage.setVertexColor(1, this._debugColors[3]);
+							helperImage.setVertexColor(2, this._debugColors[2]);
+							helperImage.setVertexColor(3, this._debugColors[3]);
+
+							helperImage.setVertexAlpha(0, this._debugAlphas[2]);
+							helperImage.setVertexAlpha(1, this._debugAlphas[3]);
+							helperImage.setVertexAlpha(2, this._debugAlphas[2]);
+							helperImage.setVertexAlpha(3, this._debugAlphas[3]);
+						}
 						helperImage.texture = this._textures.bottomCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -333,6 +481,11 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
+						if (this._debugColors)
+						{
+							helperImage.color = this._debugColors[3];
+							helperImage.alpha = this._debugAlphas[3];
+						}
 						helperImage.texture = this._textures.bottomRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;

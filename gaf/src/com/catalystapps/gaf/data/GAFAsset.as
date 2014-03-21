@@ -144,8 +144,11 @@ package com.catalystapps.gaf.data
 				
 				case CONTENT_DEFAULT:
 					this._gafgfxData.disposeTextures(this.scale, this.contentScaleFactor);
-					this._config.textureAtlas.contentScaleFactor.atlas.dispose();
-					this._config.textureAtlas.contentScaleFactor.atlas = null;
+					if (this._config.textureAtlas.contentScaleFactor.atlas)
+					{
+						this._config.textureAtlas.contentScaleFactor.atlas.dispose();
+						this._config.textureAtlas.contentScaleFactor.atlas = null;
+					}
 					return;
 				
 				case CONTENT_SPECIFY:
@@ -153,8 +156,11 @@ package com.catalystapps.gaf.data
 					if(csfConfig)
 					{
 						this._gafgfxData.disposeTextures(scale, csf);
-						csfConfig.atlas.dispose();
-						csfConfig.atlas = null;
+						if (csfConfig.atlas)
+						{
+							csfConfig.atlas.dispose();
+							csfConfig.atlas = null;
+						}
 					}
 					return;
 			}

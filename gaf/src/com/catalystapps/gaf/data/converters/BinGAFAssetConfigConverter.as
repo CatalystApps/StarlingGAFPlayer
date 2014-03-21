@@ -1,6 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
 	import com.catalystapps.gaf.data.GAFAssetConfig;
+	import com.catalystapps.gaf.data.GAFAssetConfigs;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
@@ -61,7 +62,7 @@ package com.catalystapps.gaf.data.converters
 		//--------------------------------------------------------------------------	
 
 		public static function convert(configID: String, bytes: ByteArray, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): Vector.<GAFAssetConfig>
+		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfigs
 		{
 			bytes.endian = Endian.LITTLE_ENDIAN;
 
@@ -90,7 +91,9 @@ package com.catalystapps.gaf.data.converters
 				result.textureAtlas = result.allTextureAtlases[0];
 			}
 
-			return new <GAFAssetConfig>[result];
+			var configs: GAFAssetConfigs = new GAFAssetConfigs();
+			configs.configs.push(result);
+			return configs;
 		}
 
 		//--------------------------------------------------------------------------

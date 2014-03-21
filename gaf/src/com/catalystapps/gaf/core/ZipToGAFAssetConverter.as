@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.data.GAFAssetConfigs;
+
 	import flash.events.ErrorEvent;
 	import flash.utils.setTimeout;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
@@ -204,7 +206,7 @@ package com.catalystapps.gaf.core
 		{
 			clearTimeout(this.configConvertTimeout);
 
-			var configs: Vector.<GAFAssetConfig>;
+			var configs: GAFAssetConfigs;
 			var configSource: Object = this.gafAssetConfigSources[this.gafAssetsIDs[this.currentConfigIndex]];
 			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
 
@@ -230,7 +232,7 @@ package com.catalystapps.gaf.core
 
 			var assets: Vector.<GAFAsset> = new <GAFAsset>[];
 
-			for each (var config: GAFAssetConfig in configs)
+			for each (var config: GAFAssetConfig in configs.configs)
 			{
 				assets.push(this.createAsset(config));
 			}
@@ -244,7 +246,9 @@ package com.catalystapps.gaf.core
 
 				for each (var asset: GAFAsset in assets)
 				{
-					this._gafBundle.addGAFAsset(asset);
+					var linkage: String = configs.linkages[asset.id];
+					this._gafBundle.addGAFAsset(asset, linkage);
+
 					asset.gafBundle = this._gafBundle;
 				}
 			/*}

@@ -10,22 +10,17 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.event.SequenceEvent;
 	import com.catalystapps.gaf.filter.GAFFilter;
+	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import feathers.controls.text.TextFieldTextEditor;
-
-	import feathers.core.FeathersControl;
 	import feathers.core.ITextEditor;
 
-	import flash.display.Stage;
-
 	import flash.geom.Matrix;
-	import flash.geom.Point;
-
-	import starling.core.Starling;
 
 	import starling.display.DisplayObject;
 	import starling.display.Quad;
 	import starling.display.Sprite;
+	import starling.errors.AbstractClassError;
 	import starling.events.Event;
 	import starling.extensions.pixelmask.PixelMaskDisplayObject;
 
@@ -71,6 +66,10 @@ package com.catalystapps.gaf.display
 
 		private var _inPlay: Boolean;
 		private var _loop: Boolean = true;
+
+		private var _alphaLess1: Boolean;
+		private var _masked: Boolean;
+		private var _hasFilter: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -343,6 +342,32 @@ package com.catalystapps.gaf.display
 			var objectPivotMatrix: Matrix;
 			var maskPivotMatrix: Matrix;
 
+			function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLess1: Boolean, masked: Boolean,
+			                                  hasFilter: Boolean): void
+			{
+				var changed: Boolean
+				if (mc._alphaLess1 != alphaLess1)
+				{
+					mc.alphaLess1 = alphaLess1;
+					changed = true;
+				}
+				if (mc._masked != masked)
+				{
+					mc.masked = masked;
+					changed = true;
+				}
+				if (mc._hasFilter != hasFilter)
+				{
+					mc.hasFilter = hasFilter;
+					changed = true;
+				}
+
+				if (changed)
+				{
+					mc.draw();
+				}
+			}
+
 			if (this._gafAsset.config.animationConfigFrames.frames.length > this._currentFrame)
 			{
 				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
@@ -360,6 +385,7 @@ package com.catalystapps.gaf.display
 						{
 							firstStaticObject = staticObject;
 						}
+
 						if (staticObject is IGAFImage)
 						{
 							objectPivotMatrix = (staticObject as IGAFImage).assetTexture.pivotMatrix;
@@ -373,6 +399,14 @@ package com.catalystapps.gaf.display
 
 						if (instance.maskID)
 						{
+							if (DebugUtility.RENDERING_DEBUG && staticObject is GAFMovieClip)
+							{
+								updateAlphaMaskedAndHasFilter(staticObject as GAFMovieClip,
+								                         instance.alpha < 1 || this._alphaLess1,
+								                         true,
+								                         (instance.filter != null) || this._hasFilter);
+							}
+
 							var maskObject: DisplayObject = this.masksDictionary[instance.maskID];
 
 							if (maskObject)
@@ -424,10 +458,28 @@ package com.catalystapps.gaf.display
 						}
 						else
 						{
+							if (DebugUtility.RENDERING_DEBUG && staticObject is GAFMovieClip)
+							{
+								updateAlphaMaskedAndHasFilter(staticObject as GAFMovieClip,
+								                         instance.alpha < 1 || this._alphaLess1,
+								                         false || this._masked,
+								                         (instance.filter != null) || this._hasFilter);
+							}
+
 							staticObject.transformationMatrix = instance.getTransformMatrix(objectPivotMatrix, this.scale);
 							this.updateFilter(staticObject, instance, this.scale);
 
 							this.addChild(staticObject);
+						}
+
+						if (DebugUtility.RENDERING_DEBUG && staticObject is IGAFDebug)
+						{
+							var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
+									instance,
+									this._alphaLess1,
+							        this._masked,
+							        this._hasFilter);
+							(staticObject as IGAFDebug).debugColors = colors;
 						}
 					}
 				}
@@ -532,28 +584,27 @@ package com.catalystapps.gaf.display
 						var tfObj: CTextFieldObject = this._gafAsset.config.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
 						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
 						tf.name = animationObjectConfig.instanceID;
-						tf.prompt = tfObj.text
+						//tf.prompt = tfObj.text
 						tf.text = tfObj.text;
 						tf.restrict = tfObj.restrict;
 						tf.isEditable = tfObj.editable;
 						tf.displayAsPassword = tfObj.displayAsPassword;
 						tf.maxChars = tfObj.maxChars;
+
+						tf.textEditorProperties.textFormat = tfObj.textFormat;
+						tf.textEditorProperties.embedFonts = tfObj.embedFonts;
+						tf.textEditorProperties.multiline = tfObj.multiline;
+						tf.textEditorProperties.wordWrap = tfObj.wordWrap;
 						tf.textEditorFactory = function(): ITextEditor
 						{
-							var editor: TextFieldTextEditor = new TextFieldTextEditor();
-							editor.width = tfObj.width;
-							editor.height = tfObj.height;
-							editor.textFormat = tfObj.textFormat;
-							editor.embedFonts = tfObj.embedFonts;
-							editor.multiline = tfObj.multiline;
-							editor.wordWrap = tfObj.wordWrap;
-							return editor;
+							return new TextFieldTextEditor();
 						};
 						staticObject = tf;
 						break;
 					case "timeline":
-						var mc: GAFMovieClip = new GAFMovieClip(this._gafAsset.gafBundle.getGAFassetByID(animationObjectConfig.staticObjectID));
+						var mc: GAFMovieClip = new GAFMovieClip(this._gafAsset.gafBundle.getGAFAssetByID(animationObjectConfig.staticObjectID));
 						mc.name = animationObjectConfig.instanceID;
+						mc.play();
 						staticObject = mc;
 						break;
 				}
@@ -705,7 +756,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get currentFrame(): uint
 		{
-			return _currentFrame + 1;// Like in standart AS3 API for MovieClip first frame is "1" instead of "0" (but internally used "0")
+			return this._currentFrame + 1;// Like in standart AS3 API for MovieClip first frame is "1" instead of "0" (but internally used "0")
 		}
 
 		/**
@@ -713,7 +764,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get totalFrames(): uint
 		{
-			return _totalFrames;
+			return this._totalFrames;
 		}
 
 		/**
@@ -721,7 +772,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get inPlay(): Boolean
 		{
-			return _inPlay;
+			return this._inPlay;
 		}
 
 		/**
@@ -729,13 +780,27 @@ package com.catalystapps.gaf.display
 		 */
 		public function get loop(): Boolean
 		{
-			return _loop;
+			return this._loop;
 		}
 
 		public function set loop(loop: Boolean): void
 		{
-			_loop = loop;
+			this._loop = loop;
 		}
 
+		public function set alphaLess1(value: Boolean): void
+		{
+			this._alphaLess1 = value;
+		}
+
+		public function set masked(value: Boolean): void
+		{
+			this._masked = value;
+		}
+
+		public function set hasFilter(value: Boolean): void
+		{
+			this._hasFilter = value;
+		}
 	}
 }
