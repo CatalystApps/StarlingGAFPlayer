@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import flash.utils.CompressionAlgorithm;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
@@ -55,10 +56,18 @@ package com.catalystapps.gaf.data.converters
 		{			
 			bytes.endian = Endian.LITTLE_ENDIAN;
 			
-			var compression: int = bytes.readInt();
+			var header: int = bytes.readInt();
 			var versionMajor: int = bytes.readByte();
 			var versionMinor: int = bytes.readByte();
 			var fileLength: uint = bytes.readUnsignedInt();
+			
+			switch (header)
+			{
+				case SIGNATURE_GAC:
+					bytes = decompressConfig(bytes);
+					break;
+			}
+			
 			var framesCount: uint = bytes.readShort();
 			var animationBounds: Rectangle = new Rectangle(bytes.readFloat(), bytes.readFloat(), bytes.readFloat(), bytes.readFloat());
 			var animationPoint: Point = new Point(bytes.readFloat(), bytes.readFloat());
@@ -79,7 +88,19 @@ package com.catalystapps.gaf.data.converters
 			}
 						
 			return result;		
-		}	
+		}
+
+		private static function decompressConfig(bytes: ByteArray): ByteArray
+		{			
+			var uncompressedBA: ByteArray = new ByteArray();
+			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
+			
+			bytes.readBytes(uncompressedBA);
+			
+			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
+			
+			return uncompressedBA;
+		}
 		
 		//--------------------------------------------------------------------------
 		//
