@@ -20,7 +20,6 @@ package com.catalystapps.gaf.display
 	import starling.display.DisplayObject;
 	import starling.display.Quad;
 	import starling.display.Sprite;
-	import starling.errors.AbstractClassError;
 	import starling.events.Event;
 	import starling.extensions.pixelmask.PixelMaskDisplayObject;
 
@@ -158,7 +157,7 @@ package com.catalystapps.gaf.display
 					////////////////////////////////
 
 					var cFilter: CFilter = new CFilter();
-					cFilter.addColorMatrixFilter([1,0,0,0,255, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0]);
+					cFilter.addColorMatrixFilter([1, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
 
 					var gafFilter: GAFFilter = new GAFFilter();
 					gafFilter.setConfig(cFilter, scale);
@@ -343,7 +342,7 @@ package com.catalystapps.gaf.display
 			var maskPivotMatrix: Matrix;
 
 			function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLess1: Boolean, masked: Boolean,
-			                                  hasFilter: Boolean): void
+			                                       hasFilter: Boolean): void
 			{
 				var changed: Boolean
 				if (mc._alphaLess1 != alphaLess1)
@@ -402,9 +401,9 @@ package com.catalystapps.gaf.display
 							if (DebugUtility.RENDERING_DEBUG && staticObject is GAFMovieClip)
 							{
 								updateAlphaMaskedAndHasFilter(staticObject as GAFMovieClip,
-								                         instance.alpha < 1 || this._alphaLess1,
-								                         true,
-								                         (instance.filter != null) || this._hasFilter);
+								                              instance.alpha < 1 || this._alphaLess1,
+								                              true,
+								                              (instance.filter != null) || this._hasFilter);
 							}
 
 							var maskObject: DisplayObject = this.masksDictionary[instance.maskID];
@@ -428,15 +427,18 @@ package com.catalystapps.gaf.display
 
 								if (maskInstance)
 								{
-									var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix, this.scale).clone();
-									var imageTransformMatrix: Matrix = instance.getTransformMatrix(objectPivotMatrix, this.scale).clone();
+									var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix,
+									                                                                  this.scale).clone();
+									var imageTransformMatrix: Matrix = instance.getTransformMatrix(objectPivotMatrix,
+									                                                               this.scale).clone();
 
 									maskTransformMatrix.invert();
 									imageTransformMatrix.concat(maskTransformMatrix);
 
 									staticObject.transformationMatrix = imageTransformMatrix;
 
-									pixelMaskDisplayObject.transformationMatrix = maskInstance.getTransformMatrix(maskPivotMatrix, this.scale);
+									pixelMaskDisplayObject.transformationMatrix = maskInstance.getTransformMatrix(maskPivotMatrix,
+									                                                                              this.scale);
 								}
 								else
 								{
@@ -461,12 +463,13 @@ package com.catalystapps.gaf.display
 							if (DebugUtility.RENDERING_DEBUG && staticObject is GAFMovieClip)
 							{
 								updateAlphaMaskedAndHasFilter(staticObject as GAFMovieClip,
-								                         instance.alpha < 1 || this._alphaLess1,
-								                         false || this._masked,
-								                         (instance.filter != null) || this._hasFilter);
+								                              instance.alpha < 1 || this._alphaLess1,
+								                              false || this._masked,
+								                              (instance.filter != null) || this._hasFilter);
 							}
 
-							staticObject.transformationMatrix = instance.getTransformMatrix(objectPivotMatrix, this.scale);
+							staticObject.transformationMatrix = instance.getTransformMatrix(objectPivotMatrix,
+							                                                                this.scale);
 							this.updateFilter(staticObject, instance, this.scale);
 
 							this.addChild(staticObject);
@@ -477,8 +480,8 @@ package com.catalystapps.gaf.display
 							var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
 									instance,
 									this._alphaLess1,
-							        this._masked,
-							        this._hasFilter);
+									this._masked,
+									this._hasFilter);
 							(staticObject as IGAFDebug).debugColors = colors;
 						}
 					}
@@ -595,7 +598,7 @@ package com.catalystapps.gaf.display
 						tf.textEditorProperties.embedFonts = tfObj.embedFonts;
 						tf.textEditorProperties.multiline = tfObj.multiline;
 						tf.textEditorProperties.wordWrap = tfObj.wordWrap;
-						tf.textEditorFactory = function(): ITextEditor
+						tf.textEditorFactory = function (): ITextEditor
 						{
 							return new TextFieldTextEditor();
 						};

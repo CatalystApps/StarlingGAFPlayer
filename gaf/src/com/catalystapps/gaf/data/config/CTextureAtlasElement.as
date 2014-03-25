@@ -2,6 +2,7 @@ package com.catalystapps.gaf.data.config
 {
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
+
 	/**
 	 * @private
 	 */
@@ -12,25 +13,25 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _id: String;
 		private var _atlasID: String;
 		private var _region: Rectangle;
 		private var _pivotMatrix: Matrix;
 		private var _scale9Grid: Rectangle;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function CTextureAtlasElement(id: String, atlasID: String, region: Rectangle, pivotMatrix: Matrix)
 		{
 			this._id = id;
@@ -44,31 +45,31 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get id(): String
 		{
 			return _id;
@@ -94,7 +95,7 @@ package com.catalystapps.gaf.data.config
 			return _atlasID;
 		}
 
-		public function get scale9Grid(): flash.geom.Rectangle
+		public function get scale9Grid(): Rectangle
 		{
 			return _scale9Grid;
 		}

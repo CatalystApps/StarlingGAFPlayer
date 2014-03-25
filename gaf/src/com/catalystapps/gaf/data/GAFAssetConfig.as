@@ -6,10 +6,6 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 
-	import flash.geom.Point;
-
-	import flash.geom.Rectangle;
-
 	/**
 	 * @private
 	 */
@@ -20,7 +16,7 @@ package com.catalystapps.gaf.data
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
@@ -29,10 +25,10 @@ package com.catalystapps.gaf.data
 		private var _version: String;
 
 		private var _id: String;
-		
+
 		private var _allTextureAtlases: Vector.<CTextureAtlasScale>;
 		private var _textureAtlas: CTextureAtlasScale;
-		
+
 		private var _animationConfigFrames: CAnimationFrames;
 		private var _animationObjects: CAnimationObjects;
 		private var _animationSequences: CAnimationSequences;
@@ -41,15 +37,15 @@ package com.catalystapps.gaf.data
 		private var _namedParts: Object;
 
 		private var _debugRegions: Vector.<GAFDebugInformation>;
-		
+
 		private var _warnings: Vector.<String>;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function GAFAssetConfig(version: String)
 		{
 			this._version = version;
@@ -60,7 +56,7 @@ package com.catalystapps.gaf.data
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function dispose(): void
 		{
 			for each(var cTextureAtlasScale: CTextureAtlasScale in this._allTextureAtlases)
@@ -68,26 +64,26 @@ package com.catalystapps.gaf.data
 				cTextureAtlasScale.dispose();
 			}
 		}
-		
+
 		public function getTextureAtlasForScale(scale: Number): CTextureAtlasScale
 		{
 			for each(var cTextureAtlas: CTextureAtlasScale in this._allTextureAtlases)
 			{
-				if(cTextureAtlas.scale == scale)
+				if (cTextureAtlas.scale == scale)
 				{
 					return cTextureAtlas;
 				}
 			}
-			
+
 			return null;
-		}	
+		}
 
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function addWarning(text: String): void
 		{
 			if (!text)
@@ -95,36 +91,36 @@ package com.catalystapps.gaf.data
 				return;
 			}
 
-			if(!this._warnings)
+			if (!this._warnings)
 			{
 				this._warnings = new Vector.<String>();
 			}
-			
-			if(this._warnings.indexOf(text) == -1)
+
+			if (this._warnings.indexOf(text) == -1)
 			{
 				trace(text);
 				this._warnings.push(text);
 			}
 		}
-				
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get textureAtlas(): CTextureAtlasScale
 		{
 			return this._textureAtlas;
@@ -199,7 +195,7 @@ package com.catalystapps.gaf.data
 		{
 			this._debugRegions = debugRegions;
 		}
-		
+
 		public function get warnings(): Vector.<String>
 		{
 			return this._warnings;

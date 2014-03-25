@@ -126,4 +126,6 @@ package com.catalystapps.gaf.utils
 	}
 }
 
-internal final class FakeClass {}
+internal final class FakeClass
+{
+}

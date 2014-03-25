@@ -467,38 +467,6 @@ package com.catalystapps.gaf.filter
 		//
 		//--------------------------------------------------------------------------
 
-		/** @inheritDoc */
-		public override function dispose(): void
-		{
-			if (mNormalProgram)
-			{
-				mNormalProgram.dispose();
-			}
-			if (cShaderProgram)
-			{
-				cShaderProgram.dispose();
-			}
-
-			var target: Starling = Starling.current;
-
-			if (target.hasProgram(GAFFilter.COLOR_TRANSFORM_PROGRAM_NAME))
-			{
-				target.deleteProgram(GAFFilter.COLOR_TRANSFORM_PROGRAM_NAME);
-			}
-
-			if (target.hasProgram(GAFFilter.NORMAL_PROGRAM_NAME))
-			{
-				target.deleteProgram(GAFFilter.NORMAL_PROGRAM_NAME);
-			}
-
-			if (target.hasProgram(GAFFilter.TINTED_PROGRAM_NAME))
-			{
-				target.deleteProgram(GAFFilter.TINTED_PROGRAM_NAME);
-			}
-
-			super.dispose();
-		}
-
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS

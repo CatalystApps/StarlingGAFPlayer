@@ -1,33 +1,42 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.GAFAssetConfigs;
-
-	import flash.events.ErrorEvent;
-	import flash.utils.setTimeout;
-	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
-	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
-	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
-	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
-	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
-	import com.catalystapps.gaf.data.GAFAssetConfig;
-	import flash.utils.clearTimeout;
-	import flash.display.BitmapData;
-	import deng.fzip.FZipFile;
-	import flash.events.Event;
-	import deng.fzip.FZipErrorEvent;
-	import flash.utils.ByteArray;
 	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFAssetConfig;
+	import com.catalystapps.gaf.data.GAFAssetConfigs;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
+	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
+	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
+	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
+	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
+
 	import deng.fzip.FZip;
+	import deng.fzip.FZipErrorEvent;
+	import deng.fzip.FZipFile;
 	import deng.fzip.FZipLibrary;
+
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.Loader;
+	import flash.events.ErrorEvent;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.IOErrorEvent;
+	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
+	import flash.net.URLRequest;
+	import flash.system.LoaderContext;
+	import flash.utils.ByteArray;
+	import flash.utils.clearTimeout;
+	import flash.utils.getQualifiedClassName;
+	import flash.utils.setTimeout;
 
 	/** Dispatched when convertation completed */
-    [Event(name="complete", type="flash.events.Event")]
+	[Event(name="complete", type="flash.events.Event")]
 
 	/** Dispatched when conversion failed for some reason */
-    [Event(name="error", type="flash.events.ErrorEvent")]
+	[Event(name="error", type="flash.events.ErrorEvent")]
 
 	/**
 	 * The ZipToGAFAssetConverter simply converts loaded GAF file into <code>GAFAsset</code> object that
@@ -37,11 +46,11 @@ package com.catalystapps.gaf.core
 	 * <p>Here is the simple rules to understand what is <code>GAFAsset</code>, <code>GAFBundle</code> and <code>GAFMovieClip</code>:</p>
 	 *
 	 * <ul>
-	 * 	<li><code>GAFAsset</code> - is like a library symbol in Flash IDE. When you load GAF asset file you can not use it directly.
-	 * 		All you need to do is convert it into <code>GAFAsset</code> using ZipToGAFAssetConverter</li>
-	 * 	<li><code>GAFBundle</code> - is a storage of all <code>GAFAsset's</code> from Bundle</li>
-	 * 	<li><code>GAFMovieClip</code> - is like an instance of Flash <code>MovieClip</code>.
-	 * 		You can create it from <code>GAFAsset</code> and use in <code>Starling Display Object</code></li>
+	 *    <li><code>GAFAsset</code> - is like a library symbol in Flash IDE. When you load GAF asset file you can not use it directly.
+	 *        All you need to do is convert it into <code>GAFAsset</code> using ZipToGAFAssetConverter</li>
+	 *    <li><code>GAFBundle</code> - is a storage of all <code>GAFAsset's</code> from Bundle</li>
+	 *    <li><code>GAFMovieClip</code> - is like an instance of Flash <code>MovieClip</code>.
+	 *        You can create it from <code>GAFAsset</code> and use in <code>Starling Display Object</code></li>
 	 * </ul>
 	 *
 	 * @see com.catalystapps.gaf.data.GAFAsset
@@ -99,6 +108,7 @@ package com.catalystapps.gaf.core
 		private var configConvertTimeout: Number;
 
 		private var gafAssetConfigSources: Object;
+		private var gafAssetConfigs: Object;
 		private var gafAssetsIDs: Array;
 
 		private var pngImgs: Object;
@@ -111,6 +121,16 @@ package com.catalystapps.gaf.core
 		private var _defaultScale: Number;
 		private var _defaultContentScaleFactor: Number;
 
+		///////////////////////////////////
+
+		private var gafAssetsConfigURLs: Array;
+		private var gafAssetsConfigIndex: uint = 0;
+		private var gafAssetsConfigURLLoader: URLLoader;
+
+		private var atlasSourceURLs: Array;
+		private var atlasSourceIndex: uint = 0;
+		private var atlasSourceLoader: Loader;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -121,6 +141,13 @@ package com.catalystapps.gaf.core
 		public function ZipToGAFAssetConverter()
 		{
 			this.gfxData = new GAFGFXData();
+
+			this.gafAssetConfigs = new Object();
+
+			this.gafAssetConfigSources = new Object();
+			this.gafAssetsIDs = new Array();
+
+			this.pngImgs = new Object();
 		}
 
 		//--------------------------------------------------------------------------
@@ -134,24 +161,57 @@ package com.catalystapps.gaf.core
 		 * Because conversion process is asynchronous use <code>Event.COMPLETE</code> listener to trigger successful conversion.
 		 * Use <code>ErrorEvent.ERROR</code> listener to trigger any conversion fail.
 		 *
-		 * @param zipByteArray *.zip file binary
+		 * @param data *.zip file binary or File object represents a path to a *.gaf/*.json file or directory with *.gaf/*.json config files
 		 * @param defaultScale Scale value for <code>GAFAsset</code> that will be set by default
 		 * @param defaultContentScaleFactor Content scale factor (csf) value for <code>GAFAsset</code> that will be set by default
 		 */
-		public function convert(zipByteArray: ByteArray, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
+		public function convert(data: *, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
+			if (ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
+			{
+				throw new Error("Impossible parameters combination! keepImagesInRAM = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
+			}
+
 			this._defaultScale = defaultScale;
 			this._defaultContentScaleFactor = defaultContentScaleFactor;
 
-			this._zip = new FZip();
-			this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
-			this._zip.loadBytes(zipByteArray);
+			if (data is ByteArray)
+			{
+				this._zip = new FZip();
+				this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
+				this._zip.loadBytes(data);
 
-			this._zipLoader = new FZipLibrary();
-			this._zipLoader.formatAsBitmapData(".png");
-			this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
-			this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
-			this._zipLoader.addZip(this._zip);
+				this._zipLoader = new FZipLibrary();
+				this._zipLoader.formatAsBitmapData(".png");
+				this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
+				this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
+				this._zipLoader.addZip(this._zip);
+			}
+			else
+			{
+				this.gafAssetsConfigURLs = new Array();
+
+				if (data is Array)
+				{
+					for each(var file: * in data)
+					{
+						this.processFile(file);
+					}
+				}
+				else
+				{
+					this.processFile(data);
+				}
+
+				if (this.gafAssetsConfigURLs.length)
+				{
+					this.loadConfig();
+				}
+				else
+				{
+					this.zipProcessError("No GAF animation files found", 5);
+				}
+			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -159,6 +219,202 @@ package com.catalystapps.gaf.core
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		private function processFile(data: *): void
+		{
+			if (getQualifiedClassName(data) == "flash.filesystem::File")
+			{
+				if (!data["exists"] || data["isHidden"])
+				{
+					this.zipProcessError("File or directory not found: '" + data["url"] + "'", 4);
+				}
+				else
+				{
+					var url: String;
+
+					if (data["isDirectory"])
+					{
+						var files: Array = data["getDirectoryListing"]();
+
+						for each(var file: * in files)
+						{
+							if (file["exists"] && !file["isHidden"] && !file["isDirectory"])
+							{
+								url = file["url"];
+
+								if (this.isConfigURL(url))
+								{
+									this.gafAssetsConfigURLs.push(url);
+								}
+							}
+						}
+					}
+					else
+					{
+						url = data["url"];
+
+						if (this.isConfigURL(url))
+						{
+							this.gafAssetsConfigURLs.push(url);
+						}
+					}
+				}
+			}
+		}
+
+		private function loadConfig(): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+
+			this.gafAssetsConfigURLLoader = new URLLoader();
+
+			if (this.isJSONConfig(url))
+			{
+				this.gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.TEXT;
+			}
+			else
+			{
+				this.gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			}
+
+			this.gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIoError);
+			this.gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigUrlLoaderComplete);
+			this.gafAssetsConfigURLLoader.load(new URLRequest(url));
+
+		}
+
+		private function onConfigUrlLoaderComplete(event: Event): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+
+			this.gafAssetsIDs.push(url);
+
+			this.gafAssetConfigSources[url] = this.gafAssetsConfigURLLoader.data;
+
+			this.gafAssetsConfigIndex++;
+
+			if (this.gafAssetsConfigIndex >= this.gafAssetsConfigURLs.length)
+			{
+				this.convertConfig();
+			}
+			else
+			{
+				this.loadConfig();
+			}
+		}
+
+		private function findAllAtlasURLs(): void
+		{
+			this.atlasSourceURLs = new Array();
+
+			var configs: GAFAssetConfigs;
+
+			for (var id: String in this.gafAssetConfigs)
+			{
+				configs = this.gafAssetConfigs[id];
+
+				for each (var config: GAFAssetConfig in configs.configs)
+				{
+					var folderURL: String = this.getFolderURL(id);
+
+					for each(var scale: CTextureAtlasScale in config.allTextureAtlases)
+					{
+						if (isNaN(this._defaultScale) || scale.scale == this._defaultScale)
+						{
+							for each (var csf: CTextureAtlasCSF in scale.allContentScaleFactors)
+							{
+								if (isNaN(this._defaultContentScaleFactor) || csf.csf == this._defaultContentScaleFactor)
+								{
+									for each (var source: CTextureAtlasSource in csf.sources)
+									{
+										var url: String = folderURL + source.source;
+
+										if (this.atlasSourceURLs.indexOf(url) == -1)
+										{
+											this.atlasSourceURLs.push(url);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (this.atlasSourceURLs.length)
+			{
+				this.loadPNG();
+			}
+			else
+			{
+				this.createGAFAssets();
+			}
+		}
+
+		private function loadPNG(): void
+		{
+			this.atlasSourceLoader = new Loader();
+			var url: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
+
+			this.atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
+			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadIOError);
+
+			this.atlasSourceLoader.load(url, new LoaderContext());
+		}
+
+		private function onPNGLoadIOError(event: IOErrorEvent): void
+		{
+			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
+		}
+
+		private function onPNGLoadComplete(event: Event): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
+
+			this.pngImgs[fileName] = (this.atlasSourceLoader.content as Bitmap).bitmapData;
+
+			this.atlasSourceIndex++;
+
+			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
+			{
+				this.createGAFAssets();
+			}
+			else
+			{
+				this.loadPNG();
+			}
+		}
+
+		private function getFolderURL(url: String): String
+		{
+			var cutURL: String = url.split("?")[0];
+
+			var lastIndex: int = cutURL.lastIndexOf("/");
+
+			return cutURL.slice(0, lastIndex + 1);
+		}
+
+		private function onConfigIoError(event: IOErrorEvent): void
+		{
+			this.zipProcessError("Error occurred while loading " + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex],
+			                     5);
+		}
+
+		private function isConfigURL(url: String): Boolean
+		{
+			return (this.isJSONConfig(url) || this.isGAFConfig(url));
+		}
+
+		private function isJSONConfig(url: String): Boolean
+		{
+			return (url.split("?")[0].split(".").pop().toLowerCase() == "json");
+		}
+
+		private function isGAFConfig(url: String): Boolean
+		{
+			return (url.split("?")[0].split(".").pop().toLowerCase() == "gaf");
+		}
 
 		private function parseZip(): void
 		{
@@ -198,47 +454,71 @@ package com.catalystapps.gaf.core
 					this.gafAssetConfigSources[zipFile.filename] = zipFile.content;
 				}
 			}
+			///////////////////////////////////
 
-			this.createGAFAsset();
+			this.convertConfig();
 		}
 
-		private function createGAFAsset(): void
+		private function convertConfig(): void
 		{
 			clearTimeout(this.configConvertTimeout);
 
 			var configs: GAFAssetConfigs;
-			var configSource: Object = this.gafAssetConfigSources[this.gafAssetsIDs[this.currentConfigIndex]];
+			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
+			var configSource: Object = this.gafAssetConfigSources[configID];
 			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
 
-//			try
-//			{
-				if (configSource is ByteArray)
+			if (configSource is ByteArray)
+			{
+				configs = BinGAFAssetConfigConverter.convert(gafAssetID, configSource as ByteArray, this._defaultScale,
+				                                             this._defaultContentScaleFactor);
+			}
+			else
+			{
+				configs = JsonGAFAssetConfigConverter.convert(gafAssetID, configSource as String, this._defaultScale,
+				                                              this._defaultContentScaleFactor);
+			}
+
+			this.gafAssetConfigs[configID] = configs;
+
+			this.currentConfigIndex++;
+
+			if (this.currentConfigIndex >= this.gafAssetsIDs.length)
+			{
+				if (this.gafAssetsConfigURLs && gafAssetsConfigURLs.length)
 				{
-					configs = BinGAFAssetConfigConverter.convert(gafAssetID, configSource as ByteArray, this._defaultScale, this._defaultContentScaleFactor);
+					this.findAllAtlasURLs();
 				}
 				else
 				{
-					configs = JsonGAFAssetConfigConverter.convert(gafAssetID, configSource as String, this._defaultScale, this._defaultContentScaleFactor);
+					this.createGAFAssets();
 				}
-//			}
-//			catch(error: Error)
-//			{
-//				this.zipProcessError(error.message, 4);
-//				
-//				return;
-//			}
-
-			///////////////////////////////////
-
-			var assets: Vector.<GAFAsset> = new <GAFAsset>[];
-
-			for each (var config: GAFAssetConfig in configs.configs)
-			{
-				assets.push(this.createAsset(config));
 			}
+			else
+			{
+				this.configConvertTimeout = setTimeout(this.convertConfig, 40);
+			}
+		}
 
-			/*if (this.gafAssetsIDs.length > 1 || assets.length > 1)
-			{*/
+		private function createGAFAssets(): void
+		{
+			var configs: GAFAssetConfigs;
+			var configID: String;
+
+			for (var i: uint = 0; i < this.gafAssetsIDs.length; i++)
+			{
+				configID = this.gafAssetsIDs[i];
+				configs = this.gafAssetConfigs[configID];
+
+				var assets: Vector.<GAFAsset> = new <GAFAsset>[];
+
+				for each (var config: GAFAssetConfig in configs.configs)
+				{
+					assets.push(this.createAsset(config));
+				}
+
+				///////////////////////////////////
+
 				if (!this._gafBundle)
 				{
 					this._gafBundle = new GAFBundle();
@@ -251,32 +531,14 @@ package com.catalystapps.gaf.core
 
 					asset.gafBundle = this._gafBundle;
 				}
-			/*}
-			else
-			{
-				this._gafAsset = assets[0];
-			}*/
-
-			this.currentConfigIndex++;
-
-			if (this.currentConfigIndex >= this.gafAssetsIDs.length)
-			{
-				if (!ZipToGAFAssetConverter.keepImagesInRAM)
-				{
-					this.gfxData.removeImages();
-
-					if (ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
-					{
-						throw new Error("Impossible parameters combination! keepImagesInRAM = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
-					}
-				}
-
-				this.dispatchEvent(new Event(Event.COMPLETE));
 			}
-			else
+
+			if (!ZipToGAFAssetConverter.keepImagesInRAM)
 			{
-				this.configConvertTimeout = setTimeout(this.createGAFAsset, 40);
+				this.gfxData.removeImages();
 			}
+
+			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
 		private function createAsset(config: GAFAssetConfig): GAFAsset
@@ -285,17 +547,24 @@ package com.catalystapps.gaf.core
 
 			for each (var cScale: CTextureAtlasScale in config.allTextureAtlases)
 			{
-				for each (var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
+				if (isNaN(this._defaultScale) || this._defaultScale == cScale.scale)
 				{
-					for each (var taSource: CTextureAtlasSource in cCSF.sources)
+					for each(var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
 					{
-						if (this.pngImgs[taSource.source])
+						if (isNaN(this._defaultContentScaleFactor) || this._defaultContentScaleFactor == cCSF.csf)
 						{
-							this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id, this.pngImgs[taSource.source]);
-						}
-						else
-						{
-							this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
+							for each (var taSource: CTextureAtlasSource in cCSF.sources)
+							{
+								if (this.pngImgs[taSource.source])
+								{
+									this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id,
+									                      this.pngImgs[taSource.source]);
+								}
+								else
+								{
+									this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
+								}
+							}
 						}
 					}
 				}
@@ -349,7 +618,7 @@ package com.catalystapps.gaf.core
 			return configName.substring(startIndex, endIndex);
 		}
 
-		private function zipProcessError(text: String, id: int = 0):void
+		private function zipProcessError(text: String, id: int = 0): void
 		{
 			this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, text, id));
 		}
@@ -393,9 +662,9 @@ package com.catalystapps.gaf.core
 		 * Return converted <code>GAFAsset</code>. If GAF asset file created as Bundle - returns null.
 		 */
 		/*public function get gafAsset(): GAFAsset
-		{
-			return _gafAsset;
-		}*/
+		 {
+		 return _gafAsset;
+		 }*/
 
 		/**
 		 * Return converted <code>GAFBundle</code>. If GAF asset file created as single animation - returns null.

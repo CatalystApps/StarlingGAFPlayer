@@ -39,7 +39,8 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
-		public function CTextFieldObject(id: String, text: String, textFormat: TextFormat, width: Number, height: Number)
+		public function CTextFieldObject(id: String, text: String, textFormat: TextFormat, width: Number,
+		                                 height: Number)
 		{
 			_id = id;
 			_text = text;

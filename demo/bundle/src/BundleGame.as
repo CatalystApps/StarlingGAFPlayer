@@ -3,7 +3,9 @@ package
 	import starling.events.TouchPhase;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
+
 	import com.catalystapps.gaf.data.GAFBundle;
+
 	import starling.display.Sprite;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
@@ -23,16 +25,16 @@ package
 	public class BundleGame extends Sprite
 	{
 		private var gafBundle: GAFBundle;
-		
+
 		private var gafMovieClip: GAFMovieClip;
-		
+
 		private var currentAssetIndex: uint = 0;
-		
+
 		public function BundleGame()
 		{
 			this.loadZip();
 		}
-		
+
 		private function loadZip(): void
 		{
 			var request: URLRequest = new URLRequest("assets/bundle.zip");
@@ -44,7 +46,7 @@ package
 		private function onLoaded(event: Event): void
 		{
 			var zip: ByteArray = (event.target as URLLoader).data;
-			
+
 			var converter: ZipToGAFAssetConverter = new ZipToGAFAssetConverter();
 			converter.addEventListener(Event.COMPLETE, this.onConverted);
 			converter.addEventListener(ErrorEvent.ERROR, this.onError);
@@ -54,48 +56,48 @@ package
 		private function onConverted(event: Event): void
 		{
 			this.gafBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
-			
+
 			this.initGAFMovieClip();
-			
+
 			this.stage.addEventListener(TouchEvent.TOUCH, this.onTouchEvent);
 		}
 
 		private function onTouchEvent(event: TouchEvent): void
 		{
 			var touch: Touch = event.getTouch(this.stage, TouchPhase.BEGAN);
-			
-			if(touch)
+
+			if (touch)
 			{
 				this.currentAssetIndex++;
-				
-				if(this.currentAssetIndex >= this.gafBundle.assets.length)
+
+				if (this.currentAssetIndex >= this.gafBundle.assets.length)
 				{
 					this.currentAssetIndex = 0;
 				}
-				
+
 				this.initGAFMovieClip();
 			}
 		}
-		
+
 		private function initGAFMovieClip(): void
 		{
 			(this.gafMovieClip) ? this.gafMovieClip.dispose() : null;
-			
+
 			this.removeChildren();
-			
+
 			var gafAsset: GAFAsset = this.gafBundle.assets[this.currentAssetIndex];
-			
+
 			this.gafMovieClip = new GAFMovieClip(gafAsset);
-			
+
 			this.addChild(this.gafMovieClip);
-			
+
 			this.gafMovieClip.play();
 		}
-		
+
 		private function onError(event: ErrorEvent): void
 		{
 			trace(event);
 		}
-		
+
 	}
 }

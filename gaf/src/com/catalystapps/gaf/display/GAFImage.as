@@ -1,6 +1,7 @@
 package com.catalystapps.gaf.display
 {
 	import starling.display.Image;
+	import starling.textures.TextureSmoothing;
 
 	/**
 	 * @private
@@ -12,13 +13,13 @@ package com.catalystapps.gaf.display
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _assetTexture: IGAFTexture;
 
 		//--------------------------------------------------------------------------
@@ -37,6 +38,8 @@ package com.catalystapps.gaf.display
 			this._assetTexture = assetTexture;
 
 			super(this._assetTexture.texture);
+
+			this.smoothing = TextureSmoothing.NONE;
 		}
 
 		//--------------------------------------------------------------------------
@@ -100,13 +103,13 @@ package com.catalystapps.gaf.display
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Disposes all resources of the display object
 		 */
@@ -114,26 +117,26 @@ package com.catalystapps.gaf.display
 		{
 			(this.filter) ? this.filter.dispose() : null;
 			this.filter = null;
-			
+
 			super.dispose();
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get assetTexture(): IGAFTexture
 		{
 			return _assetTexture;
 		}
-		
+
 	}
 }

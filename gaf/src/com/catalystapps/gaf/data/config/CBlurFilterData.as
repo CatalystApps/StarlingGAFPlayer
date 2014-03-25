@@ -14,11 +14,11 @@ package com.catalystapps.gaf.data.config
 		public var alpha: Number = 1;
 		public var inner: Boolean;
 		public var knockout: Boolean;
-		
+
 		public function clone(): ICFilterData
 		{
 			var copy: CBlurFilterData = new CBlurFilterData();
-			
+
 			copy.blurX = this.blurX;
 			copy.blurY = this.blurY;
 			copy.color = this.color;
@@ -28,7 +28,7 @@ package com.catalystapps.gaf.data.config
 			copy.alpha = this.alpha;
 			copy.inner = this.inner;
 			copy.knockout = this.knockout;
-			
+
 			return copy;
 		}
 

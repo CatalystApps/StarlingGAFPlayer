@@ -19,8 +19,6 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 
 	import flash.geom.Matrix;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
 	import flash.geom.Rectangle;
 	import flash.text.TextFormat;
 
@@ -279,7 +277,8 @@ package com.catalystapps.gaf.data.converters
 					textFormat.letterSpacing = textFormatObj.letterSpacing;
 					textFormat.tabStops = textFormatObj.tabStops;
 
-					var textFieldObject: CTextFieldObject = new CTextFieldObject(tf.id, tf.text, textFormat, tf.width, tf.height);
+					var textFieldObject: CTextFieldObject = new CTextFieldObject(tf.id, tf.text, textFormat, tf.width,
+					                                                             tf.height);
 					textFieldObject.embedFonts = tf.embedFonts;
 					textFieldObject.multiline = tf.multiline;
 					textFieldObject.wordWrap = tf.wordWrap;

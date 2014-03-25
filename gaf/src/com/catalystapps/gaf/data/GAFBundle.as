@@ -10,24 +10,24 @@ package com.catalystapps.gaf.data
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _assets: Vector.<GAFAsset>;
 		private var _assetsDictionary: Object;
 
 		private var _assetsByLinkage: Object;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/** @private */
 		public function GAFBundle()
 		{
@@ -35,13 +35,13 @@ package com.catalystapps.gaf.data
 			this._assetsDictionary = new Object();
 			this._assetsByLinkage = new Object();
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Disposes all assets in bundle
 		 */
@@ -52,7 +52,7 @@ package com.catalystapps.gaf.data
 				asset.dispose();
 			}
 		}
-		
+
 		/** @private */
 		public function addGAFAsset(gafAsset: GAFAsset, linkage: String = null): void
 		{
@@ -71,7 +71,7 @@ package com.catalystapps.gaf.data
 				throw new Error("Bundle error. More then one asset use id: '" + gafAsset.id + "'");
 			}
 		}
-		
+
 		/**
 		 * Returns <code>GAFAsset</code> from bundle by ID
 		 */
@@ -93,25 +93,25 @@ package com.catalystapps.gaf.data
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Returns all <code>GAFAsset's</code> from bundle as <code>Vector</code>
 		 */
@@ -119,6 +119,6 @@ package com.catalystapps.gaf.data
 		{
 			return _assets;
 		}
-		
+
 	}
 }

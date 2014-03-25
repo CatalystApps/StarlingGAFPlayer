@@ -10,7 +10,6 @@ package com.catalystapps.gaf.display
 
 	import flash.geom.Matrix;
 
-	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.textures.Texture;
 

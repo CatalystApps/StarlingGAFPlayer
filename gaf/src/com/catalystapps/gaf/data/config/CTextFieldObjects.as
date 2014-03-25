@@ -38,7 +38,7 @@ package com.catalystapps.gaf.data.config
 
 		public function addTextFieldObject(textFieldObject: CTextFieldObject): void
 		{
-			if(!this._textFieldObjectsDictionary[textFieldObject.id])
+			if (!this._textFieldObjectsDictionary[textFieldObject.id])
 			{
 				this._textFieldObjectsDictionary[textFieldObject.id] = textFieldObject;
 			}
@@ -46,7 +46,7 @@ package com.catalystapps.gaf.data.config
 
 		public function getAnimationObject(id: String): CAnimationObject
 		{
-			if(this._textFieldObjectsDictionary[id])
+			if (this._textFieldObjectsDictionary[id])
 			{
 				return this._textFieldObjectsDictionary[id];
 			}

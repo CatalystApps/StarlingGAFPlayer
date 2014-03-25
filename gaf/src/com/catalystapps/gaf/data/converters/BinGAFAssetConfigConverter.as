@@ -21,7 +21,6 @@ package com.catalystapps.gaf.data.converters
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
 	import flash.utils.ByteArray;
@@ -466,7 +465,6 @@ package com.catalystapps.gaf.data.converters
 					}
 				}
 
-
 				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "",
 				                                   new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth,
 				                                                 elementHeight),
@@ -502,7 +500,8 @@ package com.catalystapps.gaf.data.converters
 				staticObjectID = tagContent.readUnsignedInt();
 				var l: uint = tagContent.readShort();
 				type = tagContent.readUTFBytes(l);
-				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", type + "",
+				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "",
+				                                                                type + "",
 				                                                                true));
 			}
 		}
@@ -520,7 +519,8 @@ package com.catalystapps.gaf.data.converters
 				staticObjectID = tagContent.readUnsignedInt();
 				var l: uint = tagContent.readShort();
 				type = tagContent.readUTFBytes(l);
-				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", type + "",
+				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "",
+				                                                                type + "",
 				                                                                false));
 			}
 		}
@@ -643,9 +643,10 @@ package com.catalystapps.gaf.data.converters
 				var url: String = tagContent.readUTFBytes(l);
 
 				/*l = tagContent.readShort();
-				var display: String = tagContent.readUTFBytes(l);*/
+				 var display: String = tagContent.readUTFBytes(l);*/
 
-				textFormat = new TextFormat(font, size, color, bold, italic, underline, url, target, align, leftMargin, rightMargin, blockIndent, leading);
+				textFormat = new TextFormat(font, size, color, bold, italic, underline, url, target, align, leftMargin,
+				                            rightMargin, blockIndent, leading);
 				textFormat.bullet = bullet;
 				textFormat.kerning = kerning;
 				//textFormat.display = display;
