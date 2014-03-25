@@ -1,5 +1,13 @@
 package com.catalystapps.gaf.core
 {
+	import flash.display.Bitmap;
+	import flash.system.LoaderContext;
+	import flash.display.Loader;
+	import flash.net.URLRequest;
+	import flash.events.IOErrorEvent;
+	import flash.net.URLLoaderDataFormat;
+	import flash.net.URLLoader;
+	import flash.utils.getQualifiedClassName;
 	import flash.events.ErrorEvent;
 	import flash.utils.setTimeout;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
@@ -97,6 +105,7 @@ package com.catalystapps.gaf.core
 		private var configConvertTimeout: Number;
 
 		private var gafAssetConfigSources: Object;
+		private var gafAssetConfigs: Object;
 		private var gafAssetsIDs: Array;
 		
 		private var pngImgs: Object;
@@ -109,6 +118,16 @@ package com.catalystapps.gaf.core
 		private var _defaultScale: Number;
 		private var _defaultContentScaleFactor: Number;
 		
+		///////////////////////////////////
+		
+		private var gafAssetsConfigURLs: Array;
+		private var gafAssetsConfigIndex: uint = 0;
+		private var gafAssetsConfigURLLoader: URLLoader;
+		
+		private var atlasSourceURLs: Array;
+		private var atlasSourceIndex: uint = 0;
+		private var atlasSourceLoader: Loader;
+		
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -119,6 +138,13 @@ package com.catalystapps.gaf.core
 		public function ZipToGAFAssetConverter()
 		{
 			this.gfxData = new GAFGFXData();
+			
+			this.gafAssetConfigs = new Object();
+			
+			this.gafAssetConfigSources = new Object();
+			this.gafAssetsIDs = new Array();
+			
+			this.pngImgs = new Object();
 		}
 		
 		//--------------------------------------------------------------------------
@@ -132,29 +158,260 @@ package com.catalystapps.gaf.core
 		 * Because convertation process is asynchronous use <code>Event.COMPLETE</code> listener to trigger successful convertation.
 		 * Use <code>ErrorEvent.ERROR</code> listener to trigger any convertation fail.
 		 * 
-		 * @param zipByteArray *.zip file binary
+		 * @param data *.zip file binary or File object represents a path to a *.gaf/*.json file or directory with *.gaf/*.json config files
 		 * @param defaultScale Scale value for <code>GAFAsset</code> that will be set by default
 		 * @param defaultContentScaleFactor Content scale factor (csf) value for <code>GAFAsset</code> that will be set by default
 		 */
-		public function convert(zipByteArray: ByteArray, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
+		public function convert(data: *, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
+			if(ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
+			{
+				throw new Error("Impossible parameters combination! keepImagesInRAM = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
+			}
+					
 			this._defaultScale = defaultScale;
 			this._defaultContentScaleFactor = defaultContentScaleFactor;
 			
-			this._zip = new FZip();
-			this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);			
-			this._zip.loadBytes(zipByteArray);
-			
-			this._zipLoader = new FZipLibrary();
-			this._zipLoader.formatAsBitmapData(".png");
-			this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
-			this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
-			this._zipLoader.addZip(this._zip);
+			if(data is ByteArray)
+			{
+				this._zip = new FZip();
+				this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);			
+				this._zip.loadBytes(data);
+				
+				this._zipLoader = new FZipLibrary();
+				this._zipLoader.formatAsBitmapData(".png");
+				this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
+				this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
+				this._zipLoader.addZip(this._zip);
+			}
+			else
+			{
+				this.gafAssetsConfigURLs = new Array();
+				
+				if(data is Array)
+				{
+					for each(var file: * in data)
+					{
+						this.processFile(file);
+					}
+				}
+				else
+				{
+					this.processFile(data);
+				}
+				
+				if(this.gafAssetsConfigURLs.length)
+				{
+					this.loadConfig();
+				}
+				else
+				{
+					this.zipProcessError("No GAF animation files found", 5);
+				}
+			}
 		}
 
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
+		//
+		//--------------------------------------------------------------------------
+		
+		private function processFile(data: *): void
+		{
+			if(getQualifiedClassName(data) == "flash.filesystem::File")
+			{
+				if(!data["exists"] || data["isHidden"])
+				{
+					this.zipProcessError("File or directory not found: '" + data["url"] + "'", 4);
+				}
+				else
+				{
+					var url: String;
+					
+					if(data["isDirectory"])
+					{
+						var files: Array = data["getDirectoryListing"]();
+						
+						for each(var file: * in files)
+						{
+							if(file["exists"] && !file["isHidden"] && !file["isDirectory"])
+							{
+								url = file["url"];
+								
+								if(this.isConfigURL(url))
+								{
+									this.gafAssetsConfigURLs.push(url);
+								}
+							}
+						}
+					}
+					else
+					{
+						url = data["url"];
+						
+						if(this.isConfigURL(url))
+						{
+							this.gafAssetsConfigURLs.push(url);
+						}
+					}
+				}
+			}
+		}
+		
+		private function loadConfig(): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			
+			this.gafAssetsConfigURLLoader = new URLLoader();
+			
+			if(this.isJSONConfig(url))
+			{
+				this.gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.TEXT;
+			}
+			else
+			{
+				this.gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			}
+			
+			this.gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIoError);
+			this.gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigUrlLoaderComplete);
+			this.gafAssetsConfigURLLoader.load(new URLRequest(url));
+			
+		}
+
+		private function onConfigUrlLoaderComplete(event: Event): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			
+			this.gafAssetsIDs.push(url);
+					
+			this.gafAssetConfigSources[url] = this.gafAssetsConfigURLLoader.data;
+			
+			this.gafAssetsConfigIndex++;
+			
+			if(this.gafAssetsConfigIndex >= this.gafAssetsConfigURLs.length)
+			{
+				this.convertConfig();
+			}
+			else
+			{
+				this.loadConfig();
+			}
+		}
+		
+		private function findAllAtlasURLs(): void
+		{
+			this.atlasSourceURLs = new Array();
+			
+			var config: GAFAssetConfig;
+			
+			for(var id: String in this.gafAssetConfigs)
+			{
+				config = this.gafAssetConfigs[id];
+				
+				var folderURL: String = this.getFolderURL(id); 
+				
+				for each(var scale: CTextureAtlasScale in config.allTextureAtlases)
+				{
+					if(isNaN(this._defaultScale) || scale.scale == this._defaultScale)
+					{
+						for each(var csf: CTextureAtlasCSF in scale.allContentScaleFactors)
+						{
+							if(isNaN(this._defaultContentScaleFactor) || csf.csf == this._defaultContentScaleFactor)
+							{
+								for each(var source: CTextureAtlasSource in csf.sources)
+								{
+									var url: String = folderURL + source.source;
+									
+									if(this.atlasSourceURLs.indexOf(url) == -1)
+									{
+										this.atlasSourceURLs.push(url);
+									}										
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			if(this.atlasSourceURLs.length)
+			{
+				this.loadPNG();
+			}
+			else
+			{
+				this.createGAFAssets();
+			}
+		}
+		
+		private function loadPNG(): void
+		{
+			this.atlasSourceLoader = new Loader();
+			var url:URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
+			
+			this.atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
+			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadIOError);
+			
+			this.atlasSourceLoader.load(url, new LoaderContext());
+		}
+
+		private function onPNGLoadIOError(event: IOErrorEvent): void
+		{
+			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
+		}
+
+		private function onPNGLoadComplete(event: Event): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
+			
+			this.pngImgs[fileName] = (this.atlasSourceLoader.content as Bitmap).bitmapData;
+			
+			this.atlasSourceIndex++;
+			
+			if(this.atlasSourceIndex >= this.atlasSourceURLs.length)
+			{
+				this.createGAFAssets();
+			}
+			else
+			{
+				this.loadPNG();
+			}
+		}
+		
+		private function getFolderURL(url: String): String
+		{
+			var cutURL: String = url.split("?")[0];
+			
+			var lastIndex: int = cutURL.lastIndexOf("/");
+			
+			return cutURL.slice(0, lastIndex+1);
+		}
+
+		private function onConfigIoError(event: IOErrorEvent): void
+		{
+			this.zipProcessError("Error occurred while loading " + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex], 5);
+		}
+		
+		private function isConfigURL(url: String): Boolean
+		{
+			return (this.isJSONConfig(url) || this.isGAFConfig(url));
+		}
+		
+		private function isJSONConfig(url: String): Boolean
+		{
+			return (url.split("?")[0].split(".").pop().toLowerCase() == "json");
+		}
+		
+		private function isGAFConfig(url: String): Boolean
+		{
+			return (url.split("?")[0].split(".").pop().toLowerCase() == "gaf");
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		// 
 		//
 		//--------------------------------------------------------------------------
 		
@@ -169,9 +426,6 @@ package com.catalystapps.gaf.core
 			
 			this.pngImgs = new Object();
 			
-			this.gafAssetConfigSources = new Object();
-			this.gafAssetsIDs = new Array();
-						
 			for(var i: uint = 0; i < length; i++)
 			{
 				zipFile = this._zip.getFileAt(i);
@@ -197,112 +451,129 @@ package com.catalystapps.gaf.core
 				}
 			}
 			
-			this.createGAFAsset();
+			///////////////////////////////////
+			
+			this.convertConfig();
 		}
 		
-		private function createGAFAsset(): void
+		private function convertConfig(): void
 		{
 			clearTimeout(this.configConvertTimeout);
 			
+			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
+			
 			var config: GAFAssetConfig;
-			var configSource: Object = this.gafAssetConfigSources[this.gafAssetsIDs[this.currentConfigIndex]];
+			var configSource: Object = this.gafAssetConfigSources[configID];
 			
-//			try
-//			{
-				if (configSource is ByteArray)
-				{
-					config = BinGAFAssetConfigConverter.convert(configSource as ByteArray, this._defaultScale, this._defaultContentScaleFactor);
-				}	
-				else 
-				{
-					config = JsonGAFAssetConfigConverter.convert(configSource as String, this._defaultScale, this._defaultContentScaleFactor);			
-				}
-//			}
-//			catch(error: Error)
-//			{
-//				this.zipProcessError(error.message, 4);
-//				
-//				return;
-//			}
-			
-			///////////////////////////////////
-			
-			///////////////////////////////////
-			
-			for each(var cScale: CTextureAtlasScale in config.allTextureAtlases)
+			if (configSource is ByteArray)
 			{
-				for each(var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
-				{
-					for each(var taSource: CTextureAtlasSource in cCSF.sources)
-					{
-						if(this.pngImgs[taSource.source])
-						{
-							this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id, this.pngImgs[taSource.source]);
-						}
-						else
-						{
-							this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
-						}
-					}
-				}
+				config = BinGAFAssetConfigConverter.convert(configSource as ByteArray, this._defaultScale, this._defaultContentScaleFactor);
+			}	
+			else 
+			{
+				config = JsonGAFAssetConfigConverter.convert(configSource as String, this._defaultScale, this._defaultContentScaleFactor);			
 			}
 			
-			///////////////////////////////////
-			
-			var asset: GAFAsset = new GAFAsset(config);
-			asset.id = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
-			
-			asset.gafgfxData = this.gfxData;
-			
-			///////////////////////////////////
-			
-			switch(ZipToGAFAssetConverter.actionWithAtlases)
-			{
-				case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
-					asset.loadInVideoMemory(GAFAsset.CONTENT_ALL);
-					break;
-				
-				case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
-					asset.loadInVideoMemory(GAFAsset.CONTENT_DEFAULT);
-					break;
-			}
-			
-			///////////////////////////////////
-			
-			if(this.gafAssetsIDs.length > 1)
-			{
-				if(!this._gafBundle)
-				{
-					this._gafBundle = new GAFBundle();
-				}
-				
-				this._gafBundle.addGAFAsset(asset);
-			}
-			else
-			{
-				this._gafAsset = asset;
-			}
+			this.gafAssetConfigs[configID] = config;
 			
 			this.currentConfigIndex++;
 			
 			if(this.currentConfigIndex >= this.gafAssetsIDs.length)
 			{
-				if(!ZipToGAFAssetConverter.keepImagesInRAM)
+				if(this.gafAssetsConfigURLs && gafAssetsConfigURLs.length)
 				{
-					this.gfxData.removeImages();
-					
-					if(ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
-					{
-						throw new Error("Impossible parameters combination! keepImagesInRAM = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
-					}
+					this.findAllAtlasURLs();
 				}
-			
-				this.dispatchEvent(new Event(Event.COMPLETE));
+				else
+				{
+					this.createGAFAssets();
+				}
 			}
 			else
 			{
-				this.configConvertTimeout = setTimeout(this.createGAFAsset, 40);
+				this.configConvertTimeout = setTimeout(this.convertConfig, 40);
 			}
+		}
+		
+		private function createGAFAssets(): void
+		{
+			var config: GAFAssetConfig;
+			var configID: String;
+			
+			for(var i: uint = 0; i < this.gafAssetsIDs.length; i++)
+			{
+				configID = this.gafAssetsIDs[i];
+				config = this.gafAssetConfigs[configID];
+				
+				///////////////////////////////////
+				
+				for each(var cScale: CTextureAtlasScale in config.allTextureAtlases)
+				{
+					if(isNaN(this._defaultScale) || this._defaultScale == cScale.scale)
+					{
+						for each(var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
+						{
+							if(isNaN(this._defaultContentScaleFactor) || this._defaultContentScaleFactor == cCSF.csf)
+							{
+								for each(var taSource: CTextureAtlasSource in cCSF.sources)
+								{
+									if(this.pngImgs[taSource.source])
+									{
+										this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id, this.pngImgs[taSource.source]);
+									}
+									else
+									{
+										this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				///////////////////////////////////
+				
+				var asset: GAFAsset = new GAFAsset(config);
+				asset.id = this.getAssetId(configID);
+				
+				asset.gafgfxData = this.gfxData;
+				
+				///////////////////////////////////
+				
+				switch(ZipToGAFAssetConverter.actionWithAtlases)
+				{
+					case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
+						asset.loadInVideoMemory(GAFAsset.CONTENT_ALL);
+						break;
+					
+					case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
+						asset.loadInVideoMemory(GAFAsset.CONTENT_DEFAULT);
+						break;
+				}
+				
+				///////////////////////////////////
+				
+				if(this.gafAssetsIDs.length > 1)
+				{
+					if(!this._gafBundle)
+					{
+						this._gafBundle = new GAFBundle();
+					}
+					
+					this._gafBundle.addGAFAsset(asset);
+				}
+				else
+				{
+					this._gafAsset = asset;
+				}
+			}
+			
+			if(!ZipToGAFAssetConverter.keepImagesInRAM)
+			{
+				this.gfxData.removeImages();
+			}
+		
+			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
 		private function getAssetId(configName: String): String
