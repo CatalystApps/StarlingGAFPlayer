@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.display
 {
+	import starling.textures.TextureSmoothing;
 	import starling.display.Image;
 	import starling.display.Quad;
 	import starling.display.Sprite;
@@ -60,6 +61,8 @@ package com.catalystapps.gaf.display
 		
 		private var _inPlay: Boolean;
 		private var _loop: Boolean = true;
+		
+		private var _smoothing: String = TextureSmoothing.BILINEAR;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -451,6 +454,7 @@ package com.catalystapps.gaf.display
 			{
 				image = new GAFImage(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.textureElementID, this._mappedAssetID));
 				image.name = animationObjectConfig.instanceID;
+				image.smoothing = this._smoothing;
 				
 				if(animationObjectConfig.mask)
 				{
@@ -607,5 +611,32 @@ package com.catalystapps.gaf.display
 			_loop = loop;
 		}
 		
+		/**
+		 * The smoothing filter that is used for the texture. Possible values are <code>TextureSmoothing.BILINEAR, TextureSmoothing.NONE, TextureSmoothing.TRILINEAR</code>
+		 */
+		public function set smoothing(value: String): void
+		{
+			if(TextureSmoothing.isValid(value))
+			{
+				this._smoothing = value;
+				
+				var image: GAFImage;
+				
+				for each(image in this.imagesDictionary)
+				{
+					image.smoothing = this._smoothing;
+				}
+				
+				for each(image in this.masksDictionary)
+				{
+					image.smoothing = this._smoothing;
+				}
+			}
+		}
+		
+		public function get smoothing(): String
+		{
+			return this._smoothing;
+		}
 	}
 }

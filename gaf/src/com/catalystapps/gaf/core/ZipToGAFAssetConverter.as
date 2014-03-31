@@ -184,7 +184,7 @@ package com.catalystapps.gaf.core
 				this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
 				this._zipLoader.addZip(this._zip);
 			}
-			else
+			else if(data is Array || getQualifiedClassName(data) == "flash.filesystem::File")
 			{
 				this.gafAssetsConfigURLs = new Array();
 				
@@ -209,11 +209,56 @@ package com.catalystapps.gaf.core
 					this.zipProcessError("No GAF animation files found", 5);
 				}
 			}
+			else if(data is Object && data.configs && data.atlases)
+			{
+				this.parseObject(data);
+			}
+			else
+			{
+				this.zipProcessError("Unknown data format.", 6);
+			}
 		}
 
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
+		//
+		//--------------------------------------------------------------------------
+		
+		private function parseObject(data: Object): void
+		{
+			this.pngImgs = new Object();
+			
+			for each(var configObj: Object in data.configs)
+			{
+				this.gafAssetsIDs.push(configObj.name);
+				
+				var ba: ByteArray = configObj.config as ByteArray;
+				ba.position = 0;
+				
+				if(configObj.type == "json")
+				{
+					this.gafAssetConfigSources[configObj.name] = ba.readUTFBytes(ba.length);
+				}
+				else if(configObj.type == "gaf")
+				{
+					this.gafAssetConfigSources[configObj.name] = ba;
+				}
+			}
+			
+			for each(var atlasObj: Object in data.atlases)
+			{
+				this.pngImgs[atlasObj.name] = atlasObj.bitmapData;
+			}
+			
+			///////////////////////////////////
+			
+			this.convertConfig();
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		// 
 		//
 		//--------------------------------------------------------------------------
 		
