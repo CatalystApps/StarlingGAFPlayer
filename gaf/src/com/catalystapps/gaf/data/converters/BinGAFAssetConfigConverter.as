@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CStage;
 	import flash.utils.CompressionAlgorithm;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
@@ -39,6 +40,9 @@ package com.catalystapps.gaf.data.converters
 		private static const TAG_DEFINE_ANIMATION_FRAMES: uint = 4;
 		private static const TAG_DEFINE_NAMED_PARTS: uint = 5;
 		private static const TAG_DEFINE_SEQUENCES: uint = 6;
+		
+		
+		private static const TAG_DEFINE_STAGE: uint = 9;
 		
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
@@ -119,6 +123,9 @@ package com.catalystapps.gaf.data.converters
 			
 			switch (tagID)
 			{
+				case BinGAFAssetConfigConverter.TAG_DEFINE_STAGE:
+					readStageConfig(tagContent, config);
+					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
 					readTextureAtlasConfig(tagContent, config, defaultScale, defaultContentScaleFactor);
 					break;
@@ -144,6 +151,19 @@ package com.catalystapps.gaf.data.converters
 					break;
 			}
 			 
+		}
+
+		private static function readStageConfig(tagContent: ByteArray, config: GAFAssetConfig): void
+		{
+			var stageConfig: CStage = new CStage();
+			
+			stageConfig.fps = tagContent.readByte();
+			stageConfig.color = tagContent.readInt();
+			stageConfig.width = tagContent.readUnsignedShort();
+			stageConfig.height = tagContent.readUnsignedShort();
+			
+			trace(stageConfig.fps, stageConfig.color, stageConfig.width, stageConfig.height);
+			config.stageConfig = stageConfig;
 		}
 
 		private static function readAnimationFrames(tagContent: ByteArray, config: GAFAssetConfig, animationFramesCount: uint): void

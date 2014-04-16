@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
@@ -21,6 +22,7 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		private var _version: String;
+		private var _stageConfig: CStage;
 		
 		private var _allTextureAtlases: Vector.<CTextureAtlasScale>;
 		private var _textureAtlas: CTextureAtlasScale;
@@ -182,6 +184,16 @@ package com.catalystapps.gaf.data
 		public function get warnings(): Vector.<String>
 		{
 			return _warnings;
+		}
+
+		public function get stageConfig(): CStage
+		{
+			return _stageConfig;
+		}
+
+		public function set stageConfig(stageConfig: CStage): void
+		{
+			_stageConfig = stageConfig;
 		}
 		
 	}

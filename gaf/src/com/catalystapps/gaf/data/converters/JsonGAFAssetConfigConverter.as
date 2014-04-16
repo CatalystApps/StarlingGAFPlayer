@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
@@ -38,6 +39,13 @@ package com.catalystapps.gaf.data.converters
 			var jsonObject: Object = JSON.parse(json);
 			
 			var result: GAFAssetConfig = new GAFAssetConfig(jsonObject.version);
+			
+			///////////////////////////////////////////////////////////////
+			
+			if (jsonObject.stageConfig)
+			{
+				result.stageConfig = new CStage().clone(jsonObject.stageConfig);
+			}
 			
 			///////////////////////////////////////////////////////////////
 			
