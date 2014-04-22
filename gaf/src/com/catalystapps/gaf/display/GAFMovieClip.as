@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.display
 {
+	import flash.geom.Rectangle;
 	import starling.textures.TextureSmoothing;
 	import starling.display.Image;
 	import starling.display.Quad;
@@ -63,6 +64,8 @@ package com.catalystapps.gaf.display
 		private var _loop: Boolean = true;
 		
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
+		
+		private var _useClipping: Boolean;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -637,6 +640,25 @@ package com.catalystapps.gaf.display
 		public function get smoothing(): String
 		{
 			return this._smoothing;
+		}
+
+		public function get useClipping(): Boolean
+		{
+			return this._useClipping;
+		}
+
+		public function set useClipping(value: Boolean): void
+		{
+			this._useClipping = value;
+			
+			if (this._useClipping)
+			{
+				this.clipRect = new Rectangle(0,0, this._gafAsset.config.stageConfig.width, this._gafAsset.config.stageConfig.height);
+			}
+			else
+			{
+				this.clipRect = null;
+			}
 		}
 	}
 }
