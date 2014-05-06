@@ -141,28 +141,8 @@ package com.catalystapps.gaf.data.config
 			var colorMatrixFilterConfig: CColorMatrixFilterData = getColorMatrixFilter();			
 			
 			if (colorMatrixFilterConfig)
-			{
-				i = 0;
-				
-				var tmpMatrix: Array = [];
-				
-	            for (var y:int=0; y<4; ++y)
-	            {
-	                for (var x:int=0; x<5; ++x)
-	                {
-	                    tmpMatrix[int(i+x)] = 
-	                        colorMatrixFilterConfig.matrix[i]        * params[x]           +
-	                        colorMatrixFilterConfig.matrix[int(i+1)] * params[int(x +  5)] +
-	                        colorMatrixFilterConfig.matrix[int(i+2)] * params[int(x + 10)] +
-	                        colorMatrixFilterConfig.matrix[int(i+3)] * params[int(x + 15)] +
-	                        (x == 4 ? colorMatrixFilterConfig.matrix[int(i+4)] : 0);
-	                }
-	                
-	                i+=5;
-	            }
-				
-				colorMatrixFilterConfig.matrix = [];
-				copyArray(tmpMatrix, colorMatrixFilterConfig.matrix);
+			{								
+				return WarningConstants.CANT_COLOR_ADJ_CT;
 			}
 			else
 			{
