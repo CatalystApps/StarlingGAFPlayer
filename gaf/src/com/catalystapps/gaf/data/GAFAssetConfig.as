@@ -3,6 +3,7 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
+	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 
@@ -23,6 +24,7 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		private var _version: String;
+		private var _stageConfig: CStage;
 
 		private var _id: String;
 
@@ -219,6 +221,16 @@ package com.catalystapps.gaf.data
 		public function set namedParts(value: Object): void
 		{
 			this._namedParts = value;
+		}
+
+		public function get stageConfig(): CStage
+		{
+			return _stageConfig;
+		}
+
+		public function set stageConfig(stageConfig: CStage): void
+		{
+			_stageConfig = stageConfig;
 		}
 	}
 }

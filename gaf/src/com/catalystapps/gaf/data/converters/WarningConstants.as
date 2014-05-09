@@ -14,5 +14,6 @@ package com.catalystapps.gaf.data.converters
 		public static const CANT_BLUR_GLOW: String = "Warning! Online preview is not able to display Glow and Blur filters applied to one object (flash player technical limitation). All other runtimes will display this correctly.";
 		public static const CANT_BLUR_DROP: String = "Warning! Online preview is not able to display Drop Shadow and Blur filters applied to one object (flash player technical limitation). All other runtimes will display this correctly.";
 		public static const FILTERS_UNDER_MASK: String = "Warning! Animation contains objects with filters under mask! Online preview is not able to display filters applied under masks (flash player technical limitation). All other runtimes will display this correctly.";
+		public static const CANT_COLOR_ADJ_CT: String = "Warning! Animation contains objects with Tint and Adjust Color filter applied. This combination is not supported!";
 	}
 }

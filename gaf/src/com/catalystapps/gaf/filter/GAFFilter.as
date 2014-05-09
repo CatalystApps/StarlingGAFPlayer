@@ -4,6 +4,8 @@ package com.catalystapps.gaf.filter
 	import com.catalystapps.gaf.data.config.CColorMatrixFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.ICFilterData;
+	import com.catalystapps.gaf.utils.VectorUtils;
+	import com.catalystapps.gaf.utils.VectorUtils;
 
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
@@ -36,13 +38,13 @@ package com.catalystapps.gaf.filter
 		private static const TINTED_PROGRAM_NAME: String = "BF_t";
 		private static const COLOR_TRANSFORM_PROGRAM_NAME: String = "CMF";
 		private const MAX_SIGMA: Number = 2.0;
-		private static const IDENTITY: Array = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
+		private static const IDENTITY: Vector.<Number> = new <Number>[1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
 		private static const MIN_COLOR: Vector.<Number> = new <Number>[0, 0, 0, 0.0001];
 
 		private var mNormalProgram: Program3D;
 		private var mTintedProgram: Program3D;
-		private var cUserMatrix: Vector.<Number> = new Vector.<Number>();
-		private var cShaderMatrix: Vector.<Number> = new Vector.<Number>();
+		private var cUserMatrix: Vector.<Number> = new Vector.<Number>(20, true);
+		private var cShaderMatrix: Vector.<Number> = new Vector.<Number>(20, true);
 		private var cShaderProgram: Program3D;
 
 		private var mOffsets: Vector.<Number> = new <Number>[0, 0, 0, 0];
@@ -136,8 +138,8 @@ package com.catalystapps.gaf.filter
 
 		private function resetColorMatrixFilter(): void
 		{
-			cUserMatrix = new Vector.<Number>();
-			cShaderMatrix = new Vector.<Number>();
+			cUserMatrix = new Vector.<Number>(20, true);
+			cShaderMatrix = new Vector.<Number>(20, true);
 			changeColor = false;
 		}
 
@@ -174,10 +176,8 @@ package com.catalystapps.gaf.filter
 
 		private function updateColorMatrixFilter(cColorMatrixFilterData: CColorMatrixFilterData): void
 		{
-			var value: Vector.<Number> = convertToVector(cColorMatrixFilterData.matrix);
+			var value: Vector.<Number> = cColorMatrixFilterData.matrix;
 
-			cUserMatrix = new Vector.<Number>();
-			cShaderMatrix = new Vector.<Number>();
 			changeColor = false;
 
 			if (value && value.length != 20)
@@ -187,35 +187,15 @@ package com.catalystapps.gaf.filter
 
 			if (value == null)
 			{
-				cUserMatrix.length = 0;
-				cUserMatrix.push.apply(cUserMatrix, IDENTITY);
+				VectorUtils.copyMatrix(cUserMatrix, IDENTITY);
 			}
 			else
 			{
 				changeColor = true;
-				copyMatrix(value, cUserMatrix);
+				VectorUtils.copyMatrix(cUserMatrix, value);
 			}
 
 			updateShaderMatrix();
-		}
-
-		private function copyMatrix(from: Vector.<Number>, to: Vector.<Number>): void
-		{
-			for (var i: int = 0; i < 20; ++i)
-			{
-				to[i] = from[i];
-			}
-		}
-
-		private function convertToVector(array: Array): Vector.<Number>
-		{
-			var vector: Vector.<Number> = new Vector.<Number>();
-			for (var i: uint = 0; i < 20; i++)
-			{
-				vector[i] = array[i];
-			}
-
-			return vector;
 		}
 
 		/** @private */
@@ -445,20 +425,18 @@ package com.catalystapps.gaf.filter
 			}
 		}
 
+		[Inline]
 		private function updateShaderMatrix(): void
 		{
 			// the shader needs the matrix components in a different order,
 			// and it needs the offsets in the range 0-1.
 
-			cShaderMatrix.length = 0;
-			cShaderMatrix.push(
-					cUserMatrix[0], cUserMatrix[1], cUserMatrix[2], cUserMatrix[3],
+			VectorUtils.fillMatrix(cShaderMatrix, cUserMatrix[0], cUserMatrix[1], cUserMatrix[2], cUserMatrix[3],
 					cUserMatrix[5], cUserMatrix[6], cUserMatrix[7], cUserMatrix[8],
 					cUserMatrix[10], cUserMatrix[11], cUserMatrix[12], cUserMatrix[13],
 					cUserMatrix[15], cUserMatrix[16], cUserMatrix[17], cUserMatrix[18],
 					cUserMatrix[4], cUserMatrix[9], cUserMatrix[14],
-					cUserMatrix[19]
-			);
+					cUserMatrix[19]);
 		}
 
 		//--------------------------------------------------------------------------

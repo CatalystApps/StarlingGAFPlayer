@@ -10,6 +10,7 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
@@ -24,6 +25,7 @@ package com.catalystapps.gaf.data.converters
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
 	import flash.utils.ByteArray;
+	import flash.utils.CompressionAlgorithm;
 	import flash.utils.Endian;
 
 	/**
@@ -48,6 +50,8 @@ package com.catalystapps.gaf.data.converters
 		private static const TAG_DEFINE_TEXT_FIELDS: uint = 7;
 		private static const TAG_DEFINE_ATLAS2: uint = 8;
 
+		private static const TAG_DEFINE_STAGE: uint = 9;
+
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
 		private static const FILTER_BLUR: uint = 1;
@@ -58,17 +62,25 @@ package com.catalystapps.gaf.data.converters
 		//
 		//  PUBLIC METHODS
 		//
-		//--------------------------------------------------------------------------	
+		//--------------------------------------------------------------------------
 
 		public static function convert(configID: String, bytes: ByteArray, defaultScale: Number = NaN,
 		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfigs
 		{
 			bytes.endian = Endian.LITTLE_ENDIAN;
 
-			var compression: int = bytes.readInt();
+			var header: int = bytes.readInt();
 			var versionMajor: int = bytes.readByte();
 			var versionMinor: int = bytes.readByte();
 			var fileLength: uint = bytes.readUnsignedInt();
+
+			switch (header)
+			{
+				case SIGNATURE_GAC:
+					bytes = decompressConfig(bytes);
+					break;
+			}
+
 			var framesCount: uint = bytes.readShort();
 			var animationBounds: Rectangle = new Rectangle(bytes.readFloat(), bytes.readFloat(), bytes.readFloat(),
 			                                               bytes.readFloat());
@@ -95,6 +107,18 @@ package com.catalystapps.gaf.data.converters
 			return configs;
 		}
 
+		private static function decompressConfig(bytes: ByteArray): ByteArray
+		{
+			var uncompressedBA: ByteArray = new ByteArray();
+			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
+
+			bytes.readBytes(uncompressedBA);
+
+			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
+
+			return uncompressedBA;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
@@ -113,6 +137,9 @@ package com.catalystapps.gaf.data.converters
 
 			switch (tagID)
 			{
+				case BinGAFAssetConfigConverter.TAG_DEFINE_STAGE:
+					readStageConfig(tagContent, config);
+					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
 					readTextureAtlasConfig(tagContent, config, defaultScale, defaultContentScaleFactor, tagID);
@@ -141,7 +168,19 @@ package com.catalystapps.gaf.data.converters
 					trace(WarningConstants.UNSUPPORTED_TAG);
 					break;
 			}
+		}
 
+		private static function readStageConfig(tagContent: ByteArray, config: GAFAssetConfig): void
+		{
+			var stageConfig: CStage = new CStage();
+
+			stageConfig.fps = tagContent.readByte();
+			stageConfig.color = tagContent.readInt();
+			stageConfig.width = tagContent.readUnsignedShort();
+			stageConfig.height = tagContent.readUnsignedShort();
+
+			trace(stageConfig.fps, stageConfig.color, stageConfig.width, stageConfig.height);
+			config.stageConfig = stageConfig;
 		}
 
 		private static function readAnimationFrames(tagContent: ByteArray, config: GAFAssetConfig,
@@ -154,7 +193,7 @@ package com.catalystapps.gaf.data.converters
 			var hasMask: Boolean;
 			var hasEffect: Boolean;
 			var stateID: uint;
-			var zindex: int;
+			var zIndex: int;
 			var alpha: Number;
 			var matrix: Matrix;
 			var maskID: String;
@@ -203,7 +242,7 @@ package com.catalystapps.gaf.data.converters
 					hasEffect = tagContent.readBoolean();
 
 					stateID = tagContent.readUnsignedInt();
-					zindex = tagContent.readInt();
+					zIndex = tagContent.readInt();
 					alpha = tagContent.readFloat();
 					matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
 					                    tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
@@ -224,9 +263,9 @@ package com.catalystapps.gaf.data.converters
 
 					if (hasColorTransform)
 					{
-						var params: Array = [tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
+						var params: Vector.<Number> = new <Number>[tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
 							tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat()];
-
+						params.fixed = true;
 						checkAndInitFilter();
 
 						filter.addColorTransform(params);
@@ -275,7 +314,7 @@ package com.catalystapps.gaf.data.converters
 					}
 
 					instance = new CAnimationFrameInstance(stateID + "");
-					instance.update(zindex, matrix, alpha, maskID, filter);
+					instance.update(zIndex, matrix, alpha, maskID, filter);
 
 					if (maskID && filter)
 					{
@@ -333,7 +372,7 @@ package com.catalystapps.gaf.data.converters
 
 		private static function readColorMatrixFilter(source: ByteArray, filter: CFilter): String
 		{
-			var matrix: Array = [];
+			var matrix: Vector.<Number> = new Vector.<Number>(20, true);
 			for (var i: uint = 0; i < 20; i++)
 			{
 				matrix.push(source.readFloat());
@@ -498,6 +537,21 @@ package com.catalystapps.gaf.data.converters
 			{
 				objectID = tagContent.readUnsignedInt();
 				staticObjectID = tagContent.readUnsignedInt();
+				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", "texture", true));
+			}
+		}
+
+		private static function readAnimationMasks2(tagContent: ByteArray, config: GAFAssetConfig): void
+		{
+			var length: int = tagContent.readUnsignedInt();
+			var objectID: int;
+			var staticObjectID: int;
+			var type: String;
+
+			for (var i: uint = 0; i < length; i++)
+			{
+				objectID = tagContent.readUnsignedInt();
+				staticObjectID = tagContent.readUnsignedInt();
 				var l: uint = tagContent.readShort();
 				type = tagContent.readUTFBytes(l);
 				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "",
@@ -517,11 +571,26 @@ package com.catalystapps.gaf.data.converters
 			{
 				objectID = tagContent.readUnsignedInt();
 				staticObjectID = tagContent.readUnsignedInt();
+				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", "texture", false));
+			}
+		}
+
+		private static function readAnimationObjects2(tagContent: ByteArray, config: GAFAssetConfig): void
+		{
+			var length: int = tagContent.readUnsignedInt();
+			var objectID: int;
+			var staticObjectID: int;
+			var type: String;
+
+			for (var i: uint = 0; i < length; i++)
+			{
+				objectID = tagContent.readUnsignedInt();
+				staticObjectID = tagContent.readUnsignedInt();
 				var l: uint = tagContent.readShort();
 				type = tagContent.readUTFBytes(l);
 				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "",
-				                                                                type + "",
-				                                                                false));
+								type + "",
+						false));
 			}
 		}
 

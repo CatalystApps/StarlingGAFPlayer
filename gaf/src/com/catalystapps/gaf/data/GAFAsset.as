@@ -63,7 +63,7 @@ package com.catalystapps.gaf.data
 		}
 
 		/**
-		 * Load all all grafical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
+		 * Load all all graphical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
 		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
 		 * before asset conversion)
 		 *
@@ -71,8 +71,7 @@ package com.catalystapps.gaf.data
 		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN,
-		                                  csf: Number = NaN): void
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
@@ -91,8 +90,8 @@ package com.catalystapps.gaf.data
 							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf);
 
 							csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scaleConfig.scale,
-							                                                                                csfConfig.csf),
-							                                                   csfConfig);
+											csfConfig.csf),
+									csfConfig);
 						}
 					}
 					return;
@@ -108,8 +107,8 @@ package com.catalystapps.gaf.data
 					this._gafgfxData.createTextures(this.scale, this.contentScaleFactor);
 
 					csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale,
-					                                                                                this.contentScaleFactor),
-					                                                   csfConfig);
+									this.contentScaleFactor),
+							csfConfig);
 					return;
 
 				case CONTENT_SPECIFY:
@@ -123,21 +122,20 @@ package com.catalystapps.gaf.data
 					this._gafgfxData.createTextures(scale, csf);
 
 					csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf),
-					                                                   csfConfig);
+							csfConfig);
 					return;
 			}
 
 		}
 
 		/**
-		 * Unload all all grafical data connected with this asset from device GPU memory. Used in case of manual control of video memory usage
+		 * Unload all all graphical data connected with this asset from device GPU memory. Used in case of manual control of video memory usage
 		 *
 		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
 		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 */
-		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN,
-		                                      csf: Number = NaN): void
+		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
 		{
 			var csfConfig: CTextureAtlasCSF;
 
@@ -227,7 +225,7 @@ package com.catalystapps.gaf.data
 		//--------------------------------------------------------------------------
 
 		/**
-		 * Asset idintifier (name given at animation's upload or assigned by developer)
+		 * Asset identifier (name given at animation's upload or assigned by developer)
 		 */
 		public function get id(): String
 		{
@@ -260,7 +258,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Texture atlas scale that will be used for <code>GAFMovieClip</code> creation. To create <code>GAFMovieClip's</code>
-		 * with different scale assign apropriate scale to <code>GAFAsset</code> and only after that instantiate <code>GAFMovieClip</code>.
+		 * with different scale assign appropriate scale to <code>GAFAsset</code> and only after that instantiate <code>GAFMovieClip</code>.
 		 * Possible values are values from converted animation config. They are depends from project settings on site converter
 		 */
 		public function set scale(scale: Number): void
@@ -297,7 +295,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Texture atlas content scale factor (csf) that will be used for <code>GAFMovieClip</code> creation. To create <code>GAFMovieClip's</code>
-		 * with different csf assign apropriate csf to <code>GAFAsset</code> and only after that instantiate <code>GAFMovieClip</code>.
+		 * with different csf assign appropriate csf to <code>GAFAsset</code> and only after that instantiate <code>GAFMovieClip</code>.
 		 * Possible values are values from converted animation config. They are depends from project settings on site converter
 		 */
 		public function set contentScaleFactor(csf: Number): void

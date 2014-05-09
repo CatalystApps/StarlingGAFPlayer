@@ -38,8 +38,6 @@ package com.catalystapps.gaf.display
 			this._assetTexture = assetTexture;
 
 			super(this._assetTexture.texture);
-
-			this.smoothing = TextureSmoothing.NONE;
 		}
 
 		//--------------------------------------------------------------------------

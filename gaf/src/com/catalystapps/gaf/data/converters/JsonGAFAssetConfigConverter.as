@@ -10,6 +10,7 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
@@ -376,7 +377,7 @@ package com.catalystapps.gaf.data.converters
 
 						if (state.hasOwnProperty("c"))
 						{
-							var params: Array = String(state["c"]).replace(" ", "").split(",");
+							var params: Vector.<Number> = Vector.<Number>(String(state["c"]).replace(" ", "").split(","));
 
 							checkAndInitFilter();
 
@@ -397,7 +398,7 @@ package com.catalystapps.gaf.data.converters
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_COLOR_TRANSFORM:
 										checkAndInitFilter();
-										warning = filter.addColorMatrixFilter(filterConfig["matrix"]);
+										warning = filter.addColorMatrixFilter(Vector.<Number>(filterConfig["matrix"]));
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_DROP_SHADOW:
 										checkAndInitFilter();
@@ -516,6 +517,11 @@ package com.catalystapps.gaf.data.converters
 				config.id = configID;
 				convertConfig(config, jsonObject, defaultScale, defaultContentScaleFactor);
 				configs.configs.push(config);
+			}
+
+			if (jsonObject.stageConfig)
+			{
+				config.stageConfig = new CStage().clone(jsonObject.stageConfig);
 			}
 
 			///////////////////////////////////////////////////////////////
