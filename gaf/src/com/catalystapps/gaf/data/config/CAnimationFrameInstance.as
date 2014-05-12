@@ -71,7 +71,7 @@ package com.catalystapps.gaf.data.config
 		public function getTransformMatrix(pivotMatrix: Matrix, scale: Number): Matrix
 		{
 			var result: Matrix = pivotMatrix.clone();
-			var matrixCopy: Matrix = this._matrix;
+			var matrixCopy: Matrix = this._matrix.clone();
 
 			matrixCopy.tx = matrixCopy.tx * scale;
 			matrixCopy.ty = matrixCopy.ty * scale;
