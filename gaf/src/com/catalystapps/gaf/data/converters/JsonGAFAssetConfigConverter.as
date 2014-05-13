@@ -45,7 +45,7 @@ package com.catalystapps.gaf.data.converters
 		{
 			var allTextureAtlases: Vector.<CTextureAtlasScale> = new Vector.<CTextureAtlasScale>();
 
-			if (jsonObject.textureAtlas)
+			if (jsonObject.textureAtlas) // old Format
 			{
 				var textureAtlas: CTextureAtlasScale;
 
@@ -79,7 +79,7 @@ package com.catalystapps.gaf.data.converters
 
 					/////////////////////
 
-					var contentScaleFactors: Vector.<CTextureAtlasCSF> = new Vector.<CTextureAtlasCSF>();
+					var contentScaleFactors: Vector.<CTextureAtlasCSF> = new <CTextureAtlasCSF>[];
 					var contentScaleFactor: CTextureAtlasCSF;
 
 					/////////////////////
@@ -138,19 +138,13 @@ package com.catalystapps.gaf.data.converters
 					}
 				}
 			}
-			else if (scales != null && csfs != null)
+			else if (scales != null && csfs != null) // new Format
 			{
 				for each (var scale: Number in scales)
 				{
 					textureAtlas = new CTextureAtlasScale();
-					if (!isNaN(defaultScale))
-					{
-						if (defaultScale == scale)
-						{
-							textureAtlas.scale = scale;
-						}
-					}
-					else if (isNaN(textureAtlas.scale))
+
+					if ((!isNaN(defaultScale) && defaultScale == scale) || isNaN(textureAtlas.scale))
 					{
 						textureAtlas.scale = scale;
 					}
@@ -159,22 +153,21 @@ package com.catalystapps.gaf.data.converters
 					{
 						var item: CTextureAtlasCSF;
 						item = new CTextureAtlasCSF(csf, scale);
-						textureAtlas.allContentScaleFactors.push(item);
-						if (!isNaN(defaultContentScaleFactor))
-						{
-							if (defaultContentScaleFactor == csf)
-							{
-								textureAtlas.contentScaleFactor = item;
-							}
 
-						}
-						else if (!textureAtlas.contentScaleFactor)
+						if ((!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
+								|| !textureAtlas.contentScaleFactor)
 						{
 							textureAtlas.contentScaleFactor = item;
 						}
+
+						textureAtlas.allContentScaleFactors.push(item);
+					}
+					allTextureAtlases.push(textureAtlas);
+					if (!isNaN(defaultScale) && defaultScale == scale)
+					{
+						config.textureAtlas = textureAtlas;
 					}
 				}
-				config.textureAtlas = textureAtlas;
 			}
 
 			config.allTextureAtlases = allTextureAtlases;
@@ -506,8 +499,7 @@ package com.catalystapps.gaf.data.converters
 				{
 					config = new GAFAssetConfig(jsonObject.version);
 					config.id = configObject.id;
-					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale,
-					              jsonObject.csf);
+					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale, jsonObject.csf);
 					configs.configs.push(config);
 				}
 			}

@@ -349,7 +349,7 @@ package com.catalystapps.gaf.display
 
 			function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLess1: Boolean, masked: Boolean, hasFilter: Boolean): void
 			{
-				var changed: Boolean
+				var changed: Boolean;
 				if (mc._alphaLess1 != alphaLess1)
 				{
 					mc.alphaLess1 = alphaLess1;
