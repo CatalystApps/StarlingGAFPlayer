@@ -34,8 +34,8 @@ package com.catalystapps.gaf.data.config
 		{
 			this._sequences = new Vector.<CAnimationSequence>();
 
-			this._sequencesStartDictionary = new Object();
-			this._sequencesEndDictionary = new Object();
+			this._sequencesStartDictionary = {};
+			this._sequencesEndDictionary = {};
 		}
 
 		//--------------------------------------------------------------------------

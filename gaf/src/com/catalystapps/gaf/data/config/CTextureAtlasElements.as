@@ -29,7 +29,7 @@ package com.catalystapps.gaf.data.config
 		public function CTextureAtlasElements(): void
 		{
 			this._elementsVector = new Vector.<CTextureAtlasElement>();
-			this._elementsDictionary = new Object();
+			this._elementsDictionary = {};
 		}
 
 		//--------------------------------------------------------------------------

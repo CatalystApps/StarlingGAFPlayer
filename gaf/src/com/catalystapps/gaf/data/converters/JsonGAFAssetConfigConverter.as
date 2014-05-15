@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
-	import com.catalystapps.gaf.data.GAFAssetConfig;
-	import com.catalystapps.gaf.data.GAFAssetConfigs;
+	import com.catalystapps.gaf.data.GAFTimelineConfig;
+	import com.catalystapps.gaf.data.GAFTimelineConfigs;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
@@ -39,9 +39,9 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		private static function convertConfig(config: GAFAssetConfig, jsonObject: Object, defaultScale: Number = NaN,
+		private static function convertConfig(config: GAFTimelineConfig, jsonObject: Object, defaultScale: Number = NaN,
 		                                      defaultContentScaleFactor: Number = NaN, scales: Array = null,
-		                                      csfs: Array = null): GAFAssetConfig
+		                                      csfs: Array = null): GAFTimelineConfig
 		{
 			var allTextureAtlases: Vector.<CTextureAtlasScale> = new Vector.<CTextureAtlasScale>();
 
@@ -79,7 +79,7 @@ package com.catalystapps.gaf.data.converters
 
 					/////////////////////
 
-					var contentScaleFactors: Vector.<CTextureAtlasCSF> = new <CTextureAtlasCSF>[];
+					var contentScaleFactors: Vector.<CTextureAtlasCSF> = new Vector.<CTextureAtlasCSF>();
 					var contentScaleFactor: CTextureAtlasCSF;
 
 					/////////////////////
@@ -148,7 +148,7 @@ package com.catalystapps.gaf.data.converters
 					{
 						textureAtlas.scale = scale;
 					}
-					textureAtlas.allContentScaleFactors = new <CTextureAtlasCSF>[];
+					textureAtlas.allContentScaleFactors = new Vector.<CTextureAtlasCSF>();
 					for each (var csf: Number in csfs)
 					{
 						var item: CTextureAtlasCSF;
@@ -476,49 +476,47 @@ package com.catalystapps.gaf.data.converters
 			return config;
 		}
 
-		public static function convert(configID: String, json: String, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfigs
+		public static function convert(assetID: String, json: String, defaultScale: Number = NaN,
+		                               defaultContentScaleFactor: Number = NaN): GAFTimelineConfigs
 		{
 			var jsonObject: Object = JSON.parse(json);
 
-			var configs: GAFAssetConfigs = new GAFAssetConfigs();
+			var timelineConfigs: GAFTimelineConfigs = new GAFTimelineConfigs();
 
-			if (jsonObject.linkages)
-			{
-				for (var id: String in jsonObject.linkages)
-				{
-					configs.linkages[id] = jsonObject.linkages[id];
-				}
-			}
-
-			var config: GAFAssetConfig;
+			var timelineConfig: GAFTimelineConfig;
 
 			if (jsonObject.animations)
 			{
 				for each (var configObject: Object in jsonObject.animations)
 				{
-					config = new GAFAssetConfig(jsonObject.version);
-					config.id = configObject.id;
-					convertConfig(config, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale, jsonObject.csf);
-					configs.configs.push(config);
+					timelineConfig = new GAFTimelineConfig(jsonObject.version);
+					timelineConfig.id = configObject.id;
+					timelineConfig.assetID = assetID;
+					if (configObject.linkage)
+					{
+						timelineConfig.linkage = configObject.linkage;
+					}
+					convertConfig(timelineConfig, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale, jsonObject.csf);
+					timelineConfigs.configs.push(timelineConfig);
 				}
 			}
 			else
 			{
-				config = new GAFAssetConfig(jsonObject.version);
-				config.id = configID;
-				convertConfig(config, jsonObject, defaultScale, defaultContentScaleFactor);
-				configs.configs.push(config);
+				timelineConfig = new GAFTimelineConfig(jsonObject.version);
+				timelineConfig.id = "0";
+				timelineConfig.assetID = assetID;
+				convertConfig(timelineConfig, jsonObject, defaultScale, defaultContentScaleFactor);
+				timelineConfigs.configs.push(timelineConfig);
 			}
 
 			if (jsonObject.stageConfig)
 			{
-				config.stageConfig = new CStage().clone(jsonObject.stageConfig);
+				timelineConfig.stageConfig = new CStage().clone(jsonObject.stageConfig);
 			}
 
 			///////////////////////////////////////////////////////////////
 
-			return configs;
+			return timelineConfigs;
 		}
 	}
 }

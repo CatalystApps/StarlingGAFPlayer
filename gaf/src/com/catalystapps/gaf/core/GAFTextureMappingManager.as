@@ -1,6 +1,6 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.display.GAFTexture;
 	import com.catalystapps.gaf.display.IGAFTexture;
 
@@ -11,7 +11,7 @@ package com.catalystapps.gaf.core
 	/**
 	 * @private
 	 */
-	public class GAFTextureMapingManager
+	public class GAFTextureMappingManager
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -25,7 +25,7 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 
-		private static var _assetsCollection: Object = {};
+		private static var _timelinesCollection: Object = {};
 
 		private static var _tmpTexture: Texture;
 
@@ -41,11 +41,11 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 
-		public static function addGAFAsset(asset: GAFAsset): void
+		public static function addGAFTimeline(timeline: GAFTimeline): void
 		{
-			if (!_assetsCollection[asset.id])
+			if (!_timelinesCollection[timeline.uniqueID])
 			{
-				_assetsCollection[asset.id] = asset;
+				_timelinesCollection[timeline.uniqueID] = timeline;
 			}
 		}
 
@@ -53,15 +53,15 @@ package com.catalystapps.gaf.core
 		{
 			var result: IGAFTexture;
 
-			var asset: GAFAsset;
+			var timeline: GAFTimeline;
 
 			if (mappedAssetID)
 			{
-				asset = _assetsCollection[mappedAssetID];
+				timeline = _timelinesCollection[mappedAssetID];
 
-				if (asset)
+				if (timeline)
 				{
-					result = asset.textureAtlas.getTexture(id, "", true);
+					result = timeline.textureAtlas.getTexture(id, "", true);
 
 					if (result)
 					{
@@ -71,9 +71,9 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				for each(asset in _assetsCollection)
+				for each (timeline in _timelinesCollection)
 				{
-					result = asset.textureAtlas.getTexture(id, "", true);
+					result = timeline.textureAtlas.getTexture(id, "", true);
 
 					if (result)
 					{

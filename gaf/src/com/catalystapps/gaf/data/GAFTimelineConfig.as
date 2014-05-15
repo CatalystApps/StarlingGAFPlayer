@@ -10,7 +10,7 @@ package com.catalystapps.gaf.data
 	/**
 	 * @private
 	 */
-	public class GAFAssetConfig
+	public class GAFTimelineConfig
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -27,6 +27,7 @@ package com.catalystapps.gaf.data
 		private var _stageConfig: CStage;
 
 		private var _id: String;
+		private var _assetID: String;
 
 		private var _allTextureAtlases: Vector.<CTextureAtlasScale>;
 		private var _textureAtlas: CTextureAtlasScale;
@@ -37,6 +38,7 @@ package com.catalystapps.gaf.data
 		private var _textFields: CTextFieldObjects;
 
 		private var _namedParts: Object;
+		private var _linkage: String;
 
 		private var _debugRegions: Vector.<GAFDebugInformation>;
 
@@ -48,7 +50,7 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
-		public function GAFAssetConfig(version: String)
+		public function GAFTimelineConfig(version: String)
 		{
 			this._version = version;
 		}
@@ -213,6 +215,16 @@ package com.catalystapps.gaf.data
 			this._id = value;
 		}
 
+		public function get assetID(): String
+		{
+			return this._assetID;
+		}
+
+		public function set assetID(value: String): void
+		{
+			this._assetID = value;
+		}
+
 		public function get namedParts(): Object
 		{
 			return this._namedParts;
@@ -221,6 +233,16 @@ package com.catalystapps.gaf.data
 		public function set namedParts(value: Object): void
 		{
 			this._namedParts = value;
+		}
+
+		public function get linkage(): String
+		{
+			return _linkage;
+		}
+
+		public function set linkage(value: String): void
+		{
+			_linkage = value;
 		}
 
 		public function get stageConfig(): CStage

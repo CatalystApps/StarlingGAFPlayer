@@ -1,6 +1,6 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
 	/**
@@ -38,7 +38,7 @@ package com.catalystapps.gaf.core
 		/**
 		 * Add <code>GAFAsset</code> into assets collection
 		 */
-		public static function addGAFAsset(asset: GAFAsset): void
+		public static function addGAFAsset(asset: GAFTimeline): void
 		{
 			if (!_assetsCollection[asset.id])
 			{

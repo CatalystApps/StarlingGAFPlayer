@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
-	import com.catalystapps.gaf.data.GAFAssetConfig;
-	import com.catalystapps.gaf.data.GAFAssetConfigs;
+	import com.catalystapps.gaf.data.GAFTimelineConfig;
+	import com.catalystapps.gaf.data.GAFTimelineConfigs;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
@@ -65,7 +65,7 @@ package com.catalystapps.gaf.data.converters
 		//--------------------------------------------------------------------------
 
 		public static function convert(configID: String, bytes: ByteArray, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): GAFAssetConfigs
+		                               defaultContentScaleFactor: Number = NaN): GAFTimelineConfigs
 		{
 			bytes.endian = Endian.LITTLE_ENDIAN;
 
@@ -86,7 +86,7 @@ package com.catalystapps.gaf.data.converters
 			                                               bytes.readFloat());
 			var animationPoint: Point = new Point(bytes.readFloat(), bytes.readFloat());
 
-			var result: GAFAssetConfig = new GAFAssetConfig(versionMajor + "." + versionMinor);
+			var result: GAFTimelineConfig = new GAFTimelineConfig(versionMajor + "." + versionMinor);
 			result.allTextureAtlases = new Vector.<CTextureAtlasScale>();
 			result.animationObjects = new CAnimationObjects();
 			result.animationSequences = new CAnimationSequences();
@@ -102,7 +102,7 @@ package com.catalystapps.gaf.data.converters
 				result.textureAtlas = result.allTextureAtlases[0];
 			}
 
-			var configs: GAFAssetConfigs = new GAFAssetConfigs();
+			var configs: GAFTimelineConfigs = new GAFTimelineConfigs();
 			configs.configs.push(result);
 			return configs;
 		}
@@ -125,7 +125,7 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		private static function readNextTag(bytes: ByteArray, config: GAFAssetConfig, animationFramesCount: uint,
+		private static function readNextTag(bytes: ByteArray, config: GAFTimelineConfig, animationFramesCount: uint,
 		                                    defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
 			var tagID: int = bytes.readShort();
@@ -170,7 +170,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readStageConfig(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readStageConfig(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var stageConfig: CStage = new CStage();
 
@@ -183,7 +183,7 @@ package com.catalystapps.gaf.data.converters
 			config.stageConfig = stageConfig;
 		}
 
-		private static function readAnimationFrames(tagContent: ByteArray, config: GAFAssetConfig,
+		private static function readAnimationFrames(tagContent: ByteArray, config: GAFTimelineConfig,
 		                                            animationFramesCount: uint): void
 		{
 			var framesCount: uint = tagContent.readUnsignedInt();
@@ -397,7 +397,7 @@ package com.catalystapps.gaf.data.converters
 			return [alpha, color];
 		}
 
-		private static function readTextureAtlasConfig(tagContent: ByteArray, config: GAFAssetConfig,
+		private static function readTextureAtlasConfig(tagContent: ByteArray, config: GAFTimelineConfig,
 		                                               defaultScale: Number = NaN,
 		                                               defaultContentScaleFactor: Number = NaN,
 		                                               tagID: uint = BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS): void
@@ -526,7 +526,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readAnimationMasks(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readAnimationMasks(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var objectID: int;
@@ -541,7 +541,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readAnimationMasks2(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readAnimationMasks2(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var objectID: int;
@@ -560,7 +560,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readAnimationObjects(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readAnimationObjects(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var objectID: int;
@@ -575,7 +575,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readAnimationObjects2(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readAnimationObjects2(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var objectID: int;
@@ -594,7 +594,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readAnimationSequences(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readAnimationSequences(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var sequenceID: String;
@@ -610,11 +610,11 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readNamedParts(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readNamedParts(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 		}
 
-		private static function readTextFields(tagContent: ByteArray, config: GAFAssetConfig): void
+		private static function readTextFields(tagContent: ByteArray, config: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var textFieldID: int;

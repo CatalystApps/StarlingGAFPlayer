@@ -3,7 +3,7 @@
  */
 package com.catalystapps.gaf.utils
 {
-	public class VectorUtils
+	public class VectorUtility
 	{
 		[Inline]
 		public static function fillMatrix(v: Vector.<Number>,

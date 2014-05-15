@@ -4,8 +4,8 @@ package com.catalystapps.gaf.filter
 	import com.catalystapps.gaf.data.config.CColorMatrixFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.ICFilterData;
-	import com.catalystapps.gaf.utils.VectorUtils;
-	import com.catalystapps.gaf.utils.VectorUtils;
+	import com.catalystapps.gaf.utils.VectorUtility;
+	import com.catalystapps.gaf.utils.VectorUtility;
 
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
@@ -187,12 +187,12 @@ package com.catalystapps.gaf.filter
 
 			if (value == null)
 			{
-				VectorUtils.copyMatrix(cUserMatrix, IDENTITY);
+				VectorUtility.copyMatrix(cUserMatrix, IDENTITY);
 			}
 			else
 			{
 				changeColor = true;
-				VectorUtils.copyMatrix(cUserMatrix, value);
+				VectorUtility.copyMatrix(cUserMatrix, value);
 			}
 
 			updateShaderMatrix();
@@ -431,7 +431,7 @@ package com.catalystapps.gaf.filter
 			// the shader needs the matrix components in a different order,
 			// and it needs the offsets in the range 0-1.
 
-			VectorUtils.fillMatrix(cShaderMatrix, cUserMatrix[0], cUserMatrix[1], cUserMatrix[2], cUserMatrix[3],
+			VectorUtility.fillMatrix(cShaderMatrix, cUserMatrix[0], cUserMatrix[1], cUserMatrix[2], cUserMatrix[3],
 					cUserMatrix[5], cUserMatrix[6], cUserMatrix[7], cUserMatrix[8],
 					cUserMatrix[10], cUserMatrix[11], cUserMatrix[12], cUserMatrix[13],
 					cUserMatrix[15], cUserMatrix[16], cUserMatrix[17], cUserMatrix[18],

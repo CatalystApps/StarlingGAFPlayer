@@ -41,8 +41,8 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function GAFGFXData()
 		{
-			this._texturesDictionary = new Object();
-			this._imagesDictionary = new Object();
+			this._texturesDictionary = {};
+			this._imagesDictionary = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -147,12 +147,12 @@ package com.catalystapps.gaf.data
 			{
 				if (!dictionary[scale])
 				{
-					dictionary[scale] = new Object();
+					dictionary[scale] = {};
 				}
 
 				if (!dictionary[scale][csf])
 				{
-					dictionary[scale][csf] = new Object();
+					dictionary[scale][csf] = {};
 				}
 			}
 

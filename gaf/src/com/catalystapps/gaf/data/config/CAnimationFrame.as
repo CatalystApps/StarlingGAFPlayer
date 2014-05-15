@@ -32,7 +32,7 @@ package com.catalystapps.gaf.data.config
 		{
 			this._frameNumber = frameNumber;
 
-			this._instancesDictionary = new Object();
+			this._instancesDictionary = {};
 			this._instances = new Vector.<CAnimationFrameInstance>();
 		}
 
@@ -60,8 +60,7 @@ package com.catalystapps.gaf.data.config
 			{
 				if (instance.alpha)
 				{
-					this._instances.splice(this._instances.indexOf(this._instancesDictionary[instance.id]), 1,
-					                       instance);
+					this._instances.splice(this._instances.indexOf(this._instancesDictionary[instance.id]), 1, instance);
 
 					this._instancesDictionary[instance.id] = instance;
 				}

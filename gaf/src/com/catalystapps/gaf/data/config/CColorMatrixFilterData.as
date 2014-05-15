@@ -1,6 +1,6 @@
 package com.catalystapps.gaf.data.config
 {
-	import com.catalystapps.gaf.utils.VectorUtils;
+	import com.catalystapps.gaf.utils.VectorUtility;
 	import com.catalystapps.gaf.utils.copyArray;
 
 	/**
@@ -14,7 +14,7 @@ package com.catalystapps.gaf.data.config
 		{
 			var copy: CColorMatrixFilterData = new CColorMatrixFilterData();
 
-			VectorUtils.copyMatrix(copy.matrix, this.matrix);
+			VectorUtility.copyMatrix(copy.matrix, this.matrix);
 
 			return copy;
 		}

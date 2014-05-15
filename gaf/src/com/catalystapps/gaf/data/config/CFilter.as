@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
 	import com.catalystapps.gaf.data.converters.WarningConstants;
-	import com.catalystapps.gaf.utils.VectorUtils;
+	import com.catalystapps.gaf.utils.VectorUtility;
 	import com.catalystapps.gaf.utils.copyArray;
 
 	/**
@@ -121,7 +121,7 @@ package com.catalystapps.gaf.data.config
 			}
 
 			var filterData: CColorMatrixFilterData = new CColorMatrixFilterData();
-			VectorUtils.fillMatrix(filterData.matrix, Number(params[1]), 0, 0, 0, Number(params[2]),
+			VectorUtility.fillMatrix(filterData.matrix, Number(params[1]), 0, 0, 0, Number(params[2]),
 					0, Number(params[3]), 0, 0, Number(params[4]),
 					0, 0, Number(params[5]), 0, Number(params[6]),
 					0, 0, 0, 1, Number(params[0]));
@@ -149,7 +149,7 @@ package com.catalystapps.gaf.data.config
 			else
 			{
 				colorMatrixFilterConfig = new CColorMatrixFilterData();
-				VectorUtils.copyMatrix(colorMatrixFilterConfig.matrix, params);
+				VectorUtility.copyMatrix(colorMatrixFilterConfig.matrix, params);
 				_filterConfigs.push(colorMatrixFilterConfig);
 			}
 

@@ -8,7 +8,7 @@ package com.catalystapps.gaf.data
 	 * <p>GAFAsset represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation.
 	 * It is used to create <code>GAFMovieClip</code> that is ready animation object to be used in starling display list</p>
 	 */
-	public class GAFAsset
+	public class GAFTimeline
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -26,8 +26,10 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
-		private var _id: String;
-		private var _config: GAFAssetConfig;
+		private var _uniqueID: String;
+		private var _uniqueLinkage: String;
+
+		private var _config: GAFTimelineConfig;
 
 		private var _gafgfxData: GAFGFXData;
 		private var _gafBundle: GAFBundle;
@@ -43,9 +45,15 @@ package com.catalystapps.gaf.data
 		 *
 		 * @param config GAF asset config
 		 */
-		public function GAFAsset(config: GAFAssetConfig)
+		public function GAFTimeline(config: GAFTimelineConfig)
 		{
 			this._config = config;
+
+			this._uniqueID = config.assetID + "::" + config.id;
+			if (config.linkage)
+			{
+				this._uniqueLinkage = config.assetID + "::" + config.linkage;
+			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -220,16 +228,29 @@ package com.catalystapps.gaf.data
 		//--------------------------------------------------------------------------
 
 		/**
-		 * Asset identifier (name given at animation's upload or assigned by developer)
+		 * Timeline identifier
 		 */
 		public function get id(): String
 		{
-			return _id;
+			return this.config.id;
 		}
 
-		public function set id(id: String): void
+		/**
+		 * Asset identifier (name given at animation's upload or assigned by developer)
+		 */
+		public function get assetID(): String
 		{
-			_id = id;
+			return this.config.assetID;
+		}
+
+		public function get uniqueID(): String
+		{
+			return this._uniqueID;
+		}
+
+		public function get uniqueLinkage(): String
+		{
+			return this._uniqueLinkage;
 		}
 
 		/** @private */
@@ -244,7 +265,7 @@ package com.catalystapps.gaf.data
 		}
 
 		/** @private */
-		public function get config(): GAFAssetConfig
+		public function get config(): GAFTimelineConfig
 		{
 			return _config;
 		}

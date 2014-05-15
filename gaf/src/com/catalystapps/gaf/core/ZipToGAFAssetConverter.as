@@ -1,8 +1,8 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.GAFAsset;
-	import com.catalystapps.gaf.data.GAFAssetConfig;
-	import com.catalystapps.gaf.data.GAFAssetConfigs;
+	import com.catalystapps.gaf.data.GAFTimeline;
+	import com.catalystapps.gaf.data.GAFTimelineConfig;
+	import com.catalystapps.gaf.data.GAFTimelineConfigs;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
@@ -53,7 +53,7 @@ package com.catalystapps.gaf.core
 	 *        You can create it from <code>GAFAsset</code> and use in <code>Starling Display Object</code></li>
 	 * </ul>
 	 *
-	 * @see com.catalystapps.gaf.data.GAFAsset
+	 * @see com.catalystapps.gaf.data.GAFTimeline
 	 * @see com.catalystapps.gaf.data.GAFBundle
 	 * @see com.catalystapps.gaf.display.GAFMovieClip
 	 *
@@ -142,12 +142,12 @@ package com.catalystapps.gaf.core
 		{
 			this.gfxData = new GAFGFXData();
 
-			this.gafAssetConfigs = new Object();
+			this.gafAssetConfigs = {};
 
-			this.gafAssetConfigSources = new Object();
-			this.gafAssetsIDs = new Array();
+			this.gafAssetConfigSources = {};
+			this.gafAssetsIDs = [];
 
-			this.pngImgs = new Object();
+			this.pngImgs = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -189,7 +189,7 @@ package com.catalystapps.gaf.core
 			}
 			else if(data is Array || getQualifiedClassName(data) == "flash.filesystem::File")
 			{
-				this.gafAssetsConfigURLs = new Array();
+				this.gafAssetsConfigURLs = [];
 
 				if (data is Array)
 				{
@@ -230,7 +230,7 @@ package com.catalystapps.gaf.core
 
 		private function parseObject(data: Object): void
 		{
-			this.pngImgs = new Object();
+			this.pngImgs = {};
 
 			for each(var configObj: Object in data.configs)
 			{
@@ -350,15 +350,15 @@ package com.catalystapps.gaf.core
 
 		private function findAllAtlasURLs(): void
 		{
-			this.atlasSourceURLs = new Array();
+			this.atlasSourceURLs = [];
 
-			var configs: GAFAssetConfigs;
+			var configs: GAFTimelineConfigs;
 
 			for (var id: String in this.gafAssetConfigs)
 			{
 				configs = this.gafAssetConfigs[id];
 
-				for each (var config: GAFAssetConfig in configs.configs)
+				for each (var config: GAFTimelineConfig in configs.configs)
 				{
 					var folderURL: String = this.getFolderURL(id);
 
@@ -392,7 +392,7 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				this.createGAFAssets();
+				this.createGAFTimelines();
 			}
 		}
 
@@ -423,7 +423,7 @@ package com.catalystapps.gaf.core
 
 			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
 			{
-				this.createGAFAssets();
+				this.createGAFTimelines();
 			}
 			else
 			{
@@ -470,10 +470,10 @@ package com.catalystapps.gaf.core
 			var fileName: String;
 			var bmp: BitmapData;
 
-			this.pngImgs = new Object();
+			this.pngImgs = {};
 
-			this.gafAssetConfigSources = new Object();
-			this.gafAssetsIDs = new Array();
+			this.gafAssetConfigSources = {};
+			this.gafAssetsIDs = [];
 
 			for (var i: uint = 0; i < length; i++)
 			{
@@ -508,7 +508,7 @@ package com.catalystapps.gaf.core
 		{
 			clearTimeout(this.configConvertTimeout);
 
-			var configs: GAFAssetConfigs;
+			var configs: GAFTimelineConfigs;
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var configSource: Object = this.gafAssetConfigSources[configID];
 			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
@@ -536,7 +536,7 @@ package com.catalystapps.gaf.core
 				}
 				else
 				{
-					this.createGAFAssets();
+					this.createGAFTimelines();
 				}
 			}
 			else
@@ -545,21 +545,21 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function createGAFAssets(): void
+		private function createGAFTimelines(): void
 		{
-			var configs: GAFAssetConfigs;
-			var configID: String;
+			var gafTimelineConfigs: GAFTimelineConfigs;
+			var gafAssetConfigID: String;
 
 			for (var i: uint = 0; i < this.gafAssetsIDs.length; i++)
 			{
-				configID = this.gafAssetsIDs[i];
-				configs = this.gafAssetConfigs[configID];
+				gafAssetConfigID = this.gafAssetsIDs[i];
+				gafTimelineConfigs = this.gafAssetConfigs[gafAssetConfigID];
 
-				var assets: Vector.<GAFAsset> = new <GAFAsset>[];
+				var timelines: Vector.<GAFTimeline> = new Vector.<GAFTimeline>();
 
-				for each (var config: GAFAssetConfig in configs.configs)
+				for each (var config: GAFTimelineConfig in gafTimelineConfigs.configs)
 				{
-					assets.push(this.createAsset(config));
+					timelines.push(this.createTimeline(config));
 				}
 
 				///////////////////////////////////
@@ -569,12 +569,11 @@ package com.catalystapps.gaf.core
 					this._gafBundle = new GAFBundle();
 				}
 
-				for each (var asset: GAFAsset in assets)
+				for each (var timeline: GAFTimeline in timelines)
 				{
-					var linkage: String = configs.linkages[asset.id];
-					this._gafBundle.addGAFAsset(asset, linkage);
+					this._gafBundle.addGAFTimeline(timeline);
 
-					asset.gafBundle = this._gafBundle;
+					timeline.gafBundle = this._gafBundle;
 				}
 			}
 
@@ -586,7 +585,7 @@ package com.catalystapps.gaf.core
 			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
-		private function createAsset(config: GAFAssetConfig): GAFAsset
+		private function createTimeline(config: GAFTimelineConfig): GAFTimeline
 		{
 			///////////////////////////////////
 
@@ -617,27 +616,25 @@ package com.catalystapps.gaf.core
 
 			///////////////////////////////////
 
-			var asset: GAFAsset = new GAFAsset(config);
-			asset.id = config.id;
-
-			asset.gafgfxData = this.gfxData;
+			var timeline: GAFTimeline = new GAFTimeline(config);
+			timeline.gafgfxData = this.gfxData;
 
 			///////////////////////////////////
 
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
 				case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
-					asset.loadInVideoMemory(GAFAsset.CONTENT_ALL);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL);
 					break;
 
 				case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
-					asset.loadInVideoMemory(GAFAsset.CONTENT_DEFAULT);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT);
 					break;
 			}
 
 			///////////////////////////////////
 
-			return asset;
+			return timeline;
 		}
 
 		private function getAssetId(configName: String): String
@@ -708,7 +705,7 @@ package com.catalystapps.gaf.core
 		 */
 		/*public function get gafAsset(): GAFAsset
 		 {
-		 return _gafAsset;
+			 return _gafAsset;
 		 }*/
 
 		/**

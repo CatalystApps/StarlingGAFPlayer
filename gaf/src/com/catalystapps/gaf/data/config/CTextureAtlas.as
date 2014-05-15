@@ -1,6 +1,6 @@
 package com.catalystapps.gaf.data.config
 {
-	import com.catalystapps.gaf.core.GAFTextureMapingManager;
+	import com.catalystapps.gaf.core.GAFTextureMappingManager;
 	import com.catalystapps.gaf.display.GAFScale9Texture;
 	import com.catalystapps.gaf.display.GAFTexture;
 	import com.catalystapps.gaf.display.IGAFTexture;
@@ -57,7 +57,7 @@ package com.catalystapps.gaf.data.config
 		public static function createFromTextures(texturesDictionary: Object,
 		                                          textureAtlasConfig: CTextureAtlasCSF): CTextureAtlas
 		{
-			var atlasesDictionary: Object = new Object();
+			var atlasesDictionary: Object = {};
 
 			var atlas: TextureAtlas;
 
@@ -92,7 +92,7 @@ package com.catalystapps.gaf.data.config
 
 			if (textureAtlasElement)
 			{
-				var texture: Texture = this.getTextureByIDandAtlasID(id, textureAtlasElement.atlasID);
+				var texture: Texture = this.getTextureByIDAndAtlasID(id, textureAtlasElement.atlasID);
 
 				var pivotMatrix: Matrix;
 
@@ -122,7 +122,7 @@ package com.catalystapps.gaf.data.config
 				}
 				else
 				{
-					return GAFTextureMapingManager.getMappedTexture(id, mappedAssetID);
+					return GAFTextureMappingManager.getMappedTexture(id, mappedAssetID);
 				}
 			}
 		}
@@ -133,7 +133,7 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
-		private function getTextureByIDandAtlasID(id: String, atlasID: String): Texture
+		private function getTextureByIDAndAtlasID(id: String, atlasID: String): Texture
 		{
 			var textureAtlas: TextureAtlas = this._textureAtlasesDictionary[atlasID];
 

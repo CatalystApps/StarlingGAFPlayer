@@ -27,7 +27,7 @@ package com.catalystapps.gaf.data.config
 
 		public function CAnimationObjects()
 		{
-			this._animationObjectsDictionary = new Object();
+			this._animationObjectsDictionary = {};
 		}
 
 		//--------------------------------------------------------------------------

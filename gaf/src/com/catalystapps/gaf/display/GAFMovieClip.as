@@ -1,7 +1,9 @@
 package com.catalystapps.gaf.display
 {
-	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFBundle;
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
+	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
@@ -50,7 +52,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		private var _gafAsset: GAFAsset;
+		private var _gafTimeline: GAFTimeline;
 
 		private var _mappedAssetID: String;
 
@@ -86,13 +88,13 @@ package com.catalystapps.gaf.display
 		 * @param gafAsset <code>GAFAsset</code> from what <code>GAFMovieClip</code> will be created
 		 * @param mappedAssetID To be defined. For now - use default value
 		 */
-		public function GAFMovieClip(gafAsset: GAFAsset, mappedAssetID: String = "")
+		public function GAFMovieClip(gafAsset: GAFTimeline, mappedAssetID: String = "")
 		{
-			this._gafAsset = gafAsset;
+			this._gafTimeline = gafAsset;
 
 			this._mappedAssetID = mappedAssetID;
 
-			this.scale = this._gafAsset.scale;
+			this.scale = this._gafTimeline.scale;
 
 			this.initialize();
 
@@ -138,7 +140,7 @@ package com.catalystapps.gaf.display
 
 			if (maskObject)
 			{
-				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = this._gafTimeline.config.animationConfigFrames.frames[this._currentFrame];
 
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 
@@ -216,7 +218,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
-			this.playingSequence = this._gafAsset.config.animationSequences.getSecuenceByID(id);
+			this.playingSequence = this._gafTimeline.config.animationSequences.getSecuenceByID(id);
 
 			if (this.playingSequence)
 			{
@@ -314,7 +316,7 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				frame = this._gafAsset.config.animationSequences.getStartFrameNo(frame);
+				frame = this._gafTimeline.config.animationSequences.getStartFrameNo(frame);
 			}
 
 			if (frame <= this._totalFrames)
@@ -372,9 +374,9 @@ package com.catalystapps.gaf.display
 				}
 			}
 
-			if (this._gafAsset.config.animationConfigFrames.frames.length > this._currentFrame)
+			if (this._gafTimeline.config.animationConfigFrames.frames.length > this._currentFrame)
 			{
-				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = this._gafTimeline.config.animationConfigFrames.frames[this._currentFrame];
 				var firstStaticObject: DisplayObject;
 				var instances: Vector.<CAnimationFrameInstance> = frameConfig.instances;
 				var l: uint = instances.length;
@@ -431,10 +433,8 @@ package com.catalystapps.gaf.display
 
 								if (maskInstance)
 								{
-									var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix,
-											this.scale).clone();
-									var imageTransformMatrix: Matrix = instance.getTransformMatrix(objectPivotMatrix,
-											this.scale).clone();
+									var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix, this.scale).clone();
+									var imageTransformMatrix: Matrix = instance.getTransformMatrix(objectPivotMatrix, this.scale).clone();
 
 									maskTransformMatrix.invert();
 									imageTransformMatrix.concat(maskTransformMatrix);
@@ -504,7 +504,7 @@ package com.catalystapps.gaf.display
 
 			var debugView: Quad;
 			for each (var debugRegion: GAFDebugInformation in
-					_gafAsset.config.debugRegions)
+					_gafTimeline.config.debugRegions)
 			{
 				switch (debugRegion.type)
 				{
@@ -555,14 +555,17 @@ package com.catalystapps.gaf.display
 
 		private function initialize(): void
 		{
-			this.staticObjectsDictionary = new Object();
-			this.masksDictionary = new Object();
-			this.maskedImagesDictionary = new Object();
+			var gafBundle: GAFBundle = this._gafTimeline.gafBundle;
+			var timelineConfig: GAFTimelineConfig = this._gafTimeline.config;
+
+			this.staticObjectsDictionary = {};
+			this.masksDictionary = {};
+			this.maskedImagesDictionary = {};
 
 			this._currentFrame = 0;
-			this._totalFrames = this._gafAsset.config.animationConfigFrames.frames.length;
+			this._totalFrames = timelineConfig.animationConfigFrames.frames.length;
 
-			var animationObjectsDictionary: Object = this._gafAsset.config.animationObjects.animationObjectsDictionary;
+			var animationObjectsDictionary: Object = timelineConfig.animationObjects.animationObjectsDictionary;
 
 			for each (var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
 			{
@@ -570,7 +573,7 @@ package com.catalystapps.gaf.display
 				switch (animationObjectConfig.type)
 				{
 					case "texture":
-						var texture: IGAFTexture = this._gafAsset.textureAtlas.getTexture(
+						var texture: IGAFTexture = this._gafTimeline.textureAtlas.getTexture(
 								animationObjectConfig.staticObjectID, this._mappedAssetID);
 						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
 						{
@@ -584,7 +587,7 @@ package com.catalystapps.gaf.display
 						staticObject.name = animationObjectConfig.instanceID;
 						break;
 					case "textField":
-						var tfObj: CTextFieldObject = this._gafAsset.config.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
+						var tfObj: CTextFieldObject = timelineConfig.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
 						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
 						tf.name = animationObjectConfig.instanceID;
 						//tf.prompt = tfObj.text
@@ -605,9 +608,13 @@ package com.catalystapps.gaf.display
 						staticObject = tf;
 						break;
 					case "timeline":
-						var mc: GAFMovieClip = new GAFMovieClip(this._gafAsset.gafBundle.getGAFAssetByID(animationObjectConfig.staticObjectID));
+						var mc: GAFMovieClip = new GAFMovieClip(gafBundle.getGAFTimelineByID(timelineConfig.assetID, animationObjectConfig.staticObjectID));
 						mc.name = animationObjectConfig.instanceID;
-						mc.play();
+						if (!mc.inPlay)
+						{
+							mc.play();
+						}
+
 						staticObject = mc;
 						break;
 				}
@@ -626,12 +633,12 @@ package com.catalystapps.gaf.display
 					this.staticObjectsDictionary[animationObjectConfig.instanceID] = staticObject;
 				}
 
-				if (this._gafAsset.config.namedParts != null)
+				if (timelineConfig.namedParts != null)
 				{
-					var instanceName: String = this._gafAsset.config.namedParts[animationObjectConfig.instanceID];
+					var instanceName: String = this._gafTimeline.config.namedParts[animationObjectConfig.instanceID];
 					if (instanceName != null && !this.hasOwnProperty(instanceName))
 					{
-						this[this._gafAsset.config.namedParts[animationObjectConfig.instanceID]] = staticObject;
+						this[timelineConfig.namedParts[animationObjectConfig.instanceID]] = staticObject;
 					}
 				}
 			}
@@ -653,7 +660,7 @@ package com.catalystapps.gaf.display
 		{
 			this.stop();
 
-			this._gafAsset = null;
+			this._gafTimeline = null;
 
 			var staticObject: DisplayObject;
 
@@ -745,7 +752,7 @@ package com.catalystapps.gaf.display
 
 			this.draw();
 
-			var sequenceEvent: SequenceEvent = this._gafAsset.config.animationSequences.hasEvent(this._currentFrame + 1);
+			var sequenceEvent: SequenceEvent = this._gafTimeline.config.animationSequences.hasEvent(this._currentFrame + 1);
 
 			if (sequenceEvent)
 			{
@@ -855,7 +862,7 @@ package com.catalystapps.gaf.display
 
 			if (this._useClipping)
 			{
-				this.clipRect = new Rectangle(0,0, this._gafAsset.config.stageConfig.width, this._gafAsset.config.stageConfig.height);
+				this.clipRect = new Rectangle(0,0, this._gafTimeline.config.stageConfig.width, this._gafTimeline.config.stageConfig.height);
 			}
 			else
 			{
