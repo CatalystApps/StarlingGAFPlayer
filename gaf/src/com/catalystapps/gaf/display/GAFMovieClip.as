@@ -572,7 +572,7 @@ package com.catalystapps.gaf.display
 				var staticObject: DisplayObject;
 				switch (animationObjectConfig.type)
 				{
-					case "texture":
+					case CAnimationObject.TYPE_TEXTURE:
 						var texture: IGAFTexture = this._gafTimeline.textureAtlas.getTexture(
 								animationObjectConfig.staticObjectID, this._mappedAssetID);
 						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
@@ -586,7 +586,7 @@ package com.catalystapps.gaf.display
 						}
 						staticObject.name = animationObjectConfig.instanceID;
 						break;
-					case "textField":
+					case CAnimationObject.TYPE_TEXTFIELD:
 						var tfObj: CTextFieldObject = timelineConfig.textFields.textFieldObjectsDictionary[animationObjectConfig.staticObjectID];
 						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
 						tf.name = animationObjectConfig.instanceID;
@@ -607,7 +607,7 @@ package com.catalystapps.gaf.display
 						};
 						staticObject = tf;
 						break;
-					case "timeline":
+					case CAnimationObject.TYPE_TIMELINE:
 						var mc: GAFMovieClip = new GAFMovieClip(gafBundle.getGAFTimelineByID(timelineConfig.assetID, animationObjectConfig.staticObjectID));
 						mc.name = animationObjectConfig.instanceID;
 						if (!mc.inPlay)

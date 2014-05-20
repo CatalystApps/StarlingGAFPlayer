@@ -11,6 +11,10 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
+		public static const TYPE_TEXTURE: String = "texture";
+		public static const TYPE_TEXTFIELD: String = "textField";
+		public static const TYPE_TIMELINE: String = "timeline";
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES

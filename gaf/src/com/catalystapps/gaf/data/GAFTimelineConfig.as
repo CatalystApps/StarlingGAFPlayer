@@ -53,6 +53,13 @@ package com.catalystapps.gaf.data
 		public function GAFTimelineConfig(version: String)
 		{
 			this._version = version;
+
+			_allTextureAtlases = new Vector.<CTextureAtlasScale>();
+
+			_animationConfigFrames = new CAnimationFrames();
+			_animationObjects = new CAnimationObjects();
+			_animationSequences = new CAnimationSequences();
+			_textFields = new CTextFieldObjects();
 		}
 
 		//--------------------------------------------------------------------------

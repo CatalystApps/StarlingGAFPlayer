@@ -1,18 +1,15 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
-	import com.catalystapps.gaf.data.GAFTimelineConfigs;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
-	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
-	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
-	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
@@ -42,15 +39,18 @@ package com.catalystapps.gaf.data.converters
 		//tags
 		private static const TAG_END: uint = 0;
 		private static const TAG_DEFINE_ATLAS: uint = 1;
+		private static const TAG_DEFINE_ATLAS2: uint = 8; // v4.0
 		private static const TAG_DEFINE_ANIMATION_MASKS: uint = 2;
+		private static const TAG_DEFINE_ANIMATION_MASKS2: uint = 11; // v4.0
 		private static const TAG_DEFINE_ANIMATION_OBJECTS: uint = 3;
+		private static const TAG_DEFINE_ANIMATION_OBJECTS2: uint = 10; // v4.0
 		private static const TAG_DEFINE_ANIMATION_FRAMES: uint = 4;
+		private static const TAG_DEFINE_ANIMATION_FRAMES2: uint = 12; // v4.0
 		private static const TAG_DEFINE_NAMED_PARTS: uint = 5;
 		private static const TAG_DEFINE_SEQUENCES: uint = 6;
-		private static const TAG_DEFINE_TEXT_FIELDS: uint = 7;
-		private static const TAG_DEFINE_ATLAS2: uint = 8;
-
+		private static const TAG_DEFINE_TEXT_FIELDS: uint = 7; // v4.0
 		private static const TAG_DEFINE_STAGE: uint = 9;
+		private static const TAG_DEFINE_TIMELINE: uint = 13; // v4.0
 
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
@@ -64,47 +64,72 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		public static function convert(configID: String, bytes: ByteArray, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): GAFTimelineConfigs
+		public static function convert(assetID: String, bytes: ByteArray, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): Vector.<GAFTimelineConfig>
 		{
 			bytes.endian = Endian.LITTLE_ENDIAN;
 
-			var header: int = bytes.readInt();
-			var versionMajor: int = bytes.readByte();
-			var versionMinor: int = bytes.readByte();
-			var fileLength: uint = bytes.readUnsignedInt();
+			var assetConfig: GAFAssetConfig = new GAFAssetConfig(assetID);
+			assetConfig.compression = bytes.readInt();
+			assetConfig.versionMajor = bytes.readByte();
+			assetConfig.versionMinor = bytes.readByte();
+			assetConfig.fileLength = bytes.readUnsignedInt();
 
-			switch (header)
+			switch (assetConfig.compression)
 			{
 				case SIGNATURE_GAC:
 					bytes = decompressConfig(bytes);
 					break;
 			}
 
-			var framesCount: uint = bytes.readShort();
-			var animationBounds: Rectangle = new Rectangle(bytes.readFloat(), bytes.readFloat(), bytes.readFloat(),
-			                                               bytes.readFloat());
-			var animationPoint: Point = new Point(bytes.readFloat(), bytes.readFloat());
-
-			var result: GAFTimelineConfig = new GAFTimelineConfig(versionMajor + "." + versionMinor);
-			result.allTextureAtlases = new Vector.<CTextureAtlasScale>();
-			result.animationObjects = new CAnimationObjects();
-			result.animationSequences = new CAnimationSequences();
-			result.textFields = new CTextFieldObjects();
-
-			while (bytes.bytesAvailable > 0)
+			var timelineConfig: GAFTimelineConfig;
+			if (assetConfig.versionMajor < 4)
 			{
-				readNextTag(bytes, result, framesCount, defaultScale, defaultContentScaleFactor);
+				assetConfig.framesCount = bytes.readShort();
+				assetConfig.bounds = new Rectangle(bytes.readFloat(), bytes.readFloat(), bytes.readFloat(), bytes.readFloat());
+				assetConfig.pivot = new Point(bytes.readFloat(), bytes.readFloat());
+
+				timelineConfig = new GAFTimelineConfig(assetConfig.versionMajor + "." + assetConfig.versionMinor);
+				timelineConfig.id = "0";
+				timelineConfig.assetID = assetID;
+				assetConfig.timelines.push(timelineConfig);
+
+				while (bytes.bytesAvailable > 0)
+				{
+					readNextTag(bytes, assetConfig, defaultScale, defaultContentScaleFactor);
+				}
+
+				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
+				{
+					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
+				}
+			}
+			else
+			{
+				var i: int;
+				var l: uint = bytes.readUnsignedInt();
+				for (i = 0; i < l; i++)
+				{
+					assetConfig.scaleValues.push(bytes.readFloat());
+				}
+
+				l = bytes.readUnsignedInt();
+				for (i = 0; i < l; i++)
+				{
+					assetConfig.csfValues.push(bytes.readFloat());
+				}
+
+				while (bytes.bytesAvailable > 0)
+				{
+					readNextTag(bytes, assetConfig, defaultScale, defaultContentScaleFactor);
+				}
+
+				for each (timelineConfig in assetConfig.timelines)
+				{
+					timelineConfig.stageConfig = assetConfig.stageConfig;
+				}
 			}
 
-			if (!result.textureAtlas && result.allTextureAtlases.length)
-			{
-				result.textureAtlas = result.allTextureAtlases[0];
-			}
-
-			var configs: GAFTimelineConfigs = new GAFTimelineConfigs();
-			configs.configs.push(result);
-			return configs;
+			return assetConfig.timelines;
 		}
 
 		private static function decompressConfig(bytes: ByteArray): ByteArray
@@ -125,8 +150,7 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		private static function readNextTag(bytes: ByteArray, config: GAFTimelineConfig, animationFramesCount: uint,
-		                                    defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
+		private static function readNextTag(bytes: ByteArray, assetConfig: GAFAssetConfig, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
 			var tagID: int = bytes.readShort();
 			var tagLength: uint = bytes.readUnsignedInt();
@@ -134,33 +158,45 @@ package com.catalystapps.gaf.data.converters
 			tagContent.endian = Endian.LITTLE_ENDIAN;
 			bytes.readBytes(tagContent, 0, tagLength);
 			tagContent.position = 0;
+			trace("tagID: " + tagID);
+			var timelineConfig: GAFTimelineConfig;
+			if (assetConfig.timelines.length > 0)
+			{
+				timelineConfig = assetConfig.timelines[assetConfig.timelines.length - 1];
+			}
 
 			switch (tagID)
 			{
 				case BinGAFAssetConfigConverter.TAG_DEFINE_STAGE:
-					readStageConfig(tagContent, config);
+					readStageConfig(tagID, tagContent, assetConfig);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
-					readTextureAtlasConfig(tagContent, config, defaultScale, defaultContentScaleFactor, tagID);
+					readTextureAtlasConfig(tagID, tagContent, timelineConfig, defaultScale, defaultContentScaleFactor);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
-					readAnimationMasks(tagContent, config);
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS2:
+					readAnimationMasks(tagID, tagContent, timelineConfig);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS:
-					readAnimationObjects(tagContent, config);
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS2:
+					readAnimationObjects(tagID, tagContent, timelineConfig);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES:
-					readAnimationFrames(tagContent, config, animationFramesCount);
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES2:
+					readAnimationFrames(tagID, tagContent, timelineConfig, assetConfig.framesCount);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_NAMED_PARTS:
-					readNamedParts(tagContent, config);
+					readNamedParts(tagID, tagContent, timelineConfig);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_SEQUENCES:
-					readAnimationSequences(tagContent, config);
+					readAnimationSequences(tagID, tagContent, timelineConfig);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_TEXT_FIELDS:
-					readTextFields(tagContent, config);
+					readTextFields(tagID, tagContent, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_TIMELINE:
+					readTimeline(tagID, tagContent, assetConfig, defaultScale, defaultContentScaleFactor);
 					break;
 				case BinGAFAssetConfigConverter.TAG_END:
 					break;
@@ -170,7 +206,76 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readStageConfig(tagContent: ByteArray, config: GAFTimelineConfig): void
+		private static function readTimeline(tagID: int, tagContent: ByteArray, assetConfig: GAFAssetConfig,
+		                                     defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
+		{
+			var timelineConfig: GAFTimelineConfig = new GAFTimelineConfig(assetConfig.versionMajor + "." + assetConfig.versionMinor);
+			timelineConfig.id = tagContent.readUnsignedInt().toString();
+			timelineConfig.assetID = assetConfig.id;
+			var animationFramesCount: uint = tagContent.readUnsignedInt();
+			var animationBounds: Rectangle = new Rectangle(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
+			var animationPoint: Point = new Point(tagContent.readFloat(), tagContent.readFloat());
+			var hasLinkage: Boolean = tagContent.readBoolean();
+			if (hasLinkage)
+			{
+				var l: uint = tagContent.readShort();
+				timelineConfig.linkage = tagContent.readUTFBytes(l);
+			}
+
+			assetConfig.timelines.push(timelineConfig);
+
+			var nestedTags: ByteArray = new ByteArray();
+			nestedTags.endian = Endian.LITTLE_ENDIAN;
+			nestedTags.writeBytes(tagContent, tagContent.position, tagContent.bytesAvailable);
+			nestedTags.position = 0;
+
+			assetConfig.framesCount = animationFramesCount; // used in readAnimationFrames
+			while (nestedTags.bytesAvailable)
+			{
+				readNextTag(nestedTags, assetConfig, defaultScale, defaultContentScaleFactor);
+			}
+
+			if (!timelineConfig.allTextureAtlases.length && assetConfig.scaleValues != null && assetConfig.csfValues != null) // timeline hasn't atlas, create empty
+			{
+				var textureAtlas: CTextureAtlasScale;
+				for each (var scale: Number in assetConfig.scaleValues)
+				{
+					textureAtlas = new CTextureAtlasScale();
+					textureAtlas.scale = scale;
+
+					textureAtlas.allContentScaleFactors = new Vector.<CTextureAtlasCSF>();
+					for each (var csf: Number in assetConfig.csfValues)
+					{
+						var item: CTextureAtlasCSF;
+						item = new CTextureAtlasCSF(csf, scale);
+
+						if ((!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
+								|| !textureAtlas.contentScaleFactor)
+						{
+							textureAtlas.contentScaleFactor = item;
+						}
+
+						textureAtlas.allContentScaleFactors.push(item);
+					}
+					timelineConfig.allTextureAtlases.push(textureAtlas);
+					if (!isNaN(defaultScale) && defaultScale == scale)
+					{
+						timelineConfig.textureAtlas = textureAtlas;
+					}
+				}
+				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
+				{
+					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
+				}
+			}
+
+			if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
+			{
+				timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
+			}
+		}
+
+		private static function readStageConfig(tagID: int, tagContent: ByteArray, config: GAFAssetConfig): void
 		{
 			var stageConfig: CStage = new CStage();
 
@@ -183,12 +288,15 @@ package com.catalystapps.gaf.data.converters
 			config.stageConfig = stageConfig;
 		}
 
-		private static function readAnimationFrames(tagContent: ByteArray, config: GAFTimelineConfig,
-		                                            animationFramesCount: uint): void
+		private static function readAnimationFrames(tagID: int, tagContent: ByteArray,
+		                                            timelineConfig: GAFTimelineConfig, animationFramesCount: uint): void
 		{
 			var framesCount: uint = tagContent.readUnsignedInt();
 			var frameNumber: uint;
+			var hasChangesInDisplayList: Boolean;
+			var hasActions: Boolean;
 			var statesCount: uint;
+			var actionsCount: uint;
 			var hasColorTransform: Boolean;
 			var hasMask: Boolean;
 			var hasEffect: Boolean;
@@ -208,135 +316,160 @@ package com.catalystapps.gaf.data.converters
 			var filterLength: int;
 			var filterType: uint;
 
-			for (var i: uint = 0; i < framesCount; i++)
+			if (framesCount)
 			{
-				frameNumber = tagContent.readUnsignedInt();
-				statesCount = tagContent.readUnsignedInt();
-
-				if (prevFrame)
+				for (var i: uint = 0; i < framesCount; i++)
 				{
-					currentFrame = prevFrame.clone(frameNumber);
+					frameNumber = tagContent.readUnsignedInt();
 
-					for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
+					if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES)
 					{
-						animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
-					}
-				}
-				else
-				{
-					currentFrame = new CAnimationFrame(frameNumber);
-
-					if (currentFrame.frameNumber > 1)
-					{
-						for (missedFrameNumber = 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
-						{
-							animationConfigFrames.addFrame(new CAnimationFrame(missedFrameNumber));
-						}
-					}
-				}
-
-				for (var j: uint = 0; j < statesCount; j++)
-				{
-					hasColorTransform = tagContent.readBoolean();
-					hasMask = tagContent.readBoolean();
-					hasEffect = tagContent.readBoolean();
-
-					stateID = tagContent.readUnsignedInt();
-					zIndex = tagContent.readInt();
-					alpha = tagContent.readFloat();
-					matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
-					                    tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
-
-					///////////////////////////////////////////
-
-					function checkAndInitFilter(): void
-					{
-						if (!filter)
-						{
-							filter = new CFilter();
-						}
-					};
-
-					///////////////////////////////////////////
-
-					filter = null;
-
-					if (hasColorTransform)
-					{
-						var params: Vector.<Number> = new <Number>[tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
-							tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat()];
-						params.fixed = true;
-						checkAndInitFilter();
-
-						filter.addColorTransform(params);
-					}
-
-					if (hasEffect)
-					{
-						checkAndInitFilter();
-
-						filterLength = tagContent.readByte();
-						for (var k: uint = 0; k < filterLength; k++)
-						{
-							filterType = tagContent.readUnsignedInt();
-							var warning: String;
-
-							switch (filterType)
-							{
-								case BinGAFAssetConfigConverter.FILTER_DROP_SHADOW:
-									warning = readDropShadowFilter(tagContent, filter);
-									break;
-								case BinGAFAssetConfigConverter.FILTER_BLUR:
-									warning = readBlurFilter(tagContent, filter);
-									break;
-								case BinGAFAssetConfigConverter.FILTER_GLOW:
-									warning = readGlowFilter(tagContent, filter);
-									break;
-								case BinGAFAssetConfigConverter.FILTER_COLOR_MATRIX:
-									warning = readColorMatrixFilter(tagContent, filter);
-									break;
-								default:
-									trace(WarningConstants.UNSUPPORTED_FILTERS);
-									break;
-							}
-
-							config.addWarning(warning);
-						}
-					}
-
-					if (hasMask)
-					{
-						maskID = tagContent.readUnsignedInt() + "";
+						hasChangesInDisplayList = true;
+						hasActions = false;
 					}
 					else
 					{
-						maskID = "";
+						hasChangesInDisplayList = tagContent.readBoolean();
+						hasActions = tagContent.readBoolean();
 					}
 
-					instance = new CAnimationFrameInstance(stateID + "");
-					instance.update(zIndex, matrix, alpha, maskID, filter);
+					statesCount = tagContent.readUnsignedInt();
 
-					if (maskID && filter)
+					if (prevFrame)
 					{
-						config.addWarning(WarningConstants.FILTERS_UNDER_MASK);
+						currentFrame = prevFrame.clone(frameNumber);
+
+						for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
+						{
+							animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+						}
+					}
+					else
+					{
+						currentFrame = new CAnimationFrame(frameNumber);
+
+						if (currentFrame.frameNumber > 1)
+						{
+							for (missedFrameNumber = 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
+							{
+								animationConfigFrames.addFrame(new CAnimationFrame(missedFrameNumber));
+							}
+						}
 					}
 
-					currentFrame.addInstance(instance);
+					if (hasChangesInDisplayList)
+					{
+						for (var j: uint = 0; j < statesCount; j++)
+						{
+							hasColorTransform = tagContent.readBoolean();
+							hasMask = tagContent.readBoolean();
+							hasEffect = tagContent.readBoolean();
+
+							stateID = tagContent.readUnsignedInt();
+							zIndex = tagContent.readInt();
+							alpha = tagContent.readFloat();
+							matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
+									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
+
+							///////////////////////////////////////////
+
+							function checkAndInitFilter(): void
+							{
+								if (!filter)
+								{
+									filter = new CFilter();
+								}
+							};
+
+							///////////////////////////////////////////
+
+							filter = null;
+
+							if (hasColorTransform)
+							{
+								var params: Vector.<Number> = new <Number>[
+									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
+									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
+									tagContent.readFloat()];
+								params.fixed = true;
+								checkAndInitFilter();
+
+								filter.addColorTransform(params);
+							}
+
+							if (hasEffect)
+							{
+								checkAndInitFilter();
+
+								filterLength = tagContent.readByte();
+								for (var k: uint = 0; k < filterLength; k++)
+								{
+									filterType = tagContent.readUnsignedInt();
+									var warning: String;
+
+									switch (filterType)
+									{
+										case BinGAFAssetConfigConverter.FILTER_DROP_SHADOW:
+											warning = readDropShadowFilter(tagContent, filter);
+											break;
+										case BinGAFAssetConfigConverter.FILTER_BLUR:
+											warning = readBlurFilter(tagContent, filter);
+											break;
+										case BinGAFAssetConfigConverter.FILTER_GLOW:
+											warning = readGlowFilter(tagContent, filter);
+											break;
+										case BinGAFAssetConfigConverter.FILTER_COLOR_MATRIX:
+											warning = readColorMatrixFilter(tagContent, filter);
+											break;
+										default:
+											trace(WarningConstants.UNSUPPORTED_FILTERS);
+											break;
+									}
+
+									timelineConfig.addWarning(warning);
+								}
+							}
+
+							if (hasMask)
+							{
+								maskID = tagContent.readUnsignedInt() + "";
+							}
+							else
+							{
+								maskID = "";
+							}
+
+							instance = new CAnimationFrameInstance(stateID + "");
+							instance.update(zIndex, matrix, alpha, maskID, filter);
+
+							if (maskID && filter)
+							{
+								timelineConfig.addWarning(WarningConstants.FILTERS_UNDER_MASK);
+							}
+
+							currentFrame.addInstance(instance);
+						}
+
+						currentFrame.sortInstances();
+					}
+
+					if (hasActions)
+					{
+						// TODO add frame actions logic
+					}
+
+					animationConfigFrames.addFrame(currentFrame);
+
+					prevFrame = currentFrame;
 				}
 
-				currentFrame.sortInstances();
-
-				animationConfigFrames.addFrame(currentFrame);
-
-				prevFrame = currentFrame;
+				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= animationFramesCount; missedFrameNumber++)
+				{
+					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+				}
 			}
 
-			for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= animationFramesCount; missedFrameNumber++)
-			{
-				animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
-			}
-
-			config.animationConfigFrames = animationConfigFrames;
+			timelineConfig.animationConfigFrames = animationConfigFrames;
 		}
 
 		private static function readDropShadowFilter(source: ByteArray, filter: CFilter): String
@@ -375,7 +508,7 @@ package com.catalystapps.gaf.data.converters
 			var matrix: Vector.<Number> = new Vector.<Number>(20, true);
 			for (var i: uint = 0; i < 20; i++)
 			{
-				matrix.push(source.readFloat());
+				matrix[i] = source.readFloat();
 			}
 
 			return filter.addColorMatrixFilter(matrix);
@@ -397,10 +530,8 @@ package com.catalystapps.gaf.data.converters
 			return [alpha, color];
 		}
 
-		private static function readTextureAtlasConfig(tagContent: ByteArray, config: GAFTimelineConfig,
-		                                               defaultScale: Number = NaN,
-		                                               defaultContentScaleFactor: Number = NaN,
-		                                               tagID: uint = BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS): void
+		private static function readTextureAtlasConfig(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig,
+		                                               defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
 			var i: uint;
 			var j: uint;
@@ -505,10 +636,8 @@ package com.catalystapps.gaf.data.converters
 				}
 
 				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "",
-				                                   new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth,
-				                                                 elementHeight),
-				                                   new Matrix(1 / elementScale, 0, 0, 1 / elementScale,
-				                                              -pivot.x / elementScale, -pivot.y / elementScale));
+						new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight),
+						new Matrix(1 / elementScale, 0, 0, 1 / elementScale, -pivot.x / elementScale, -pivot.y / elementScale));
 				element.scale9Grid = scale9Grid;
 				elements.addElement(element);
 			}
@@ -518,15 +647,15 @@ package com.catalystapps.gaf.data.converters
 				contentScaleFactor.elements = elements;
 			}
 
-			config.allTextureAtlases.push(textureAtlas);
+			timelineConfig.allTextureAtlases.push(textureAtlas);
 
 			if (!isNaN(defaultScale) && defaultScale == scale)
 			{
-				config.textureAtlas = textureAtlas;
+				timelineConfig.textureAtlas = textureAtlas;
 			}
 		}
 
-		private static function readAnimationMasks(tagContent: ByteArray, config: GAFTimelineConfig): void
+		private static function readAnimationMasks(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var objectID: int;
@@ -537,11 +666,39 @@ package com.catalystapps.gaf.data.converters
 			{
 				objectID = tagContent.readUnsignedInt();
 				staticObjectID = tagContent.readUnsignedInt();
-				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", "texture", true));
+				var type: String;
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS)
+				{
+					type = CAnimationObject.TYPE_TEXTURE;
+				}
+				else
+				{
+					type = getAnimatedStaticObjectTypeString(tagContent.readUnsignedShort());
+				}
+				timelineConfig.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", type, true));
 			}
 		}
 
-		private static function readAnimationMasks2(tagContent: ByteArray, config: GAFTimelineConfig): void
+		private static function getAnimatedStaticObjectTypeString(type: uint): String
+		{
+			var typeString: String = CAnimationObject.TYPE_TEXTURE;
+			switch (type)
+			{
+				case 0:
+					typeString = CAnimationObject.TYPE_TEXTURE;
+					break;
+				case 1:
+					typeString = CAnimationObject.TYPE_TEXTFIELD;
+					break;
+				case 2:
+					typeString = CAnimationObject.TYPE_TIMELINE;
+					break;
+			}
+
+			return typeString;
+		}
+
+		private static function readAnimationObjects(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var objectID: int;
@@ -552,49 +709,19 @@ package com.catalystapps.gaf.data.converters
 			{
 				objectID = tagContent.readUnsignedInt();
 				staticObjectID = tagContent.readUnsignedInt();
-				var l: uint = tagContent.readShort();
-				type = tagContent.readUTFBytes(l);
-				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "",
-				                                                                type + "",
-				                                                                true));
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS)
+				{
+					type = CAnimationObject.TYPE_TEXTURE;
+				}
+				else
+				{
+					type = getAnimatedStaticObjectTypeString(tagContent.readUnsignedShort());
+				}
+				timelineConfig.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", type, false));
 			}
 		}
 
-		private static function readAnimationObjects(tagContent: ByteArray, config: GAFTimelineConfig): void
-		{
-			var length: int = tagContent.readUnsignedInt();
-			var objectID: int;
-			var staticObjectID: int;
-			var type: String;
-
-			for (var i: uint = 0; i < length; i++)
-			{
-				objectID = tagContent.readUnsignedInt();
-				staticObjectID = tagContent.readUnsignedInt();
-				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "", "texture", false));
-			}
-		}
-
-		private static function readAnimationObjects2(tagContent: ByteArray, config: GAFTimelineConfig): void
-		{
-			var length: int = tagContent.readUnsignedInt();
-			var objectID: int;
-			var staticObjectID: int;
-			var type: String;
-
-			for (var i: uint = 0; i < length; i++)
-			{
-				objectID = tagContent.readUnsignedInt();
-				staticObjectID = tagContent.readUnsignedInt();
-				var l: uint = tagContent.readShort();
-				type = tagContent.readUTFBytes(l);
-				config.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", staticObjectID + "",
-								type + "",
-						false));
-			}
-		}
-
-		private static function readAnimationSequences(tagContent: ByteArray, config: GAFTimelineConfig): void
+		private static function readAnimationSequences(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var sequenceID: String;
@@ -606,15 +733,25 @@ package com.catalystapps.gaf.data.converters
 				sequenceID = tagContent.readUTF();
 				startFrameNo = tagContent.readShort();
 				endFrameNo = tagContent.readShort();
-				config.animationSequences.addSequence(new CAnimationSequence(sequenceID, startFrameNo, endFrameNo));
+				timelineConfig.animationSequences.addSequence(new CAnimationSequence(sequenceID, startFrameNo, endFrameNo));
 			}
 		}
 
-		private static function readNamedParts(tagContent: ByteArray, config: GAFTimelineConfig): void
+		private static function readNamedParts(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
+			timelineConfig.namedParts = {};
+
+			var length: int = tagContent.readUnsignedInt();
+			var partID: int;
+			for (var i: uint = 0; i < length; i++)
+			{
+				partID = tagContent.readUnsignedInt();
+				var l: uint = tagContent.readShort();
+				timelineConfig.namedParts[partID] = tagContent.readUTFBytes(l);
+			}
 		}
 
-		private static function readTextFields(tagContent: ByteArray, config: GAFTimelineConfig): void
+		private static function readTextFields(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var textFieldID: int;
@@ -715,7 +852,7 @@ package com.catalystapps.gaf.data.converters
 				 var display: String = tagContent.readUTFBytes(l);*/
 
 				textFormat = new TextFormat(font, size, color, bold, italic, underline, url, target, align, leftMargin,
-				                            rightMargin, blockIndent, leading);
+						rightMargin, blockIndent, leading);
 				textFormat.bullet = bullet;
 				textFormat.kerning = kerning;
 				//textFormat.display = display;
@@ -724,7 +861,7 @@ package com.catalystapps.gaf.data.converters
 				textFormat.indent = indent;
 
 				var textFieldObject: CTextFieldObject = new CTextFieldObject(textFieldID.toString(), text, textFormat,
-				                                                             width, height);
+						width, height);
 				textFieldObject.embedFonts = embedFonts;
 				textFieldObject.multiline = multiline;
 				textFieldObject.wordWrap = wordWrap;
@@ -733,7 +870,7 @@ package com.catalystapps.gaf.data.converters
 				textFieldObject.selectable = selectable;
 				textFieldObject.displayAsPassword = displayAsPassword;
 				textFieldObject.maxChars = maxChars;
-				config.textFields.addTextFieldObject(textFieldObject);
+				timelineConfig.textFields.addTextFieldObject(textFieldObject);
 			}
 		}
 	}

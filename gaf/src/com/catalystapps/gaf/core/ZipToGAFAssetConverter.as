@@ -2,7 +2,6 @@ package com.catalystapps.gaf.core
 {
 	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
-	import com.catalystapps.gaf.data.GAFTimelineConfigs;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
@@ -352,13 +351,13 @@ package com.catalystapps.gaf.core
 		{
 			this.atlasSourceURLs = [];
 
-			var configs: GAFTimelineConfigs;
+			var configs: Vector.<GAFTimelineConfig>;
 
 			for (var id: String in this.gafAssetConfigs)
 			{
 				configs = this.gafAssetConfigs[id];
 
-				for each (var config: GAFTimelineConfig in configs.configs)
+				for each (var config: GAFTimelineConfig in configs)
 				{
 					var folderURL: String = this.getFolderURL(id);
 
@@ -508,7 +507,7 @@ package com.catalystapps.gaf.core
 		{
 			clearTimeout(this.configConvertTimeout);
 
-			var configs: GAFTimelineConfigs;
+			var configs: Vector.<GAFTimelineConfig>;
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var configSource: Object = this.gafAssetConfigSources[configID];
 			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
@@ -547,7 +546,7 @@ package com.catalystapps.gaf.core
 
 		private function createGAFTimelines(): void
 		{
-			var gafTimelineConfigs: GAFTimelineConfigs;
+			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 			var gafAssetConfigID: String;
 
 			for (var i: uint = 0; i < this.gafAssetsIDs.length; i++)
@@ -557,7 +556,7 @@ package com.catalystapps.gaf.core
 
 				var timelines: Vector.<GAFTimeline> = new Vector.<GAFTimeline>();
 
-				for each (var config: GAFTimelineConfig in gafTimelineConfigs.configs)
+				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
 					timelines.push(this.createTimeline(config));
 				}
