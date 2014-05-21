@@ -158,7 +158,7 @@ package com.catalystapps.gaf.data.converters
 			tagContent.endian = Endian.LITTLE_ENDIAN;
 			bytes.readBytes(tagContent, 0, tagLength);
 			tagContent.position = 0;
-			trace("tagID: " + tagID);
+
 			var timelineConfig: GAFTimelineConfig;
 			if (assetConfig.timelines.length > 0)
 			{
@@ -218,8 +218,7 @@ package com.catalystapps.gaf.data.converters
 			var hasLinkage: Boolean = tagContent.readBoolean();
 			if (hasLinkage)
 			{
-				var l: uint = tagContent.readShort();
-				timelineConfig.linkage = tagContent.readUTFBytes(l);
+				timelineConfig.linkage = tagContent.readUTF();
 			}
 
 			assetConfig.timelines.push(timelineConfig);
@@ -746,8 +745,7 @@ package com.catalystapps.gaf.data.converters
 			for (var i: uint = 0; i < length; i++)
 			{
 				partID = tagContent.readUnsignedInt();
-				var l: uint = tagContent.readShort();
-				timelineConfig.namedParts[partID] = tagContent.readUTFBytes(l);
+				timelineConfig.namedParts[partID] = tagContent.readUTF();
 			}
 		}
 
@@ -775,8 +773,7 @@ package com.catalystapps.gaf.data.converters
 				width = tagContent.readFloat();
 				height = tagContent.readFloat();
 
-				var l: uint = tagContent.readShort();
-				text = tagContent.readUTFBytes(l);
+				text = tagContent.readUTF();
 
 				embedFonts = tagContent.readBoolean();
 				multiline = tagContent.readBoolean();
@@ -785,8 +782,7 @@ package com.catalystapps.gaf.data.converters
 				var hasRestrict: Boolean = tagContent.readBoolean();
 				if (hasRestrict)
 				{
-					l = tagContent.readShort();
-					restrict = tagContent.readUTFBytes(l);
+					restrict = tagContent.readUTF();
 				}
 
 				editable = tagContent.readBoolean();
@@ -824,8 +820,7 @@ package com.catalystapps.gaf.data.converters
 				var bullet: Boolean = tagContent.readBoolean();
 				var color: uint = tagContent.readUnsignedInt();
 
-				l = tagContent.readShort();
-				var font: String = tagContent.readUTFBytes(l);
+				var font: String = tagContent.readUTF();
 				var indent: uint = tagContent.readUnsignedInt();
 				var italic: Boolean = tagContent.readBoolean();
 				var kerning: Boolean = tagContent.readBoolean();
@@ -835,21 +830,18 @@ package com.catalystapps.gaf.data.converters
 				var rightMargin: Number = tagContent.readUnsignedInt();
 				var size: int = tagContent.readUnsignedInt();
 
-				l = tagContent.readUnsignedInt();
+				var l: uint = tagContent.readUnsignedInt();
 				var tabStops: Array = [];
 				for (var j: uint = 0; j < l; j++)
 				{
 					tabStops.push(tagContent.readUnsignedInt());
 				}
 
-				l = tagContent.readShort();
-				var target: String = tagContent.readUTFBytes(l);
+				var target: String = tagContent.readUTF();
 				var underline: Boolean = tagContent.readBoolean();
-				l = tagContent.readShort();
-				var url: String = tagContent.readUTFBytes(l);
+				var url: String = tagContent.readUTF();
 
-				/*l = tagContent.readShort();
-				 var display: String = tagContent.readUTFBytes(l);*/
+				/* var display: String = tagContent.readUTF();*/
 
 				textFormat = new TextFormat(font, size, color, bold, italic, underline, url, target, align, leftMargin,
 						rightMargin, blockIndent, leading);

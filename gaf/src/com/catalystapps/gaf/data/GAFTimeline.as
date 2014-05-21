@@ -43,16 +43,16 @@ package com.catalystapps.gaf.data
 		/**
 		 * Creates an GAFAsset object
 		 *
-		 * @param config GAF asset config
+		 * @param timelineConfig GAF asset timelineConfig
 		 */
-		public function GAFTimeline(config: GAFTimelineConfig)
+		public function GAFTimeline(timelineConfig: GAFTimelineConfig)
 		{
-			this._config = config;
+			this._config = timelineConfig;
 
-			this._uniqueID = config.assetID + "::" + config.id;
-			if (config.linkage)
+			this._uniqueID = timelineConfig.assetID + "::" + timelineConfig.id;
+			if (timelineConfig.linkage)
 			{
-				this._uniqueLinkage = config.assetID + "::" + config.linkage;
+				this._uniqueLinkage = timelineConfig.assetID + "::" + timelineConfig.linkage;
 			}
 		}
 
@@ -295,12 +295,12 @@ package com.catalystapps.gaf.data
 				}
 				else
 				{
-					throw new Error("There is no csf " + csf + "in asset config for scalse " + scale);
+					throw new Error("There is no csf " + csf + "in timeline config for scalse " + scale);
 				}
 			}
 			else
 			{
-				throw new Error("There is no scale " + scale + "in asset config");
+				throw new Error("There is no scale " + scale + "in timeline config");
 			}
 		}
 
@@ -324,7 +324,7 @@ package com.catalystapps.gaf.data
 			}
 			else
 			{
-				throw new Error("There is no csf " + csf + "in asset config");
+				throw new Error("There is no csf " + csf + "in timeline config");
 			}
 		}
 

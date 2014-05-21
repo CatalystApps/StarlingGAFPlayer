@@ -75,17 +75,17 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by ID
 		 */
-		public function getGAFTimelineByID(assetID: String, id: String): GAFTimeline
+		public function getGAFTimelineByID(timelineID: String, id: String): GAFTimeline
 		{
-			return this._timelinesDictionary[assetID + "::" + id];
+			return this._timelinesDictionary[timelineID + "::" + id];
 		}
 
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by ID
 		 */
-		public function getGAFTimelineByLinkage(assetID: String, linkage: String): GAFTimeline
+		public function getGAFTimelineByLinkage(timelineID: String, linkage: String): GAFTimeline
 		{
-			return this._timelinesByLinkage[assetID + "::" + linkage];
+			return this._timelinesByLinkage[timelineID + "::" + linkage];
 		}
 
 		/**
