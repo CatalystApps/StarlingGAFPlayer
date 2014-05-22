@@ -97,6 +97,7 @@ package com.catalystapps.gaf.core
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
+		private var _id: String;
 		
 		private var _zip: FZip;
 		private var _zipLoader: FZipLibrary;
@@ -135,8 +136,9 @@ package com.catalystapps.gaf.core
 		//--------------------------------------------------------------------------
 		
 		/** @private */
-		public function ZipToGAFAssetConverter()
+		public function ZipToGAFAssetConverter(id: String = null)
 		{
+			this.id = id;
 			this.gfxData = new GAFGFXData();
 			
 			this.gafAssetConfigs = new Object();
@@ -716,5 +718,15 @@ package com.catalystapps.gaf.core
 			return _zipLoader;
 		}
 		
+		/**
+		 * Return the id of the converter
+		 */
+		public function get id() : String {
+			return _id;
+		}
+
+		public function set id(value : String) : void {
+			_id = value;
+		}
 	}
 }
