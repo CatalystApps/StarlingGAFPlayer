@@ -1,6 +1,5 @@
 package com.catalystapps.gaf.data.converters
 {
-	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
@@ -10,6 +9,7 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
@@ -39,9 +39,7 @@ package com.catalystapps.gaf.data.converters
 		//
 		//--------------------------------------------------------------------------
 
-		private static function convertConfig(config: GAFTimelineConfig, jsonObject: Object, defaultScale: Number = NaN,
-		                                      defaultContentScaleFactor: Number = NaN, scales: Array = null,
-		                                      csfs: Array = null): GAFTimelineConfig
+		private static function convertConfig(config: GAFTimelineConfig, jsonObject: Object, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN, scales: Array = null, csfs: Array = null): GAFTimelineConfig
 		{
 			var allTextureAtlases: Vector.<CTextureAtlasScale> = new Vector.<CTextureAtlasScale>();
 
@@ -63,16 +61,12 @@ package com.catalystapps.gaf.data.converters
 					for each (var e: Object in ta.elements)
 					{
 						var element: CTextureAtlasElement = new CTextureAtlasElement(e.name, e.atlasID,
-						                                                             new Rectangle(int(e.x), int(e.y),
-						                                                                           e.width, e.height),
-						                                                             new Matrix(1 / e.scale, 0, 0,
-						                                                                        1 / e.scale,
-						                                                                        -e.pivotX / e.scale,
-						                                                                        -e.pivotY / e.scale));
+								new Rectangle(int(e.x), int(e.y), e.width, e.height),
+								new Matrix(1 / e.scale, 0, 0, 1 / e.scale, -e.pivotX / e.scale, -e.pivotY / e.scale));
 						if (e.scale9Grid != undefined)
 						{
 							element.scale9Grid = new Rectangle(e.scale9Grid.x, e.scale9Grid.y, e.scale9Grid.width,
-							                                   e.scale9Grid.height);
+									e.scale9Grid.height);
 						}
 						elements.addElement(element);
 					}
@@ -388,15 +382,15 @@ package com.catalystapps.gaf.data.converters
 									case JsonGAFAssetConfigConverter.FILTER_DROP_SHADOW:
 										checkAndInitFilter();
 										warning = filter.addDropShadowFilter(filterConfig["x"], filterConfig["y"],
-										                                     filterConfig["color"],
-										                                     filterConfig["alpha"],
-										                                     filterConfig["angle"],
-										                                     filterConfig["distance"]);
+												filterConfig["color"],
+												filterConfig["alpha"],
+												filterConfig["angle"],
+												filterConfig["distance"]);
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_GLOW:
 										checkAndInitFilter();
 										warning = filter.addGlowFilter(filterConfig["x"], filterConfig["y"],
-										                               filterConfig["color"], filterConfig["alpha"]);
+												filterConfig["color"], filterConfig["alpha"]);
 										break;
 									default:
 										trace(WarningConstants.UNSUPPORTED_FILTERS);
@@ -415,7 +409,7 @@ package com.catalystapps.gaf.data.converters
 
 						instance = new CAnimationFrameInstance(stateID);
 						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), io[7], maskID,
-						                filter);
+								filter);
 
 						if (maskID && filter)
 						{
@@ -426,16 +420,16 @@ package com.catalystapps.gaf.data.converters
 					}
 
 					currentFrame.sortInstances();
-					
+
 					if (f.hasOwnProperty("actions"))
 					{
 						var action: CFrameAction;
-						
+
 						for (var i: int = 0; i < f.actions.length; i++)
 						{
 							action = new CFrameAction();
 							action.type = f.actions[i].type;
-							
+
 							if (f.actions[i].type > 1) // if not stop(); or play(); and has params
 							{
 								for (var p: int = 0; p < f.actions[i].paramsCount; p++)
@@ -451,7 +445,7 @@ package com.catalystapps.gaf.data.converters
 
 					prevFrame = currentFrame;
 				}
-				
+
 				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
 				{
 					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
@@ -489,8 +483,7 @@ package com.catalystapps.gaf.data.converters
 			return config;
 		}
 
-		public static function convert(assetID: String, json: String, defaultScale: Number = NaN,
-		                               defaultContentScaleFactor: Number = NaN): Vector.<GAFTimelineConfig>
+		public static function convert(assetID: String, json: String, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): Vector.<GAFTimelineConfig>
 		{
 			var jsonObject: Object = JSON.parse(json);
 
@@ -524,7 +517,10 @@ package com.catalystapps.gaf.data.converters
 
 			if (jsonObject.stageConfig)
 			{
-				timelineConfig.stageConfig = new CStage().clone(jsonObject.stageConfig);
+				for each (timelineConfig in timelineConfigs)
+				{
+					timelineConfig.stageConfig = new CStage().clone(jsonObject.stageConfig);
+				}
 			}
 
 			///////////////////////////////////////////////////////////////
