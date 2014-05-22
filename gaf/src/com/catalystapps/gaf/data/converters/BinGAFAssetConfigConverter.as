@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
@@ -332,8 +333,6 @@ package com.catalystapps.gaf.data.converters
 						hasActions = tagContent.readBoolean();
 					}
 
-					statesCount = tagContent.readUnsignedInt();
-
 					if (prevFrame)
 					{
 						currentFrame = prevFrame.clone(frameNumber);
@@ -358,6 +357,8 @@ package com.catalystapps.gaf.data.converters
 
 					if (hasChangesInDisplayList)
 					{
+						statesCount = tagContent.readUnsignedInt();
+						
 						for (var j: uint = 0; j < statesCount; j++)
 						{
 							hasColorTransform = tagContent.readBoolean();
@@ -454,7 +455,24 @@ package com.catalystapps.gaf.data.converters
 
 					if (hasActions)
 					{
-						// TODO add frame actions logic
+						var action: CFrameAction;
+						var count: int = tagContent.readUnsignedInt();
+						for (var a: int = 0; a < count; a++)
+						{
+							action = new CFrameAction();
+							action.type = tagContent.readUnsignedInt();
+							
+							if (action.type > 1) // if not stop(); or play(); and has params
+							{
+								var paramsCount: int = tagContent.readUnsignedInt();
+								for (var p: int = 0; p < paramsCount; p++)
+								{
+									action.params.push(tagContent.readUTF());
+								}
+							}
+							
+							currentFrame.addAction(action);
+						}
 					}
 
 					animationConfigFrames.addFrame(currentFrame);

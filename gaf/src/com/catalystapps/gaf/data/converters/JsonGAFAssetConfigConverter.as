@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
@@ -425,11 +426,32 @@ package com.catalystapps.gaf.data.converters
 					}
 
 					currentFrame.sortInstances();
+					
+					if (f.hasOwnProperty("actions"))
+					{
+						var action: CFrameAction;
+						
+						for (var i: int = 0; i < f.actions.length; i++)
+						{
+							action = new CFrameAction();
+							action.type = f.actions[i].type;
+							
+							if (f.actions[i].type > 1) // if not stop(); or play(); and has params
+							{
+								for (var p: int = 0; p < f.actions[i].paramsCount; p++)
+								{
+									action.params[p] = f.actions[i].params[p];
+								}
+							}
+						}
+						currentFrame.addAction(action);
+					}
 
 					animationConfigFrames.addFrame(currentFrame);
 
 					prevFrame = currentFrame;
 				}
+				
 				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
 				{
 					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
