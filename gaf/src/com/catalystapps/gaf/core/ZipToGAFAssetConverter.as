@@ -1,9 +1,9 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.GAFTimeline;
-	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
+	import com.catalystapps.gaf.data.GAFTimeline;
+	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
@@ -579,6 +579,11 @@ package com.catalystapps.gaf.core
 			if (!ZipToGAFAssetConverter.keepImagesInRAM)
 			{
 				this.gfxData.removeImages();
+			}
+
+			if (!this._gafBundle.timelines.length)
+			{
+				throw new Error("No animations found.");
 			}
 
 			this.dispatchEvent(new Event(Event.COMPLETE));
