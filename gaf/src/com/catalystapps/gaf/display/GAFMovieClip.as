@@ -12,6 +12,7 @@ package com.catalystapps.gaf.display {
 	import flash.geom.Rectangle;
 
 	import starling.animation.IAnimatable;
+	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.display.Quad;
 	import starling.display.Sprite;
@@ -321,12 +322,12 @@ package com.catalystapps.gaf.display {
 
 						if (instance.maskID) {
 							var maskImage : GAFImage = this.masksDictionary[instance.maskID];
-							mustReorder ||= (maskImage.zIndex != instance.zIndex);
-							maskImage.zIndex = instance.zIndex;
 
 							if (maskImage) {
 								var pixelMaskDisplayObject : PixelMaskDisplayObject = this.maskedImagesDictionary[instance.maskID];
 								pixelMaskDisplayObject.visible = true;
+								mustReorder ||= (pixelMaskDisplayObject.zIndex != instance.zIndex);
+								pixelMaskDisplayObject.zIndex = pixelMaskDisplayObject.zIndex;
 
 								if (!image.parent)
 									pixelMaskDisplayObject.addChild(image);
@@ -371,7 +372,7 @@ package com.catalystapps.gaf.display {
 			}
 
 			if (mustReorder) {
-				sortChildren(sortGAFImage);
+				sortChildren(sortDisplayObjects);
 			}
 
 			var debugView : Quad;
@@ -395,10 +396,13 @@ package com.catalystapps.gaf.display {
 			}
 		}
 
-		private function sortGAFImage(a : GAFImage, b : GAFImage) : int {
-			if (a.zIndex > b.zIndex)
+		private function sortDisplayObjects(a : DisplayObject, b : DisplayObject) : int {
+			var aZindex : uint = a.hasOwnProperty('zIndex') ? a['zIndex'] : 0;
+			var bZindex : uint = b.hasOwnProperty('zIndex') ? b['zIndex'] : 0;
+
+			if (aZindex > bZindex)
 				return 1;
-			else if (a.zIndex < b.zIndex)
+			else if (aZindex < bZindex)
 				return -1;
 			else
 				return 0;

@@ -10,7 +10,7 @@ package com.catalystapps.gaf.display {
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		public var zIndex : int;
+		public var zIndex : uint;
 
 		//--------------------------------------------------------------------------
 		//
