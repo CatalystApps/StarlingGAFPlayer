@@ -295,6 +295,8 @@ package com.catalystapps.gaf.display {
 			}
 		}
 
+		private var tmpMaskTransformationMatrix : Matrix = new Matrix();
+
 		private function draw() : void {
 			if (_gafAsset.config.debugRegions) {
 				// Non optimized way when there are debug regions
@@ -304,6 +306,12 @@ package com.catalystapps.gaf.display {
 				for (var i : int = (numChildren - 1); i >= 0; i--) {
 					getChildAt(i).visible = false;
 				}
+
+				for each (var pixelMaskimage : PixelMaskDisplayObject in this.maskedImagesDictionary) {
+					for (var j : int = (pixelMaskimage.numChildren - 1); j >= 0; j--) {
+						pixelMaskimage.getChildAt(j).visible = false;
+					}
+				}
 			}
 
 			var image : GAFImage;
@@ -311,13 +319,12 @@ package com.catalystapps.gaf.display {
 			if (this._gafAsset.config.animationConfigFrames.frames.length > this._currentFrame) {
 				var frameConfig : CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
 				var mustReorder : Boolean;
+				var zIndex : uint;
 				for each (var instance : CAnimationFrameInstance in frameConfig.instances) {
 					image = this.imagesDictionary[instance.id];
 
 					if (image) {
 						image.alpha = instance.alpha;
-						mustReorder ||= (image.zIndex != instance.zIndex);
-						image.zIndex = instance.zIndex;
 						image.visible = true;
 
 						if (instance.maskID) {
@@ -326,8 +333,8 @@ package com.catalystapps.gaf.display {
 							if (maskImage) {
 								var pixelMaskDisplayObject : PixelMaskDisplayObject = this.maskedImagesDictionary[instance.maskID];
 								pixelMaskDisplayObject.visible = true;
-								mustReorder ||= (pixelMaskDisplayObject.zIndex != instance.zIndex);
-								pixelMaskDisplayObject.zIndex = pixelMaskDisplayObject.zIndex;
+								mustReorder ||= (pixelMaskDisplayObject.zIndex != zIndex);
+								pixelMaskDisplayObject.zIndex = zIndex;
 
 								if (!image.parent)
 									pixelMaskDisplayObject.addChild(image);
@@ -335,15 +342,13 @@ package com.catalystapps.gaf.display {
 								var maskInstance : CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
 
 								if (maskInstance) {
-									var maskTransformMatrix : Matrix = maskInstance.getTransformMatrix(maskImage.assetTexture.pivotMatrix, this.scale).clone();
-									var imageTransformMatrix : Matrix = instance.getTransformMatrix(image.assetTexture.pivotMatrix, this.scale).clone();
+									instance.applyTransformMatrix(image.transformationMatrix, image.assetTexture.pivotMatrix, this.scale);
 
-									maskTransformMatrix.invert();
-									imageTransformMatrix.concat(maskTransformMatrix);
+									maskInstance.applyTransformMatrix(tmpMaskTransformationMatrix, maskImage.assetTexture.pivotMatrix, this.scale);
+									tmpMaskTransformationMatrix.invert();
+									image.transformationMatrix.concat(tmpMaskTransformationMatrix);
 
-									image.transformationMatrix = imageTransformMatrix;
-
-									pixelMaskDisplayObject.transformationMatrix = maskInstance.getTransformMatrix(maskImage.assetTexture.pivotMatrix, this.scale);
+									maskInstance.applyTransformMatrix(pixelMaskDisplayObject.transformationMatrix, maskImage.assetTexture.pivotMatrix, this.scale);
 								} else {
 									throw new Error("Unable to find mask with ID " + instance.maskID);
 								}
@@ -360,6 +365,9 @@ package com.catalystapps.gaf.display {
 								throw new Error("Unable to find mask with ID " + instance.maskID);
 							}
 						} else {
+							mustReorder ||= (image.zIndex != zIndex);
+							image.zIndex = zIndex;
+
 							//image.transformationMatrix = instance.getTransformMatrix(image.assetTexture.pivotMatrix, this.scale);
 							instance.applyTransformMatrix(image.transformationMatrix, image.assetTexture.pivotMatrix, this.scale);
 							this.updateFilter(image, instance, this.scale);
@@ -368,6 +376,8 @@ package com.catalystapps.gaf.display {
 								this.addChild(image);
 						}
 					}
+
+					++zIndex;
 				}
 			}
 
@@ -434,7 +444,7 @@ package com.catalystapps.gaf.display {
 
 			this._currentFrame = 0;
 			this._totalFrames = this._gafAsset.config.animationConfigFrames.frames.length;
-			this.fps = this._gafAsset.config.stageConfig.fps;
+			this.fps = this._gafAsset.config.stageConfig ? this._gafAsset.config.stageConfig.fps : 30;
 
 			var animationObjectsDictionary : Object = this._gafAsset.config.animationObjects.animationObjectsDictionary;
 
