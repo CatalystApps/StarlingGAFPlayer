@@ -404,6 +404,20 @@ package com.catalystapps.gaf.display {
 
 				addChild(debugView);
 			}
+
+			var sequence : CAnimationSequence;
+			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START)) {
+				sequence = this._gafAsset.config.animationSequences.getSequenceStart(this._currentFrame + 1);
+				if (sequence) {
+					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
+				}
+			}
+			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END)) {
+				sequence = this._gafAsset.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
+				if (sequence) {
+					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
+				}
+			}
 		}
 
 		private function sortDisplayObjects(a : DisplayObject, b : DisplayObject) : int {
@@ -537,30 +551,27 @@ package com.catalystapps.gaf.display {
 						}
 					}
 
-					if (!isSkipping)
+					if (!isSkipping) {
+						// Draw will trigger events if any
 						this.draw();
-
-					if (!isSkipping && this.hasEventListener(EVENT_TYPE_SEQUENCE_START)) {
-						sequence = this._gafAsset.config.animationSequences.getSequenceStart(this._currentFrame + 1);
-						if (sequence) {
-							this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
+					} else {
+						// If we are skipping, we send our own events
+						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_START)) {
+							sequence = this._gafAsset.config.animationSequences.getSequenceStart(this._currentFrame + 1);
+							if (sequence) {
+								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_START, false, sequence);
+							}
 						}
-					} else if (isSkipping && this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_START)) {
-						sequence = this._gafAsset.config.animationSequences.getSequenceStart(this._currentFrame + 1);
-						if (sequence) {
-							this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_START, false, sequence);
-						}
-					} else if (!isSkipping && this.hasEventListener(EVENT_TYPE_SEQUENCE_END)) {
-						sequence = this._gafAsset.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
-						if (sequence) {
-							this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
-						}
-					} else if (isSkipping && this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_END)) {
-						sequence = this._gafAsset.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
-						if (sequence) {
-							this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_END, false, sequence);
+						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_END)) {
+							sequence = this._gafAsset.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
+							if (sequence) {
+								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_END, false, sequence);
+							}
 						}
 					}
+
+					if (!inPlay)
+						return;
 				}
 			}
 		}
