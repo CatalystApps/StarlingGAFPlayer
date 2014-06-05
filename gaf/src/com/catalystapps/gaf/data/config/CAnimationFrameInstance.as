@@ -73,6 +73,13 @@ package com.catalystapps.gaf.data.config {
 			return result;
 		}
 
+		public function applyTransformMatrix(transformationMatrix : Matrix, pivotMatrix : Matrix, scale : Number) : void {
+			transformationMatrix.copyFrom(pivotMatrix);
+			transformationMatrix.concat(this._matrix);
+			transformationMatrix.tx *= scale;
+			transformationMatrix.ty *= scale;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
