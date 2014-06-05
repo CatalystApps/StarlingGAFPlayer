@@ -68,17 +68,9 @@ package com.catalystapps.gaf.data.config {
 
 			matrixCopy.tx = matrixCopy.tx * scale;
 			matrixCopy.ty = matrixCopy.ty * scale;
-
 			result.concat(matrixCopy);
 
 			return result;
-		}
-
-		public function applyTransformMatrix(transformationMatrix : Matrix, pivotMatrix : Matrix, scale : Number) : void {
-			transformationMatrix.copyFrom(pivotMatrix);
-			transformationMatrix.concat(this._matrix);
-			transformationMatrix.tx *= scale;
-			transformationMatrix.ty *= scale;
 		}
 
 		//--------------------------------------------------------------------------
