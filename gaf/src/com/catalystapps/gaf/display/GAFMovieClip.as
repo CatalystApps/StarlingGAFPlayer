@@ -569,9 +569,6 @@ package com.catalystapps.gaf.display {
 							}
 						}
 					}
-
-					if (!inPlay)
-						return;
 				}
 			}
 		}
