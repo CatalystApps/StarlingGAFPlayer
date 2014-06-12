@@ -1,25 +1,26 @@
 package com.catalystapps.gaf.data.converters {
-	import com.catalystapps.gaf.data.config.CStage;
-	import flash.utils.CompressionAlgorithm;
-	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
+	import com.catalystapps.gaf.data.GAFAssetConfig;
+	import com.catalystapps.gaf.data.config.CAnimationFrame;
+	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
+	import com.catalystapps.gaf.data.config.CAnimationFrames;
+	import com.catalystapps.gaf.data.config.CAnimationObject;
+	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
-	import com.catalystapps.gaf.data.config.CAnimationObject;
-	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
-	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
-	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CFilter;
-	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
-	import com.catalystapps.gaf.data.config.CAnimationFrame;
-	import com.catalystapps.gaf.data.config.CAnimationFrames;
-	import flash.geom.Matrix;
-	import com.catalystapps.gaf.data.config.CAnimationObjects;
+	import com.catalystapps.gaf.data.config.CStage;
+	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
+	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
+	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
+
+	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.utils.Endian;
-	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import flash.utils.ByteArray;
+	import flash.utils.CompressionAlgorithm;
+	import flash.utils.Endian;
 
 	/**
 	 * @private
@@ -208,28 +209,18 @@ package com.catalystapps.gaf.data.converters {
 					alpha = tagContent.readFloat();
 					matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
 
-					///////////////////////////////////////////
-
-					function checkAndInitFilter() : void {
-						if (!filter) {
-							filter = new CFilter();
-						}
-					};
-
-					///////////////////////////////////////////
-
 					filter = null;
 
 					if (hasColorTransform) {
 						var params : Array = [tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat()];
 
-						checkAndInitFilter();
+						filter = !filter ? new CFilter() : filter;
 
 						filter.addColorTransform(params);
 					}
 
 					if (hasEffect) {
-						checkAndInitFilter();
+						filter = !filter ? new CFilter() : filter;
 
 						filterLength = tagContent.readByte();
 						for (var k : uint = 0; k < filterLength; k++) {
@@ -261,7 +252,7 @@ package com.catalystapps.gaf.data.converters {
 					if (hasMask) {
 						maskID = tagContent.readUnsignedInt() + "";
 					} else {
-						maskID = "";
+						maskID = null;
 					}
 
 					instance = new CAnimationFrameInstance(stateID + "");
