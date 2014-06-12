@@ -23,6 +23,7 @@ package com.catalystapps.gaf.data.config {
 		private var _alpha : Number;
 		private var _maskID : String;
 		private var _filter : CFilter;
+		private var matrixCopy : Matrix;
 
 		//--------------------------------------------------------------------------
 		//
@@ -32,6 +33,7 @@ package com.catalystapps.gaf.data.config {
 
 		public function CAnimationFrameInstance(id : String) {
 			this._id = id;
+			this.matrixCopy = new Matrix();
 		}
 
 		//--------------------------------------------------------------------------
@@ -75,9 +77,10 @@ package com.catalystapps.gaf.data.config {
 
 		public function applyTransformMatrix(transformationMatrix : Matrix, pivotMatrix : Matrix, scale : Number) : void {
 			transformationMatrix.copyFrom(pivotMatrix);
-			transformationMatrix.concat(this._matrix);
-			transformationMatrix.tx *= scale;
-			transformationMatrix.ty *= scale;
+			this.matrixCopy.copyFrom(this._matrix);
+			this.matrixCopy.tx *= scale;
+			this.matrixCopy.ty *= scale;
+			transformationMatrix.concat(this.matrixCopy);
 		}
 
 		//--------------------------------------------------------------------------

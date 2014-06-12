@@ -336,7 +336,7 @@ package com.catalystapps.gaf.display {
 								mustReorder ||= (pixelMaskDisplayObject.zIndex != zIndex);
 								pixelMaskDisplayObject.zIndex = zIndex;
 
-								if (!image.parent)
+								if (image.parent != pixelMaskDisplayObject)
 									pixelMaskDisplayObject.addChild(image);
 
 								var maskInstance : CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
@@ -372,7 +372,7 @@ package com.catalystapps.gaf.display {
 							instance.applyTransformMatrix(image.transformationMatrix, image.assetTexture.pivotMatrix, this.scale);
 							this.updateFilter(image, instance, this.scale);
 
-							if (!image.parent)
+							if (image.parent != this)
 								this.addChild(image);
 						}
 					}
