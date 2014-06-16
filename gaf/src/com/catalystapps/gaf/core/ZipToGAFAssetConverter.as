@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.data.converters.IGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.GAFTimeline;
@@ -507,23 +508,31 @@ package com.catalystapps.gaf.core
 		{
 			clearTimeout(this.configConvertTimeout);
 
-			var configs: Vector.<GAFTimelineConfig>;
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var configSource: Object = this.gafAssetConfigSources[configID];
 			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
 
+			var converter: IGAFAssetConfigConverter;
 			if (configSource is ByteArray)
 			{
-				configs = BinGAFAssetConfigConverter.convert(gafAssetID, configSource as ByteArray, this._defaultScale,
-				                                             this._defaultContentScaleFactor);
+				converter = new BinGAFAssetConfigConverter(gafAssetID, configSource as ByteArray, this._defaultScale, this._defaultContentScaleFactor);
 			}
 			else
 			{
-				configs = JsonGAFAssetConfigConverter.convert(gafAssetID, configSource as String, this._defaultScale,
-				                                              this._defaultContentScaleFactor);
+				converter = new JsonGAFAssetConfigConverter(gafAssetID, configSource as String, this._defaultScale, this._defaultContentScaleFactor);
 			}
+			
+			converter.addEventListener(Event.COMPLETE, onConverted);
+			converter.convert();
+		}
 
-			this.gafAssetConfigs[configID] = configs;
+		private function onConverted(event: Event): void
+		{
+			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
+			var converter: IGAFAssetConfigConverter = event.target as IGAFAssetConfigConverter;
+			converter.removeEventListener(Event.COMPLETE, onConverted);
+			
+			this.gafAssetConfigs[configID] = converter.config.timelines;
 
 			this.currentConfigIndex++;
 
