@@ -107,7 +107,7 @@ package com.catalystapps.gaf.data.converters
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 
-		private function convertConfig(config: GAFTimelineConfig): void
+		private function convertConfig(timelineConfig: GAFTimelineConfig): void
 		{
 			var allTextureAtlases: Vector.<CTextureAtlasScale> = new Vector.<CTextureAtlasScale>();
 
@@ -196,7 +196,7 @@ package com.catalystapps.gaf.data.converters
 
 					if (!isNaN(_defaultScale) && _defaultScale == scale)
 					{
-						config.textureAtlas = textureAtlas;
+						timelineConfig.textureAtlas = textureAtlas;
 					}
 				}
 			}
@@ -224,16 +224,16 @@ package com.catalystapps.gaf.data.converters
 					allTextureAtlases.push(textureAtlas);
 					if (!isNaN(_defaultScale) && _defaultScale == scale)
 					{
-						config.textureAtlas = textureAtlas;
+						timelineConfig.textureAtlas = textureAtlas;
 					}
 				}
 			}
 
-			config.allTextureAtlases = allTextureAtlases;
+			timelineConfig.allTextureAtlases = allTextureAtlases;
 
-			if (!config.textureAtlas && allTextureAtlases.length)
+			if (!timelineConfig.textureAtlas && allTextureAtlases.length)
 			{
-				config.textureAtlas = allTextureAtlases[0];
+				timelineConfig.textureAtlas = allTextureAtlases[0];
 			}
 
 			///////////////////////////////////////////////////////////////
@@ -279,7 +279,7 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			config.animationObjects = animationObjects;
+			timelineConfig.animationObjects = animationObjects;
 
 			///////////////////////////////////////////////////////////////
 
@@ -293,7 +293,7 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			config.animationSequences = animationSequences;
+			timelineConfig.animationSequences = animationSequences;
 
 			///////////////////////////////////////////////////////////////
 
@@ -339,17 +339,17 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			config.textFields = textFieldObjects;
+			timelineConfig.textFields = textFieldObjects;
 
 			///////////////////////////////////////////////////////////////
 
-			config.namedParts = {};
+			timelineConfig.namedParts = {};
 
 			if (jsonObject.namedParts)
 			{
 				for (var id: String in jsonObject.namedParts)
 				{
-					config.namedParts[id] = jsonObject.namedParts[id];
+					timelineConfig.namedParts[id] = jsonObject.namedParts[id];
 				}
 			}
 
@@ -465,7 +465,7 @@ package com.catalystapps.gaf.data.converters
 										break;
 								}
 
-								config.addWarning(warning);
+								timelineConfig.addWarning(warning);
 							}
 						}
 
@@ -481,7 +481,7 @@ package com.catalystapps.gaf.data.converters
 
 						if (maskID && filter)
 						{
-							config.addWarning(WarningConstants.FILTERS_UNDER_MASK);
+							timelineConfig.addWarning(WarningConstants.FILTERS_UNDER_MASK);
 						}
 
 						currentFrame.addInstance(instance);
@@ -520,7 +520,7 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			config.animationConfigFrames = animationConfigFrames;
+			timelineConfig.animationConfigFrames = animationConfigFrames;
 
 			///////////////////////////////////////////////////////////////
 

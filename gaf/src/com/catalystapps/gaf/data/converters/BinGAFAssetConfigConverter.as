@@ -201,7 +201,7 @@ package com.catalystapps.gaf.data.converters
 
 		private function parseTags(tagsBytes: ByteArray, onComplete: Function, ...args): void
 		{
-			if (_bytes.bytesAvailable > 0)
+			if (tagsBytes.bytesAvailable > 0)
 			{
 				readNextTag(tagsBytes);
 				args.unshift(parseTags, tagsBytes, onComplete);
