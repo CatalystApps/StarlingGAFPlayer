@@ -110,6 +110,10 @@ package com.catalystapps.gaf.data.config
 			return "";
 		}
 		
+		/**
+		 * params = [alphaOffset, red, redOffset, green, greenOffset, blue, blueOffset]
+		 * we ignore alphaOffset. It's value merged with alpha value.
+		 */
 		public function addColorTransform(params: Array): void
 		{
 			if (getColorMatrixFilter())
@@ -121,7 +125,7 @@ package com.catalystapps.gaf.data.config
 			filterData.matrix.push(Number(params[1]), 0, 0, 0, Number(params[2]),
 								   0, Number(params[3]), 0, 0, Number(params[4]),
 								   0, 0, Number(params[5]), 0, Number(params[6]),
-								   0, 0, 0, 1, Number(params[0]));	
+								   0, 0, 0, 1, 0);
 			
 			_filterConfigs.push(filterData);
 		}

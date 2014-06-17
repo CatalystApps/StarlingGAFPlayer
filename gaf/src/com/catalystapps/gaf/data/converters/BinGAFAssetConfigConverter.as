@@ -249,6 +249,8 @@ package com.catalystapps.gaf.data.converters
 						checkAndInitFilter();
 						
 						filter.addColorTransform(params);
+						
+						alpha = Math.max(Math.min(alpha + params[0], 1), 0);
 					}
 					
 					if (hasEffect)

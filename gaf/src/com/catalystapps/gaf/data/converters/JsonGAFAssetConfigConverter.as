@@ -246,9 +246,18 @@ package com.catalystapps.gaf.data.converters
 						
 						filter = null;
 						
+						stateConfig = state["st"];
+						stateConfig = stateConfig.replace("{", "");
+						stateConfig = stateConfig.replace("}", "");
+						
+						io = stateConfig.split(",");
+						
+						var alpha: Number = io[7];// 
+						
 						if(state.hasOwnProperty("c"))
 						{
 							var params: Array = String(state["c"]).replace(" ", "").split(",");
+							alpha = Math.max(Math.min(alpha + params[0], 1), 0);
 							
 							checkAndInitFilter();
 							
@@ -288,14 +297,9 @@ package com.catalystapps.gaf.data.converters
 							}							
 						}
 						
-						stateConfig = state["st"];
-						stateConfig = stateConfig.replace("{", "");
-						stateConfig = stateConfig.replace("}", "");
-						
-						io = stateConfig.split(",");
-						
 						instance = new CAnimationFrameInstance(stateID);						
-						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), io[7], maskID, filter);
+//						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), io[7], maskID, filter);
+						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), alpha, maskID, filter);
 						
 						if(maskID && filter)
 						{
