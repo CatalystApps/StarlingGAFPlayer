@@ -6,7 +6,7 @@ package com.catalystapps.gaf.data.config
 	public class CStage
 	{
 		public var fps: uint;
-		public var color: int;
+		public var color: uint;
 		public var width: int;
 		public var height: int;
 		
