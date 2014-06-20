@@ -162,7 +162,6 @@ package com.catalystapps.gaf.data.converters
 			stageConfig.width = tagContent.readUnsignedShort();
 			stageConfig.height = tagContent.readUnsignedShort();
 			
-			trace(stageConfig.fps, stageConfig.color, stageConfig.width, stageConfig.height);
 			config.stageConfig = stageConfig;
 		}
 
