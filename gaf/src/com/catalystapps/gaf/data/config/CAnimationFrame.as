@@ -48,7 +48,7 @@ package com.catalystapps.gaf.data.config
 			
 			for each(var instance: CAnimationFrameInstance in this._instances)
 			{
-				result.addInstance(instance.clone());
+				result.addInstance(instance);
 			}
 			
 			return result;
