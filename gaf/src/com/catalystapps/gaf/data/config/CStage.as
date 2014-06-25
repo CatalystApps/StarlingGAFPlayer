@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
 	/**
-	 * @author Programmer
+	 * @private
 	 */
 	public class CStage
 	{

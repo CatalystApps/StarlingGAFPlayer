@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.display
 {
+	import starling.core.Starling;
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
@@ -77,8 +78,9 @@ package com.catalystapps.gaf.display
 		 *
 		 * @param gafAsset <code>GAFAsset</code> from what <code>GAFMovieClip</code> will be created
 		 * @param mappedAssetID To be defined. For now - use default value
+		 * @param fps defines the frame rate of the movie clip. The default value is stage config frame rate.
 		 */
-		public function GAFMovieClip(gafAsset: GAFAsset, mappedAssetID: String = "", fps: int = 0)
+		public function GAFMovieClip(gafAsset: GAFAsset, mappedAssetID: String = "", fps: int = -1)
 		{
 			this._gafAsset = gafAsset;
 
@@ -88,7 +90,7 @@ package com.catalystapps.gaf.display
 
 			this.initialize();
 
-			if (fps)
+			if (fps > 0)
 			{
 				this.fps = fps;
 			}
@@ -196,17 +198,14 @@ package com.catalystapps.gaf.display
 		 *
 		 * @param id Sequence ID
 		 * @param play Play or not immediately. <code>true</code> - starts playing from sequence start frame. <code>false</code> - go to sequence start frame and stop
-		 * @param loop Shall the sequence loop or or not.
-		 *
 		 * @return
 		 */
-		public function setSequence(id: String, play: Boolean = true, loop: Boolean = false): CAnimationSequence
+		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
 			this.playingSequence = this._gafAsset.config.animationSequences.getSecuenceByID(id);
 
 			if (this.playingSequence)
 			{
-				this._loop = loop;
 				if (play)
 				{
 					this.gotoAndPlay(this.playingSequence.startFrameNo);
@@ -554,6 +553,8 @@ package com.catalystapps.gaf.display
 					this.imagesDictionary[animationObjectConfig.instanceID] = image;
 				}
 			}
+			
+			Starling.juggler.add(this);
 		}
 
 		// --------------------------------------------------------------------------
@@ -570,6 +571,8 @@ package com.catalystapps.gaf.display
 		override public function dispose(): void
 		{
 			this.stop();
+			
+			Starling.juggler.remove(this);
 
 			this._gafAsset = null;
 
@@ -752,6 +755,9 @@ package com.catalystapps.gaf.display
 			return this._useClipping;
 		}
 
+		/**
+		 * Indicates whether movie clip is clipped (masked) by stage borders
+		 */
 		public function set useClipping(value: Boolean): void
 		{
 			this._useClipping = value;
@@ -771,6 +777,9 @@ package com.catalystapps.gaf.display
 			return 1 / this._frameDuration;
 		}
 
+		/**
+		 * Sets an individual frame rate for movie clip. If this value is lower than stage fps -  the movie clip will skip frames.
+		 */
 		public function set fps(value: Number): void
 		{
 			this._frameDuration = 1 / value;
