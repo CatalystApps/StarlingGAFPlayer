@@ -106,16 +106,24 @@ package com.catalystapps.gaf.data
 		/**
 		 * Removes specified image or images for specified combination scale and csf. If nothing was specified - removes all images
 		 */
-		public function removeImages(scale : Number = NaN, csf : Number = NaN, imageID : String = null) : void {
+		public function removeImages(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
+		{
 			// Dispose only if starling does not handle lost context
-			if (!Starling.handleLostContext) {
-				for (var tmpScale : Number in _imagesDictionary) {
-					if (isNaN(scale) || scale == tmpScale) {
-						for (var tmpCsf : Number in _imagesDictionary[tmpScale]) {
-							if (isNaN(csf) || csf == tmpCsf) {
-								for (var tmpImageID : String in _imagesDictionary[tmpScale][tmpCsf]) {
-									if (!imageID || imageID == tmpImageID) {
-										var tmpBitmapData : BitmapData = _imagesDictionary[tmpScale][tmpCsf][tmpImageID];
+			if (!Starling.handleLostContext)
+			{
+				for (var tmpScale: Number in _imagesDictionary)
+				{
+					if (isNaN(scale) || scale == tmpScale)
+					{
+						for (var tmpCsf: Number in _imagesDictionary[tmpScale])
+						{
+							if (isNaN(csf) || csf == tmpCsf)
+							{
+								for (var tmpImageID: String in _imagesDictionary[tmpScale][tmpCsf])
+								{
+									if (!imageID || imageID == tmpImageID)
+									{
+										var tmpBitmapData: BitmapData = _imagesDictionary[tmpScale][tmpCsf][tmpImageID];
 										tmpBitmapData.dispose();
 									}
 								}
@@ -125,15 +133,24 @@ package com.catalystapps.gaf.data
 				}
 			}
 
-			if (isNaN(scale)) {
+			if (isNaN(scale))
+			{
 				this._imagesDictionary = null;
-			} else {
-				if (isNaN(csf)) {
+			}
+			else
+			{
+				if (isNaN(csf))
+				{
 					delete this._imagesDictionary[scale];
-				} else {
-					if (imageID) {
+				}
+				else
+				{
+					if (imageID)
+					{
 						delete this._imagesDictionary[scale][csf][imageID];
-					} else {
+					}
+					else
+					{
 						delete this._imagesDictionary[scale][csf];
 					}
 				}

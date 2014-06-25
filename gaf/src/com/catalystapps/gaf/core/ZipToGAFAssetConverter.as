@@ -721,11 +721,13 @@ package com.catalystapps.gaf.core
 		/**
 		 * Return the id of the converter
 		 */
-		public function get id() : String {
+		public function get id(): String
+		{
 			return _id;
 		}
 
-		public function set id(value : String) : void {
+		public function set id(value: String): void
+		{
 			_id = value;
 		}
 	}
