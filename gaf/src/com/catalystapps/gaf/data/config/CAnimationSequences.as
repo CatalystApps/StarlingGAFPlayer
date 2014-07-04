@@ -76,6 +76,21 @@ package com.catalystapps.gaf.data.config
 
 			return result;
 		}
+		
+		public function getEndFrameNo(sequenceID: String): uint
+		{
+			var result: uint = 0;
+
+			for each (var sequence: CAnimationSequence in this._sequences)
+			{
+				if (sequence.id == sequenceID)
+				{
+					return sequence.endFrameNo;
+				}
+			}
+
+			return result;
+		}
 
 		public function getSecuenceByID(id: String): CAnimationSequence
 		{

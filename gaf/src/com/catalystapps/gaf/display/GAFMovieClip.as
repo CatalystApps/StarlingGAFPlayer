@@ -67,6 +67,10 @@ package com.catalystapps.gaf.display
 		private var _frameDuration: Number;
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
 		private var _useClipping: Boolean;
+		private var _reversePlayback: Boolean;
+		private var _nextFrame : int;
+		private var _startFrame : int;
+		private var _finalFrame : int;
 
 		// --------------------------------------------------------------------------
 		//
@@ -203,16 +207,16 @@ package com.catalystapps.gaf.display
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
 			this.playingSequence = this._gafAsset.config.animationSequences.getSecuenceByID(id);
-
 			if (this.playingSequence)
 			{
+				var startFrame: int = this._reversePlayback ? this.playingSequence.endFrameNo : this.playingSequence.startFrameNo;
 				if (play)
 				{
-					this.gotoAndPlay(this.playingSequence.startFrameNo);
+					this.gotoAndPlay(startFrame);
 				}
 				else
 				{
-					this.gotoAndStop(this.playingSequence.startFrameNo);
+					this.gotoAndStop(startFrame);
 				}
 			}
 
@@ -280,7 +284,15 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				frame = this._gafAsset.config.animationSequences.getStartFrameNo(frame);
+				if (this._reversePlayback)
+				{
+					frame = this._gafAsset.config.animationSequences.getEndFrameNo(frame) || this.totalFrames - 1;
+				}
+				else
+				{
+					frame = this._gafAsset.config.animationSequences.getStartFrameNo(frame);
+				}
+				
 			}
 
 			if (frame <= this._totalFrames)
@@ -609,46 +621,8 @@ package com.catalystapps.gaf.display
 				for (var i: int = 0; i < nbFrames; ++i)
 				{
 					isSkipping = (i + 1) != nbFrames;
-
-					if (this.playingSequence)
-					{
-						if (this._currentFrame + 1 >= this.playingSequence.startFrameNo && this._currentFrame + 1 < this.playingSequence.endFrameNo)
-						{
-							this._currentFrame++;
-							this._lastFrameTime = this._lastFrameTime + this._frameDuration;
-						}
-						else
-						{
-							if (!this._loop)
-							{
-								this.stop();
-							}
-							else
-							{
-								this._currentFrame = this.playingSequence.startFrameNo - 1;
-							}
-						}
-					}
-					else
-					{
-						if (this._currentFrame < this._totalFrames - 1)
-						{
-							this._currentFrame++;
-							this._lastFrameTime = this._lastFrameTime + this._frameDuration;
-						}
-						else
-						{
-							if (!this._loop)
-							{
-								this.stop();
-							}
-							else
-							{
-								this._currentFrame = 0;
-								this._lastFrameTime = this._lastFrameTime + this._frameDuration;
-							}
-						}
-					}
+					
+					changeCurrentFrame();
 
 					if (!isSkipping)
 					{
@@ -675,6 +649,31 @@ package com.catalystapps.gaf.display
 							}
 						}
 					}
+				}
+			}
+		}
+
+		private function changeCurrentFrame(): void
+		{
+			this._nextFrame = this._currentFrame + (this._reversePlayback ? -1 : 1);
+			this._startFrame = (this.playingSequence ? this.playingSequence.startFrameNo : 1) - 1;
+			this._finalFrame = (this.playingSequence ? this.playingSequence.endFrameNo : this._totalFrames) - 1;
+
+			if (this._nextFrame >= this._startFrame && this._nextFrame <= this._finalFrame)
+			{
+				this._currentFrame = this._nextFrame;
+				this._lastFrameTime = this._lastFrameTime + this._frameDuration;
+			}
+			else
+			{
+				if (!this._loop)
+				{
+					this.stop();
+				}
+				else
+				{
+					this._currentFrame = this._reversePlayback ? this._finalFrame : this._startFrame;
+					this._lastFrameTime = this._lastFrameTime + this._frameDuration;
 				}
 			}
 		}
@@ -783,6 +782,19 @@ package com.catalystapps.gaf.display
 		public function set fps(value: Number): void
 		{
 			this._frameDuration = 1 / value;
+		}
+
+		public function get reversePlayback(): Boolean
+		{
+			return _reversePlayback;
+		}
+
+		/**
+		 * Should animation play in reverse mode
+		 */
+		public function set reversePlayback(value: Boolean): void
+		{
+			_reversePlayback = value;
 		}
 	}
 }
