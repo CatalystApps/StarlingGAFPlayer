@@ -102,7 +102,8 @@ package com.catalystapps.gaf.data.converters
 			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
 
 			bytes.readBytes(uncompressedBA);
-
+			bytes.clear();
+			
 			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
 
 			return uncompressedBA;

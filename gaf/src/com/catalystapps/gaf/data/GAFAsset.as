@@ -126,7 +126,8 @@ package com.catalystapps.gaf.data
 						for each(csfConfig in scaleConfig.allContentScaleFactors)
 						{
 							this._gafgfxData.disposeTextures(scaleConfig.scale, csfConfig.csf);
-							csfConfig.atlas.dispose();
+							if (csfConfig.atlas)
+								csfConfig.atlas.dispose();
 							csfConfig.atlas = null;
 						}
 					}

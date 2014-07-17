@@ -179,42 +179,19 @@ package starling.extensions.pixelmask
 			}
 		}
 
-		private static var _a: Number;
-		private static var _b: Number;
-		private static var _c: Number;
-		private static var _d: Number;
-		private static var _tx: Number;
-		private static var _ty: Number;
+		private static var _tempMatrix: Matrix = new Matrix();
 
 		private function drawRenderTextures(object: DisplayObject = null, matrix: Matrix = null, alpha: Number = 1.0): void
 		{
-			_a = this.transformationMatrix.a;
-			_b = this.transformationMatrix.b;
-			_c = this.transformationMatrix.c;
-			_d = this.transformationMatrix.d;
-
-			_tx = this.transformationMatrix.tx;
-			_ty = this.transformationMatrix.ty;
-
-			this.transformationMatrix.a = 1;
-			this.transformationMatrix.b = 0;
-			this.transformationMatrix.c = 0;
-			this.transformationMatrix.d = 1;
-
-			this.transformationMatrix.tx = 0;
-			this.transformationMatrix.ty = 0;
+			_tempMatrix.copyFrom(this.transformationMatrix);
+			
+			this.transformationMatrix.identity();
 
 			_superRenderFlag = true;
 			_renderTexture.draw(this);
 			_superRenderFlag = false;
-
-			this.transformationMatrix.a = _a;
-			this.transformationMatrix.b = _b;
-			this.transformationMatrix.c = _c;
-			this.transformationMatrix.d = _d;
-
-			this.transformationMatrix.tx = _tx;
-			this.transformationMatrix.ty = _ty;
+			
+			this.transformationMatrix.copyFrom(_tempMatrix);
 
 			_renderTexture.draw(_maskImage);
 		}
