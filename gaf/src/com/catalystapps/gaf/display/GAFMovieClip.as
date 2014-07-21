@@ -337,6 +337,7 @@ package com.catalystapps.gaf.display
 				{
 					displayObject = this.getChildAt(i);
 					displayObject.visible = false;
+					displayObject.alpha = 0;
 				}
 
 				
