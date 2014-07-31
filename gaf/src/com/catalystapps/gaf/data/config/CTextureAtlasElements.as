@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
 	/**
-	 * @author mitvad
+	 * @private
 	 */
 	public class CTextureAtlasElements
 	{
@@ -10,47 +10,47 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _elementsVector: Vector.<CTextureAtlasElement>;
 		private var _elementsDictionary: Object;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function CTextureAtlasElements(): void
 		{
 			this._elementsVector = new Vector.<CTextureAtlasElement>();
-			this._elementsDictionary = new Object();
+			this._elementsDictionary = {};
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function addElement(element: CTextureAtlasElement): void
 		{
-			if(!this._elementsDictionary[element.id])
+			if (!this._elementsDictionary[element.id])
 			{
 				this._elementsDictionary[element.id] = element;
-				
+
 				this._elementsVector.push(element);
 			}
 		}
-		
+
 		public function getElement(id: String): CTextureAtlasElement
 		{
-			if(this._elementsDictionary[id])
+			if (this._elementsDictionary[id])
 			{
 				return this._elementsDictionary[id];
 			}
@@ -59,35 +59,35 @@ package com.catalystapps.gaf.data.config
 				return null;
 			}
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get elementsVector(): Vector.<CTextureAtlasElement>
 		{
 			return _elementsVector;
 		}
-		
+
 	}
 }

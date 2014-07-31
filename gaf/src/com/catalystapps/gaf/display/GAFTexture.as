@@ -1,36 +1,36 @@
 package com.catalystapps.gaf.display
 {
-	import starling.textures.Texture;
-
 	import flash.geom.Matrix;
+
+	import starling.textures.Texture;
 
 	/**
 	 * @private
 	 */
-	public class GAFTexture
+	public class GAFTexture implements IGAFTexture
 	{
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _id: String;
 		private var _texture: Texture;
 		private var _pivotMatrix: Matrix;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function GAFTexture(id: String, texture: Texture, pivotMatrix: Matrix)
 		{
 			this._id = id;
@@ -43,31 +43,31 @@ package com.catalystapps.gaf.display
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get texture(): Texture
 		{
 			return _texture;
@@ -82,6 +82,10 @@ package com.catalystapps.gaf.display
 		{
 			return _id;
 		}
-		
+
+		public function clone(): IGAFTexture
+		{
+			return new GAFTexture(_id, _texture, _pivotMatrix.clone());
+		}
 	}
 }

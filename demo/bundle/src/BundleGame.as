@@ -1,5 +1,6 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import starling.events.TouchPhase;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
@@ -7,7 +8,6 @@ package
 	import starling.display.Sprite;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
-	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
 	import flash.events.ErrorEvent;
@@ -68,7 +68,7 @@ package
 			{
 				this.currentAssetIndex++;
 				
-				if(this.currentAssetIndex >= this.gafBundle.assets.length)
+				if(this.currentAssetIndex >= this.gafBundle.timelines.length)
 				{
 					this.currentAssetIndex = 0;
 				}
@@ -83,9 +83,9 @@ package
 			
 			this.removeChildren();
 			
-			var gafAsset: GAFAsset = this.gafBundle.assets[this.currentAssetIndex];
+			var timeline: GAFTimeline = this.gafBundle.timelines[this.currentAssetIndex];
 			
-			this.gafMovieClip = new GAFMovieClip(gafAsset);
+			this.gafMovieClip = new GAFMovieClip(timeline);
 			
 			this.addChild(this.gafMovieClip);
 			

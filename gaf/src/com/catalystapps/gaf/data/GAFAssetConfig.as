@@ -1,189 +1,96 @@
+/**
+ * Created by Nazar on 19.05.2014.
+*/
 package com.catalystapps.gaf.data
 {
 	import com.catalystapps.gaf.data.config.CStage;
-	import com.catalystapps.gaf.data.config.CAnimationFrames;
-	import com.catalystapps.gaf.data.config.CAnimationObjects;
-	import com.catalystapps.gaf.data.config.CAnimationSequences;
-	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+
 	/**
 	 * @private
 	 */
 	public class GAFAssetConfig
 	{
-		//--------------------------------------------------------------------------
-		//
-		//  PUBLIC VARIABLES
-		//
-		//--------------------------------------------------------------------------
-		
-		//--------------------------------------------------------------------------
-		//
-		//  PRIVATE VARIABLES
-		//
-		//--------------------------------------------------------------------------
-		private var _version: String;
+		private var _id: String;
+		private var _compression: int;
+		private var _versionMajor: uint;
+		private var _versionMinor: uint;
+		private var _fileLength: uint;
+		private var _scaleValues: Vector.<Number>;
+		private var _csfValues: Vector.<Number>;
 		private var _stageConfig: CStage;
-		
-		private var _allTextureAtlases: Vector.<CTextureAtlasScale>;
-		private var _textureAtlas: CTextureAtlasScale;
-		
-		private var _animationConfigFrames: CAnimationFrames;
-		private var _animationObjects: CAnimationObjects;
-		private var _animationSequences: CAnimationSequences;
 
-		private var _debugRegions: Vector.<GAFDebugInformation>;
-		
-		private var _warnings: Vector.<String>;
-		
-		//--------------------------------------------------------------------------
-		//
-		//  CONSTRUCTOR
-		//
-		//--------------------------------------------------------------------------
-		
-		public function GAFAssetConfig(version: String)
+		private var _timelines: Vector.<GAFTimelineConfig>;
+
+		public function GAFAssetConfig(id: String)
 		{
-			this._version = version;
+			_id = id;
+			_scaleValues = new Vector.<Number>();
+			_csfValues = new Vector.<Number>();
+
+			_timelines = new Vector.<GAFTimelineConfig>();
 		}
 
-		//--------------------------------------------------------------------------
-		//
-		//  PUBLIC METHODS
-		//
-		//--------------------------------------------------------------------------
-		
 		public function dispose(): void
 		{
-			for each(var cTextureAtlasScale: CTextureAtlasScale in this._allTextureAtlases)
+			for each(var timeline: GAFTimelineConfig in this._timelines)
 			{
-				cTextureAtlasScale.dispose();
+				timeline.dispose();
 			}
 		}
-		
-		public function getTextureAtlasForScale(scale: Number): CTextureAtlasScale
-		{
-			for each(var cTextureAtlas: CTextureAtlasScale in this._allTextureAtlases)
-			{
-				if(cTextureAtlas.scale == scale)
-				{
-					return cTextureAtlas;
-				}
-			}
-			
-			return null;
-		}	
 
-		//--------------------------------------------------------------------------
-		//
-		//  PRIVATE METHODS
-		//
-		//--------------------------------------------------------------------------
-		
-		public function addWarning(text: String): void
+		public function get compression(): int
 		{
-			if (!text)
-			{
-				return;
-			}
-			
-			if(!this._warnings)
-			{
-				this._warnings = new Vector.<String>();
-			}
-			
-			if(this._warnings.indexOf(text) == -1)
-			{
-				trace(text);
-				this._warnings.push(text);
-			}
-		}
-				
-		//--------------------------------------------------------------------------
-		//
-		// OVERRIDDEN METHODS
-		//
-		//--------------------------------------------------------------------------
-		
-		//--------------------------------------------------------------------------
-		//
-		//  EVENT HANDLERS
-		//
-		//--------------------------------------------------------------------------
-		
-		//--------------------------------------------------------------------------
-		//
-		//  GETTERS AND SETTERS
-		//
-		//--------------------------------------------------------------------------
-		
-		public function get textureAtlas(): CTextureAtlasScale
-		{
-			return _textureAtlas;
+			return _compression;
 		}
 
-		public function set textureAtlas(textureAtlas: CTextureAtlasScale): void
+		public function set compression(value: int): void
 		{
-			_textureAtlas = textureAtlas;
+			_compression = value;
 		}
 
-		public function get animationObjects(): CAnimationObjects
+		public function get versionMajor(): uint
 		{
-			return _animationObjects;
+			return _versionMajor;
 		}
 
-		public function set animationObjects(animationObjects: CAnimationObjects): void
+		public function set versionMajor(value: uint): void
 		{
-			_animationObjects = animationObjects;
+			_versionMajor = value;
 		}
 
-		public function get animationConfigFrames(): CAnimationFrames
+		public function get versionMinor(): uint
 		{
-			return _animationConfigFrames;
+			return _versionMinor;
 		}
 
-		public function set animationConfigFrames(animationConfigFrames: CAnimationFrames): void
+		public function set versionMinor(value: uint): void
 		{
-			_animationConfigFrames = animationConfigFrames;
+			_versionMinor = value;
 		}
 
-		public function get animationSequences(): CAnimationSequences
+		public function get fileLength(): uint
 		{
-			return _animationSequences;
+			return _fileLength;
 		}
 
-		public function set animationSequences(animationSequences: CAnimationSequences): void
+		public function set fileLength(value: uint): void
 		{
-			_animationSequences = animationSequences;
+			_fileLength = value;
 		}
 
-		public function get allTextureAtlases(): Vector.<CTextureAtlasScale>
+		public function get scaleValues(): Vector.<Number>
 		{
-			return _allTextureAtlases;
+			return _scaleValues;
 		}
 
-		public function set allTextureAtlases(allTextureAtlases: Vector.<CTextureAtlasScale>): void
+		public function get csfValues(): Vector.<Number>
 		{
-			_allTextureAtlases = allTextureAtlases;
+			return _csfValues;
 		}
 
-		public function get version(): String
+		public function get timelines(): Vector.<GAFTimelineConfig>
 		{
-			return _version;
-		}
-
-		public function get debugRegions(): Vector.<GAFDebugInformation>
-		{
-			return _debugRegions;
-		}
-
-		public function set debugRegions(debugRegions: Vector.<GAFDebugInformation>): void
-		{
-			_debugRegions = debugRegions;
-		}
-		
-		public function get warnings(): Vector.<String>
-		{
-			return _warnings;
+			return _timelines;
 		}
 
 		public function get stageConfig(): CStage
@@ -191,10 +98,14 @@ package com.catalystapps.gaf.data
 			return _stageConfig;
 		}
 
-		public function set stageConfig(stageConfig: CStage): void
+		public function set stageConfig(value: CStage): void
 		{
-			_stageConfig = stageConfig;
+			_stageConfig = value;
 		}
-		
+
+		public function get id(): String
+		{
+			return _id;
+		}
 	}
 }

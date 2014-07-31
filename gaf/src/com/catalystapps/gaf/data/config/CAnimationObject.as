@@ -10,27 +10,33 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
+		public static const TYPE_TEXTURE: String = "texture";
+		public static const TYPE_TEXTFIELD: String = "textField";
+		public static const TYPE_TIMELINE: String = "timeline";
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _instanceID: String;
-		private var _textureElementID: String;
+		private var _regionID: String;
+		private var _type: String;
 		private var _mask: Boolean;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
-		public function CAnimationObject(instanceID: String, textureElementID: String, mask: Boolean)
+
+		public function CAnimationObject(instanceID: String, regionID: String, type: String, mask: Boolean)
 		{
 			this._instanceID = instanceID;
-			this._textureElementID = textureElementID;
+			this._regionID = regionID;
+			this._type = type;
 			this._mask = mask;
 		}
 
@@ -39,45 +45,49 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get instanceID(): String
 		{
 			return _instanceID;
 		}
 
-		public function get textureElementID(): String
+		public function get regionID(): String
 		{
-			return _textureElementID;
+			return _regionID;
 		}
 
 		public function get mask(): Boolean
 		{
 			return _mask;
 		}
-		
+
+		public function get type(): String
+		{
+			return _type;
+		}
 	}
 }

@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
 	/**
-	 * @author p0d04Va
+	 * @private
 	 */
 	public interface ICFilterData
 	{

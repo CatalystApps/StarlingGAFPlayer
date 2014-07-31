@@ -1,7 +1,8 @@
 package com.catalystapps.gaf.data.config
 {
 	import com.catalystapps.gaf.data.converters.WarningConstants;
-	import com.catalystapps.gaf.utils.copyArray;
+	import com.catalystapps.gaf.utils.VectorUtility;
+
 	/**
 	 * @private
 	 */
@@ -12,7 +13,7 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-			
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
@@ -40,8 +41,8 @@ package com.catalystapps.gaf.data.config
 			for each (var filterData: ICFilterData in _filterConfigs)
 			{
 				result.filterConfigs.push(filterData.clone());
-			}			
-			
+			}
+
 			return result;
 		}
 		
@@ -58,7 +59,7 @@ package com.catalystapps.gaf.data.config
 			filterData.color = -1;
 			
 			_filterConfigs.push(filterData);
-			
+
 			return "";
 		}
 		
@@ -73,30 +74,30 @@ package com.catalystapps.gaf.data.config
 			{
 				return WarningConstants.CANT_CT_GLOW;
 			}
-			
+
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
 			filterData.color = color;
 			filterData.alpha = alpha;
-			
+
 			_filterConfigs.push(filterData);
-			
+
 			return "";
 		}
-		
+
 		public function addDropShadowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number, angle: Number, distance: Number): String
 		{
 			if (getBlurFilter())
 			{
 				return WarningConstants.CANT_BLUR_DROP;
 			}
-			
+
 			if (getColorMatrixFilter())
 			{
 				return WarningConstants.CANT_CT_DROP;
 			}
-			
+
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
@@ -104,59 +105,55 @@ package com.catalystapps.gaf.data.config
 			filterData.alpha = alpha;
 			filterData.angle = angle;
 			filterData.distance = distance;
-			
+
 			_filterConfigs.push(filterData);
-			
+
 			return "";
 		}
-		
-		/**
-		 * params = [alphaOffset, red, redOffset, green, greenOffset, blue, blueOffset]
-		 * we ignore alphaOffset. It's value merged with alpha value.
-		 */
-		public function addColorTransform(params: Array): void
+
+		public function addColorTransform(params: Vector.<Number>): void
 		{
 			if (getColorMatrixFilter())
 			{
-				return;				
+				return;
 			}
-			
+
 			var filterData: CColorMatrixFilterData = new CColorMatrixFilterData();
-			filterData.matrix.push(Number(params[1]), 0, 0, 0, Number(params[2]),
-								   0, Number(params[3]), 0, 0, Number(params[4]),
-								   0, 0, Number(params[5]), 0, Number(params[6]),
+			VectorUtility.fillMatrix(filterData.matrix,
+					Number(params[1]), 0, 0, 0, Number(params[2]),
+					0, Number(params[3]), 0, 0, Number(params[4]),
+					0, 0, Number(params[5]), 0, Number(params[6]),
 								   0, 0, 0, 1, 0);
-			
 			_filterConfigs.push(filterData);
 		}
-		
-		public function addColorMatrixFilter(params: Array): String
+
+		public function addColorMatrixFilter(params: Vector.<Number>): String
 		{
 			var i: uint;
-			
+
 			for (i = 0; i < params.length; i++)
 			{
 				if (i % 5 == 4)
 				{
 					params[i] = params[i] / 255;
-				}								
+				}
 			}
-			
-			var colorMatrixFilterConfig: CColorMatrixFilterData = getColorMatrixFilter();			
-			
+
+			var colorMatrixFilterConfig: CColorMatrixFilterData = getColorMatrixFilter();
+
 			if (colorMatrixFilterConfig)
-			{								
+			{
 				return WarningConstants.CANT_COLOR_ADJ_CT;
 			}
 			else
 			{
 				colorMatrixFilterConfig = new CColorMatrixFilterData();
-				copyArray(params, colorMatrixFilterConfig.matrix);
-				_filterConfigs.push(colorMatrixFilterConfig); 
+				VectorUtility.copyMatrix(colorMatrixFilterConfig.matrix, params);
+				_filterConfigs.push(colorMatrixFilterConfig);
 			}
-			
+
 			return "";
-		}		
+		}
 
 		//--------------------------------------------------------------------------
 		//
@@ -173,10 +170,10 @@ package com.catalystapps.gaf.data.config
 					return filterConfig as CBlurFilterData;
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		private function getColorMatrixFilter(): CColorMatrixFilterData
 		{
 			for each (var filterConfig: ICFilterData in _filterConfigs)
@@ -186,10 +183,10 @@ package com.catalystapps.gaf.data.config
 					return filterConfig as CColorMatrixFilterData;
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -208,7 +205,7 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 		
-		public function get filterConfigs() : Vector.<ICFilterData>
+		public function get filterConfigs(): Vector.<ICFilterData>
 		{
 			return _filterConfigs;
 		}

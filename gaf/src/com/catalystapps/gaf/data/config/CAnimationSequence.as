@@ -10,27 +10,27 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _id: String;
 		private var _startFrameNo: uint;
 		private var _endFrameNo: uint;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * @private
 		 */
-		public function CAnimationSequence(id: String , startFrameNo: uint, endFrameNo: uint)
+		public function CAnimationSequence(id: String, startFrameNo: uint, endFrameNo: uint)
 		{
 			this._id = id;
 			this._startFrameNo = startFrameNo;
@@ -42,15 +42,15 @@ package com.catalystapps.gaf.data.config
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * @private
 		 */
 		public function isSequenceFrame(frameNo: uint): Boolean
 		{
 			// first frame is "1" !!!
-			
-			if(frameNo >= this._startFrameNo && frameNo <= this._endFrameNo)
+
+			if (frameNo >= this._startFrameNo && frameNo <= this._endFrameNo)
 			{
 				return true;
 			}
@@ -59,31 +59,31 @@ package com.catalystapps.gaf.data.config
 				return false;
 			}
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Sequence ID
 		 */
@@ -91,7 +91,7 @@ package com.catalystapps.gaf.data.config
 		{
 			return _id;
 		}
-		
+
 		/**
 		 * Sequence start frame number
 		 */
@@ -99,14 +99,14 @@ package com.catalystapps.gaf.data.config
 		{
 			return _startFrameNo;
 		}
-		
+
 		/**
-		 * Sequence start end number
+		 * Sequence end frame number
 		 */
 		public function get endFrameNo(): uint
 		{
 			return _endFrameNo;
 		}
-		
+
 	}
 }

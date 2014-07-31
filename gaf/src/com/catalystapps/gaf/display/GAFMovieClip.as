@@ -1,99 +1,133 @@
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.core.gaf_internal;
+	import com.catalystapps.gaf.data.config.CTextureAtlas;
+	import starling.display.QuadBatch;
+	import flash.geom.Point;
 	import starling.core.Starling;
-	import com.catalystapps.gaf.data.GAFAsset;
+	import starling.animation.IAnimatable;
+	import com.catalystapps.gaf.data.GAFBundle;
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
+	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.filter.GAFFilter;
+	import com.catalystapps.gaf.utils.DebugUtility;
+
+	import feathers.controls.text.TextFieldTextEditor;
+	import feathers.core.ITextEditor;
 
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 
-	import starling.animation.IAnimatable;
 	import starling.display.DisplayObject;
-	import starling.display.Image;
 	import starling.display.Quad;
 	import starling.display.Sprite;
-	import starling.extensions.pixelmask.PixelMaskDisplayObject;
 	import starling.textures.TextureSmoothing;
 
-	/** Dispatched when playhead reached first frame of sequence, the data property of the event is the <code>CAnimationSequence</code> instance related to the event */
-	[Event(name = "typeSequenceStart", type = "starling.events.Event")]
-	/** Dispatched when playhead reached end frame of sequence, the data property of the event is the <code>CAnimationSequence</code> instance related to the event */
-	[Event(name = "typeSequenceEnd", type = "starling.events.Event")]
+	/** Dispatched when playhead reached first frame of sequence */
+	[Event(name="typeSequenceStart", type="com.catalystapps.gaf.event.SequenceEvent")]
+
+	/** Dispatched when playhead reached end frame of sequence */
+	[Event(name="typeSequenceEnd", type="com.catalystapps.gaf.event.SequenceEvent")]
+	
 	/** Dispatched when playhead skip first frame of sequence, the data property of the event is the <code>CAnimationSequence</code> instance related to the event */
 	[Event(name = "typeSequenceSkipStart", type = "starling.events.Event")]
+	
 	/** Dispatched when playhead skip end frame of sequence, the data property of the event is the <code>CAnimationSequence</code> instance related to the event */
 	[Event(name = "typeSequenceSkipEnd", type = "starling.events.Event")]
+
 	/**
 	 * GAFMovieClip represents animation display object that is ready to be used in Starling display list. It has
 	 * all controls for animation familiar from standard MovieClip (<code>play</code>, <code>stop</code>, <code>gotoAndPlay,</code> etc.)
 	 * and some more like <code>loop</code>, <code>nPlay</code>, <code>setSequence</code> that helps manage playback
 	 */
-	public class GAFMovieClip extends Sprite implements IAnimatable
+	dynamic public class GAFMovieClip extends Sprite implements IAnimatable, IGAFDisplayObject
 	{
 		public static const EVENT_TYPE_SEQUENCE_START: String = "typeSequenceStart";
 		public static const EVENT_TYPE_SEQUENCE_END: String = "typeSequenceEnd";
 		public static const EVENT_TYPE_SEQUENCE_SKIP_START: String = "typeSequenceSkipStart";
 		public static const EVENT_TYPE_SEQUENCE_SKIP_END: String = "typeSequenceSkipEnd";
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// PUBLIC VARIABLES
+		//  PUBLIC VARIABLES
 		//
-		// --------------------------------------------------------------------------
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
+		//--------------------------------------------------------------------------
 		//
-		// PRIVATE VARIABLES
+		//  PRIVATE VARIABLES
 		//
-		// --------------------------------------------------------------------------
-		private var _gafAsset: GAFAsset;
+		//--------------------------------------------------------------------------
+
 		private var _mappedAssetID: String;
+
 		private var scale: Number;
-		private var imagesDictionary: Object;
+
+		private var displayObjectsDictionary: Object;
 		private var masksDictionary: Object;
 		private var maskedImagesDictionary: Object;
+
 		private var playingSequence: CAnimationSequence;
+
 		private var _currentFrame: uint;
 		private var _totalFrames: uint;
+
 		private var _inPlay: Boolean;
 		private var _loop: Boolean = true;
+
+		private var _smoothing: String = TextureSmoothing.BILINEAR;
+
+		private var _alphaLess1: Boolean;
+		private var _masked: Boolean;
+		private var _hasFilter: Boolean;
+		private var _useClipping: Boolean;
+		
 		private var _elapsedTime: Number = 0;
 		// Hold the current time spent animating
 		private var _lastFrameTime: Number = 0;
 		private var _frameDuration: Number;
-		private var _smoothing: String = TextureSmoothing.BILINEAR;
-		private var _useClipping: Boolean;
-		private var _reversePlayback: Boolean;
-		private var _nextFrame : int;
-		private var _startFrame : int;
-		private var _finalFrame : int;
+		private var _reverse: Boolean;
+		private var _nextFrame: int;
+		private var _startFrame: int;
+		private var _finalFrame: int;
+		private var _addToJuggler: Boolean;
+		private var _zIndex: uint;
+		private var boundsAndPivot: QuadBatch;
+		private var config: GAFTimelineConfig;
 
 		// --------------------------------------------------------------------------
 		//
-		// CONSTRUCTOR
+		//  CONSTRUCTOR
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		/**
 		 * Creates a new GAFMovieClip instance.
 		 *
-		 * @param gafAsset <code>GAFAsset</code> from what <code>GAFMovieClip</code> will be created
+		 * @param gafTimeline <code>GAFTimeline</code> from what <code>GAFMovieClip</code> will be created
 		 * @param mappedAssetID To be defined. For now - use default value
-		 * @param fps defines the frame rate of the movie clip. The default value is stage config frame rate.
+		 * @param fps defines the frame rate of the movie clip. If not set - the stage config frame rate will be used instead.
+		 * @param addToJuggler if <code>true - GAFMovieClip</code> will be added to <code>Starling.juggler</code>
+		 * and removed automatically on <code>dispose</code>
 		 */
-		public function GAFMovieClip(gafAsset: GAFAsset, mappedAssetID: String = "", fps: int = -1)
+		public function GAFMovieClip(gafTimeline: GAFTimeline, mappedAssetID: String = "", fps: int = -1, addToJuggler: Boolean = true)
 		{
-			this._gafAsset = gafAsset;
-
+			this._addToJuggler = addToJuggler;
 			this._mappedAssetID = mappedAssetID;
+			this.scale = gafTimeline.scale;
+			this.config = gafTimeline.config;
 
-			this.scale = this._gafAsset.scale;
-
-			this.initialize();
-
+			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafBundle);
+			
+			this.boundsAndPivot = new QuadBatch();
+			this.updateBounds(this.config.bounds);
+			
 			if (fps > 0)
 			{
 				this.fps = fps;
@@ -102,20 +136,21 @@ package com.catalystapps.gaf.display
 			this.draw();
 		}
 
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// PUBLIC METHODS
+		//  PUBLIC METHODS
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		/**
 		 * Returns the child display object that exists with the specified ID. Use to obtain animation's parts
 		 *
 		 * @param id Child ID
 		 * @return The child display object with the specified ID
 		 */
-		public function getChildByID(id: String): GAFImage
+		public function getChildByID(id: String): DisplayObject
 		{
-			return this.imagesDictionary[id];
+			return this.displayObjectsDictionary[id];
 		}
 
 		/**
@@ -124,7 +159,7 @@ package com.catalystapps.gaf.display
 		 * @param id Mask ID
 		 * @return The mask display object with the specified ID
 		 */
-		public function getMaskByID(id: String): GAFImage
+		public function getMaskByID(id: String): DisplayObject
 		{
 			return this.masksDictionary[id];
 		}
@@ -136,33 +171,42 @@ package com.catalystapps.gaf.display
 		 */
 		public function showMaskByID(id: String): void
 		{
-			var maskImage: GAFImage = this.masksDictionary[id];
-
-			if (maskImage)
+			var maskObject: DisplayObject = this.masksDictionary[id];
+			if (maskObject)
 			{
-				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
 
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
-
 				if (maskInstance)
 				{
-					var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskImage.assetTexture.pivotMatrix, this.scale).clone();
+					var maskPivotMatrix: Matrix;
+					if (maskObject is IGAFImage)
+					{
+						maskPivotMatrix = (maskObject as IGAFImage).assetTexture.pivotMatrix;
+					}
+					else
+					{
+						maskPivotMatrix = new Matrix();
+					}
+					var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix, this.scale).clone();
 
-					maskImage.transformationMatrix = maskTransformMatrix;
+					maskObject.transformationMatrix = maskTransformMatrix;
 
-					// //////////////////////////////
+					////////////////////////////////
 
 					var cFilter: CFilter = new CFilter();
-					cFilter.addColorMatrixFilter([1, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
+					var cmf: Vector.<Number> = new <Number>[1, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0];
+					cmf.fixed = true;
+					cFilter.addColorMatrixFilter(cmf);
 
 					var gafFilter: GAFFilter = new GAFFilter();
 					gafFilter.setConfig(cFilter, scale);
 
-					maskImage.filter = gafFilter;
+					maskObject.filter = gafFilter;
 
-					// //////////////////////////////
+					////////////////////////////////
 
-					this.addChild(maskImage);
+					this.addChild(maskObject);
 				}
 			}
 		}
@@ -175,16 +219,15 @@ package com.catalystapps.gaf.display
 		 */
 		public function hideMaskByID(id: String): void
 		{
-			var maskImage: GAFImage = this.masksDictionary[id];
-
-			if (maskImage)
+			var maskObject: DisplayObject = this.masksDictionary[id];
+			if (maskObject)
 			{
-				maskImage.transformationMatrix = new Matrix();
-				maskImage.filter = null;
+				maskObject.transformationMatrix = new Matrix();
+				maskObject.filter = null;
 
-				if (maskImage.parent == this)
+				if (maskObject.parent == this)
 				{
-					this.removeChild(maskImage);
+					this.removeChild(maskObject);
 				}
 			}
 		}
@@ -206,17 +249,17 @@ package com.catalystapps.gaf.display
 		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
-			this.playingSequence = this._gafAsset.config.animationSequences.getSecuenceByID(id);
+			this.playingSequence = this.config.animationSequences.getSecuenceByID(id);
+
 			if (this.playingSequence)
 			{
-				var startFrame: int = this._reversePlayback ? this.playingSequence.endFrameNo : this.playingSequence.startFrameNo;
 				if (play)
 				{
-					this.gotoAndPlay(startFrame);
+					this.gotoAndPlay(this.playingSequence.startFrameNo);
 				}
 				else
 				{
-					this.gotoAndStop(startFrame);
+					this.gotoAndStop(this.playingSequence.startFrameNo);
 				}
 			}
 
@@ -232,6 +275,16 @@ package com.catalystapps.gaf.display
 			{
 				this._inPlay = true;
 			}
+			
+			var mc: GAFMovieClip;
+			for (var i: int = 0; i < this.numChildren - 1; i++)
+			{
+				mc = this.getChildAt(i) as GAFMovieClip;
+				if (mc)
+				{
+					mc.play();
+				}
+			}
 		}
 
 		/**
@@ -240,6 +293,16 @@ package com.catalystapps.gaf.display
 		public function stop(): void
 		{
 			this._inPlay = false;
+			
+			var mc: GAFMovieClip;
+			for (var i: int = 0; i < this.numChildren - 1; i++)
+			{
+				mc = this.getChildAt(i) as GAFMovieClip;
+				if (mc)
+				{
+					mc.stop();
+				}
+			}
 		}
 
 		/**
@@ -249,9 +312,11 @@ package com.catalystapps.gaf.display
 		 */
 		public function gotoAndStop(frame: *): void
 		{
-			this.stop();
 			this.checkAndSetCurrentFrame(frame);
+
 			this.draw();
+
+			this.stop();
 		}
 
 		/**
@@ -262,15 +327,81 @@ package com.catalystapps.gaf.display
 		public function gotoAndPlay(frame: *): void
 		{
 			this.checkAndSetCurrentFrame(frame);
+
 			this.draw();
+
 			this.play();
 		}
+		
+		/** Advances all objects by a certain time (in seconds).
+		 * @see starling.animation.IAnimatable
+		 */
+		public function advanceTime(time: Number): void
+		{
+			if (_inPlay && _frameDuration != Number.POSITIVE_INFINITY)
+			{
+				this._elapsedTime += time;
 
-		// --------------------------------------------------------------------------
+				var nbFrames: int = (this._elapsedTime - this._lastFrameTime) / _frameDuration;
+				var isSkipping: Boolean;
+				var sequence: CAnimationSequence;
+
+				for (var i: int = 0; i < nbFrames; ++i)
+				{
+					isSkipping = (i + 1) != nbFrames;
+					
+					changeCurrentFrame();
+
+					if (!isSkipping)
+					{
+						// Draw will trigger events if any
+						this.draw();
+					}
+					else
+					{
+						// If we are skipping, we send our own events
+						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_START))
+						{
+							sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
+							if (sequence)
+							{
+								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_START, false, sequence);
+							}
+						}
+						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_END))
+						{
+							sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
+							if (sequence)
+							{
+								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_END, false, sequence);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		/** Shows bounds of a whole animation with a pivot point.
+		 * Used for debug purposes.
+		 */
+		public function showBounds(value: Boolean): void
+		{
+			if (value)
+			{
+				this.addChild(this.boundsAndPivot);
+			}
+			else
+			{
+				this.removeChild(this.boundsAndPivot);
+			}
+		}
+
+		//--------------------------------------------------------------------------
 		//
-		// PRIVATE METHODS
+		//  PRIVATE METHODS
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		private function checkAndSetCurrentFrame(frame: *): void
 		{
 			if (frame is uint)
@@ -284,21 +415,12 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				if (this._reversePlayback)
-				{
-					frame = this._gafAsset.config.animationSequences.getEndFrameNo(frame) || this.totalFrames - 1;
-				}
-				else
-				{
-					frame = this._gafAsset.config.animationSequences.getStartFrameNo(frame);
-				}
-				
+				frame = this.config.animationSequences.getStartFrameNo(frame);
 			}
 
 			if (frame <= this._totalFrames)
 			{
 				this._currentFrame = frame;
-				this._lastFrameTime = this._elapsedTime;
 			}
 
 			if (this.playingSequence && !this.playingSequence.isSequenceFrame(this._currentFrame + 1))
@@ -311,90 +433,130 @@ package com.catalystapps.gaf.display
 		{
 			this.removeChildren();
 
-			for each (var pixelMaskimage: PixelMaskDisplayObject in this.maskedImagesDictionary)
+			for each (var pixelMaskImage: GAFPixelMaskDisplayObject in this.maskedImagesDictionary)
 			{
-				pixelMaskimage.removeChildren();
+				pixelMaskImage.removeChildren();
 			}
 		}
+		
+		private function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLess1: Boolean, masked: Boolean, hasFilter: Boolean): void
+		{
+			var changed: Boolean;
+			if (mc._alphaLess1 != alphaLess1)
+			{
+				mc._alphaLess1 = alphaLess1;
+				changed = true;
+			}
+			if (mc._masked != masked)
+			{
+				mc._masked = masked;
+				changed = true;
+			}
+			if (mc._hasFilter != hasFilter)
+			{
+				mc._hasFilter = hasFilter;
+				changed = true;
+			}
 
+			if (changed)
+			{
+				mc.draw();
+			}
+		}
+		
 		private var tmpMaskTransformationMatrix: Matrix = new Matrix();
 
 		private function draw(): void
 		{
 			var i: int;
-			var pixelMaskDisplayObject: PixelMaskDisplayObject;
+			var displayObject: IGAFDisplayObject;
+			var maskedDisplayObject: GAFPixelMaskDisplayObject;
 			
-			if (_gafAsset.config.debugRegions)
+			if (DebugUtility.RENDERING_DEBUG || config.debugRegions)
 			{
 				// Non optimized way when there are debug regions
 				this.clearDisplayList();
 			}
 			else
 			{
-				var displayObject: DisplayObject;
 				// Just hide the children to avoir dispatching a lot of events and alloc temporary arrays
-				for (i = (this.numChildren - 1); i >= 0; i--)
+				for each (displayObject in this.displayObjectsDictionary)
 				{
-					displayObject = this.getChildAt(i);
 					displayObject.visible = false;
+					displayObject.alpha = 0;
 				}
 
 				
-				for each (pixelMaskDisplayObject in this.maskedImagesDictionary)
+				for each (maskedDisplayObject in this.maskedImagesDictionary)
 				{
-					for (i = (pixelMaskDisplayObject.numChildren - 1); i >= 0; i--)
+					for (i = (maskedDisplayObject.numChildren - 1); i >= 0; i--)
 					{
-						displayObject = pixelMaskDisplayObject.getChildAt(i);
+						displayObject = maskedDisplayObject.getChildAt(i) as IGAFDisplayObject;
 						displayObject.visible = false;
 						displayObject.alpha = 0;
 					}
 				}
 			}
 
-			var image: GAFImage;
+			var objectPivotMatrix: Matrix;
+			var maskPivotMatrix: Matrix;
 
-			if (this._gafAsset.config.animationConfigFrames.frames.length > this._currentFrame)
+			if (this.config.animationConfigFrames.frames.length > this._currentFrame)
 			{
-				var frameConfig: CAnimationFrame = this._gafAsset.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
 				var mustReorder: Boolean;
 				var zIndex: uint;
-				for each (var instance: CAnimationFrameInstance in frameConfig.instances)
+				var instances: Vector.<CAnimationFrameInstance> = frameConfig.instances;
+				var l: uint = instances.length;
+				for (i = 0; i < l; i++)
 				{
-					image = this.imagesDictionary[instance.id];
+					var instance: CAnimationFrameInstance = instances[i];
+					displayObject = this.displayObjectsDictionary[instance.id];
+					
+					objectPivotMatrix = getTransformMatrix(displayObject);
 
-					if (image)
+					if (displayObject)
 					{
-						image.alpha = instance.alpha;
-						image.visible = true;
+						displayObject.alpha = instance.alpha;
+						displayObject.visible = true;
 
 						if (instance.maskID)
 						{
-							var maskImage: GAFImage = this.masksDictionary[instance.maskID];
-							if (maskImage)
+							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
-								pixelMaskDisplayObject = this.maskedImagesDictionary[instance.maskID];
-								pixelMaskDisplayObject.visible = true;
+								updateAlphaMaskedAndHasFilter(
+												displayObject as GAFMovieClip, instance.alpha < 1 || this._alphaLess1,
+												true, (instance.filter != null) || this._hasFilter);
+							}
 
-								mustReorder ||= (pixelMaskDisplayObject.zIndex != zIndex);
-								pixelMaskDisplayObject.zIndex = zIndex;
-								pixelMaskDisplayObject.mustReorder ||= (image.zIndex != zIndex);
+							var maskObject: IGAFDisplayObject = this.masksDictionary[instance.maskID];
+							if (maskObject)
+							{
+								maskedDisplayObject = this.maskedImagesDictionary[instance.maskID];
+								maskedDisplayObject.visible = true;
+								maskedDisplayObject.alpha = 1;
 
-								if (image.parent != pixelMaskDisplayObject)
+								mustReorder ||= (maskedDisplayObject.zIndex != zIndex);
+								maskedDisplayObject.zIndex = zIndex;
+								maskedDisplayObject.mustReorder ||= (displayObject.zIndex != zIndex);
+
+								if (displayObject.parent != maskedDisplayObject)
 								{
-									pixelMaskDisplayObject.addChild(image);
+									maskedDisplayObject.addChild(displayObject as DisplayObject);
 									mustReorder = true;
 								}
 
 								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
 								if (maskInstance)
 								{
-									instance.applyTransformMatrix(image.transformationMatrix, image.assetTexture.pivotMatrix, this.scale);
+									maskPivotMatrix = getTransformMatrix(maskObject);
+									displayObject.transformationMatrix = instance.calculateTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this.scale);
 
-									maskInstance.applyTransformMatrix(tmpMaskTransformationMatrix, maskImage.assetTexture.pivotMatrix, this.scale);
+									maskInstance.applyTransformMatrix(tmpMaskTransformationMatrix, maskPivotMatrix, this.scale);
 									tmpMaskTransformationMatrix.invert();
-									image.transformationMatrix.concat(tmpMaskTransformationMatrix);
+									displayObject.transformationMatrix.concat(tmpMaskTransformationMatrix);
 
-									maskInstance.applyTransformMatrix(pixelMaskDisplayObject.transformationMatrix, maskImage.assetTexture.pivotMatrix, this.scale);
+									maskedDisplayObject.transformationMatrix = maskInstance.calculateTransformMatrix(maskedDisplayObject.transformationMatrix, maskPivotMatrix, this.scale);
 								}
 								else
 								{
@@ -403,13 +565,14 @@ package com.catalystapps.gaf.display
 
 								// !!! Currently it's not possible to use filters under mask. This limitation will be removed in a future Stage3D version.
 								// TODO: uncomment this line when this limitation will be removed
-								// this.updateFilter(image, instance, this.scale);
+								// this.updateFilter(displayObject, instance, this.scale);
 
-								image.filter = null;
+								displayObject.filter = null;
 
-								if (!pixelMaskDisplayObject.parent)
+								if (!maskedDisplayObject.parent)
 								{
-									this.addChild(pixelMaskDisplayObject);
+									this.addChild(maskedDisplayObject);
+									mustReorder = true;
 								}
 							}
 							else
@@ -419,40 +582,55 @@ package com.catalystapps.gaf.display
 						}
 						else
 						{
-							mustReorder ||= (image.zIndex != zIndex);
-
-							instance.applyTransformMatrix(image.transformationMatrix, image.assetTexture.pivotMatrix, this.scale);
-							this.updateFilter(image, instance, this.scale);
-
-							if (image.parent != this)
+							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
-								this.addChild(image);
+								updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
+															  instance.alpha < 1 || this._alphaLess1,
+															  this._masked,
+															  (instance.filter != null) || this._hasFilter);
+							}
+
+							mustReorder ||= (displayObject.zIndex != zIndex);
+
+							displayObject.transformationMatrix = instance.calculateTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this.scale);
+							this.updateFilter(displayObject, instance, this.scale);
+
+							if (displayObject.parent != this)
+							{
+								this.addChild(displayObject as DisplayObject);
 								mustReorder = true;
 							}
 						}
-						image.zIndex = zIndex;
-					}
+						
+						displayObject.zIndex = zIndex;
 
+						if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
+						{
+							var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
+									instance, this._alphaLess1, this._masked, this._hasFilter);
+							(displayObject as IGAFDebug).debugColors = colors;
+						}
+					}
 					++zIndex;
 				}
 			}
-
+			
 			if (mustReorder)
 			{
 				sortChildren(sortDisplayObjects);
 			}
 
-			for each (pixelMaskDisplayObject in this.maskedImagesDictionary)
+			for each (maskedDisplayObject in this.maskedImagesDictionary)
 			{
-				if (pixelMaskDisplayObject.mustReorder)
+				if (maskedDisplayObject.mustReorder)
 				{
-					pixelMaskDisplayObject.mustReorder = false;
-					pixelMaskDisplayObject.sortChildren(sortDisplayObjects);
+					maskedDisplayObject.mustReorder = false;
+					maskedDisplayObject.sortChildren(sortDisplayObjects);
 				}
 			}
 
 			var debugView: Quad;
-			for each (var debugRegion: GAFDebugInformation in _gafAsset.config.debugRegions)
+			for each (var debugRegion: GAFDebugInformation in config.debugRegions)
 			{
 				switch (debugRegion.type)
 				{
@@ -472,11 +650,11 @@ package com.catalystapps.gaf.display
 
 				addChild(debugView);
 			}
-
+			
 			var sequence: CAnimationSequence;
 			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
 			{
-				sequence = this._gafAsset.config.animationSequences.getSequenceStart(this._currentFrame + 1);
+				sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
 				if (sequence)
 				{
 					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
@@ -484,7 +662,7 @@ package com.catalystapps.gaf.display
 			}
 			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END))
 			{
-				sequence = this._gafAsset.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
+				sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
 				if (sequence)
 				{
 					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
@@ -492,6 +670,18 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		private function getTransformMatrix(displayObject: IGAFDisplayObject): Matrix
+		{
+			if (displayObject is IGAFImage)
+			{
+				return (displayObject as IGAFImage).assetTexture.pivotMatrix;
+			}
+			else
+			{
+				return new Matrix();
+			}
+		}
+		
 		private function sortDisplayObjects(a: DisplayObject, b: DisplayObject): int
 		{
 			var aZindex: uint = a.hasOwnProperty('zIndex') ? a['zIndex'] : 0;
@@ -505,7 +695,7 @@ package com.catalystapps.gaf.display
 				return 0;
 		}
 
-		private function updateFilter(image: Image, instance: CAnimationFrameInstance, scale: Number): void
+		private function updateFilter(image: IGAFDisplayObject, instance: CAnimationFrameInstance, scale: Number): void
 		{
 			var gafFilter: GAFFilter;
 
@@ -532,51 +722,130 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function initialize(): void
+		private function initialize(textureAtlas : CTextureAtlas, gafBundle : GAFBundle): void
 		{
-			this.imagesDictionary = new Object();
-			this.masksDictionary = new Object();
-			this.maskedImagesDictionary = new Object();
+			this.displayObjectsDictionary = {};
+			this.masksDictionary = {};
+			this.maskedImagesDictionary = {};
 
 			this._currentFrame = 0;
-			this._totalFrames = this._gafAsset.config.animationConfigFrames.frames.length;
-			this.fps = this._gafAsset.config.stageConfig ? this._gafAsset.config.stageConfig.fps : 30;
+			this._totalFrames = this.config.animationConfigFrames.frames.length;
+			this.fps = this.config.stageConfig ? this.config.stageConfig.fps : Starling.current.nativeStage.frameRate;
 
-			var animationObjectsDictionary: Object = this._gafAsset.config.animationObjects.animationObjectsDictionary;
+			var animationObjectsDictionary: Object = this.config.animationObjects.animationObjectsDictionary;
 
-			var image: GAFImage;
 			for each (var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
 			{
-				image = new GAFImage(this._gafAsset.textureAtlas.getTexture(animationObjectConfig.textureElementID, this._mappedAssetID));
-				image.name = animationObjectConfig.instanceID;
-				image.smoothing = this._smoothing;
+				var displayObject: DisplayObject;
+				switch (animationObjectConfig.type)
+				{
+					case CAnimationObject.TYPE_TEXTURE:
+						var texture: IGAFTexture = textureAtlas.getTexture(animationObjectConfig.regionID, this._mappedAssetID);
+						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
+						{
+							displayObject = new GAFScale9Image(texture as GAFScale9Texture);
+						}
+						else
+						{
+							displayObject = new GAFImage(texture);
+							(displayObject as GAFImage).smoothing = this._smoothing;
+						}
+						break;
+					case CAnimationObject.TYPE_TEXTFIELD:
+						var tfObj: CTextFieldObject = this.config.textFields.textFieldObjectsDictionary[animationObjectConfig.regionID];
+						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
+						tf.text = tfObj.text;
+						tf.restrict = tfObj.restrict;
+						tf.isEditable = tfObj.editable;
+						tf.displayAsPassword = tfObj.displayAsPassword;
+						tf.maxChars = tfObj.maxChars;
+
+						tf.textEditorProperties.textFormat = tfObj.textFormat;
+						tf.textEditorProperties.embedFonts = tfObj.embedFonts;
+						tf.textEditorProperties.multiline = tfObj.multiline;
+						tf.textEditorProperties.wordWrap = tfObj.wordWrap;
+						tf.textEditorFactory = function (): ITextEditor
+						{
+							return new TextFieldTextEditor();
+						};
+						displayObject = tf;
+						break;
+					case CAnimationObject.TYPE_TIMELINE:
+						var mc: GAFMovieClip = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this.config.assetID, animationObjectConfig.regionID));
+						if (!mc.inPlay)
+						{
+							mc.play();
+						}
+
+						displayObject = mc;
+						break;
+				}
 
 				if (animationObjectConfig.mask)
 				{
-					this.masksDictionary[animationObjectConfig.instanceID] = image;
+					this.masksDictionary[animationObjectConfig.instanceID] = displayObject;
 
-					var pixelMaskDisplayObject: PixelMaskDisplayObject = new PixelMaskDisplayObject();
-					pixelMaskDisplayObject.mask = image;
+					var pixelMaskDisplayObject: GAFPixelMaskDisplayObject = new GAFPixelMaskDisplayObject();
+					pixelMaskDisplayObject.mask = displayObject;
 
 					this.maskedImagesDictionary[animationObjectConfig.instanceID] = pixelMaskDisplayObject;
 				}
 				else
 				{
-					this.imagesDictionary[animationObjectConfig.instanceID] = image;
+					this.displayObjectsDictionary[animationObjectConfig.instanceID] = displayObject;
+				}
+
+				if (this.config.namedParts != null)
+				{
+					var instanceName: String = this.config.namedParts[animationObjectConfig.instanceID];
+					if (instanceName != null && !this.hasOwnProperty(instanceName))
+					{
+						this[this.config.namedParts[animationObjectConfig.instanceID]] = displayObject;
+						displayObject.name = instanceName;
+					}
 				}
 			}
 			
-			Starling.juggler.add(this);
+			if (this._addToJuggler)
+			{
+				Starling.juggler.add(this);
+			}
+		}
+		
+		private function updateBounds(bounds: Rectangle): void
+		{
+			this.boundsAndPivot.reset();
+			//bounds
+			var quad: Quad = new Quad(bounds.width, 2, 0xff0000);
+			quad.x = bounds.x;
+			quad.y = bounds.y;
+			this.boundsAndPivot.addQuad(quad);
+			quad = new Quad(bounds.width, 2, 0xff0000);
+			quad.x = bounds.x;
+			quad.y = bounds.bottom - 2;
+			this.boundsAndPivot.addQuad(quad);
+			quad = new Quad(2, bounds.height, 0xff0000);
+			quad.x = bounds.x;
+			quad.y = bounds.y;
+			this.boundsAndPivot.addQuad(quad);
+			quad = new Quad(2, bounds.height, 0xff0000);
+			quad.x = bounds.right - 2;
+			quad.y = bounds.y;
+			this.boundsAndPivot.addQuad(quad);
+			//pivot point
+			quad = new Quad(5, 5, 0xff0000);
+			this.boundsAndPivot.addQuad(quad);
 		}
 
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		/**
 		 * Disposes all resources of the display object instance. Note: this method won't delete used texture atlases from GPU memory.
-		 * To delete texture atlases from GPU memory use <code>unloadFromVideoMemory()</code> method for <code>GAFAsset</code> instance
+		 * To delete texture atlases from GPU memory use <code>unloadFromVideoMemory()</code> method for <code>GAFTimeline</code> instance
 		 * from what <code>GAFMovieClip</code> was instantiated.
 		 * Call this method every time before delete no longer required instance! Otherwise GPU memory leak may occur!
 		 */
@@ -584,23 +853,26 @@ package com.catalystapps.gaf.display
 		{
 			this.stop();
 			
-			Starling.juggler.remove(this);
-
-			this._gafAsset = null;
-
-			var image: GAFImage;
-
-			for each (image in this.imagesDictionary)
+			if (this._addToJuggler)
 			{
-				image.dispose();
+				Starling.juggler.remove(this);
 			}
 
-			for each (image in this.masksDictionary)
+			this.config = null;
+
+			var displayObject: DisplayObject;
+
+			for each(displayObject in this.displayObjectsDictionary)
 			{
-				image.dispose();
+				displayObject.dispose();
 			}
 
-			for each (var pixelMaskDisplayObject: PixelMaskDisplayObject in this.maskedImagesDictionary)
+			for each(displayObject in this.masksDictionary)
+			{
+				displayObject.dispose();
+			}
+
+			for each(var pixelMaskDisplayObject: GAFPixelMaskDisplayObject in this.maskedImagesDictionary)
 			{
 				pixelMaskDisplayObject.dispose();
 			}
@@ -608,54 +880,33 @@ package com.catalystapps.gaf.display
 			super.dispose();
 		}
 
-		public function advanceTime(time: Number): void
+		/** @private
+		 * Invalidates textfields to correct display size
+		 * @param matrix
+		 */
+		override public function set transformationMatrix(matrix: Matrix): void
 		{
-			if (_inPlay)
+			super.transformationMatrix = matrix;
+
+			for (var i: uint = 0; i < this.numChildren; i++)
 			{
-				this._elapsedTime += time;
-
-				var nbFrames: int = (this._elapsedTime - this._lastFrameTime) / _frameDuration;
-				var isSkipping: Boolean;
-				var sequence: CAnimationSequence;
-
-				for (var i: int = 0; i < nbFrames; ++i)
+				var child: GAFTextField = this.getChildAt(i) as GAFTextField;
+				if (child)
 				{
-					isSkipping = (i + 1) != nbFrames;
-					
-					changeCurrentFrame();
-
-					if (!isSkipping)
-					{
-						// Draw will trigger events if any
-						this.draw();
-					}
-					else
-					{
-						// If we are skipping, we send our own events
-						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_START))
-						{
-							sequence = this._gafAsset.config.animationSequences.getSequenceStart(this._currentFrame + 1);
-							if (sequence)
-							{
-								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_START, false, sequence);
-							}
-						}
-						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_END))
-						{
-							sequence = this._gafAsset.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
-							if (sequence)
-							{
-								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_END, false, sequence);
-							}
-						}
-					}
+					child.invalidateSize();
 				}
 			}
 		}
 
+		//--------------------------------------------------------------------------
+		//
+		//  EVENT HANDLERS
+		//
+		//--------------------------------------------------------------------------
+
 		private function changeCurrentFrame(): void
 		{
-			this._nextFrame = this._currentFrame + (this._reversePlayback ? -1 : 1);
+			this._nextFrame = this._currentFrame + (this._reverse ? -1 : 1);
 			this._startFrame = (this.playingSequence ? this.playingSequence.startFrameNo : 1) - 1;
 			this._finalFrame = (this.playingSequence ? this.playingSequence.endFrameNo : this._totalFrames) - 1;
 
@@ -672,24 +923,24 @@ package com.catalystapps.gaf.display
 				}
 				else
 				{
-					this._currentFrame = this._reversePlayback ? this._finalFrame : this._startFrame;
+					this._currentFrame = this._reverse ? this._finalFrame : this._startFrame;
 					this._lastFrameTime = this._lastFrameTime + this._frameDuration;
 				}
 			}
 		}
 
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// GETTERS AND SETTERS
+		//  GETTERS AND SETTERS
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		/**
 		 * Specifies the number of the frame in which the playhead is located in the timeline of the GAFMovieClip instance. First frame is "1"
 		 */
 		public function get currentFrame(): uint
 		{
-			return _currentFrame + 1;
-			// Like in standart AS3 API for MovieClip first frame is "1" instead of "0" (but internally used "0")
+			return this._currentFrame + 1;// Like in standart AS3 API for MovieClip first frame is "1" instead of "0" (but internally used "0")
 		}
 
 		/**
@@ -697,7 +948,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get totalFrames(): uint
 		{
-			return _totalFrames;
+			return this._totalFrames;
 		}
 
 		/**
@@ -705,7 +956,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get inPlay(): Boolean
 		{
-			return _inPlay;
+			return this._inPlay;
 		}
 
 		/**
@@ -713,12 +964,12 @@ package com.catalystapps.gaf.display
 		 */
 		public function get loop(): Boolean
 		{
-			return _loop;
+			return this._loop;
 		}
 
 		public function set loop(loop: Boolean): void
 		{
-			_loop = loop;
+			this._loop = loop;
 		}
 
 		/**
@@ -730,16 +981,22 @@ package com.catalystapps.gaf.display
 			{
 				this._smoothing = value;
 
-				var image: GAFImage;
+				var image: IGAFDisplayObject;
 
-				for each (image in this.imagesDictionary)
+				for each (image in this.displayObjectsDictionary)
 				{
-					image.smoothing = this._smoothing;
+					if (image is GAFImage)
+					{
+						(image as GAFImage).smoothing = this._smoothing;
+					}
 				}
 
 				for each (image in this.masksDictionary)
 				{
-					image.smoothing = this._smoothing;
+					if (image is GAFImage)
+					{
+						(image as GAFImage).smoothing = this._smoothing;
+					}
 				}
 			}
 		}
@@ -755,46 +1012,85 @@ package com.catalystapps.gaf.display
 		}
 
 		/**
-		 * Indicates whether movie clip is clipped (masked) by stage borders
+		 * if set <code>true</code> - <code>GAFMivieclip</code> will be clipped with flash stage dimensions
 		 */
 		public function set useClipping(value: Boolean): void
 		{
 			this._useClipping = value;
 
-			if (this._useClipping)
+			if (this._useClipping && this.config.stageConfig)
 			{
-				this.clipRect = new Rectangle(0, 0, this._gafAsset.config.stageConfig.width, this._gafAsset.config.stageConfig.height);
+				this.clipRect = new Rectangle(0,0, this.config.stageConfig.width, this.config.stageConfig.height);
 			}
 			else
 			{
 				this.clipRect = null;
 			}
 		}
-
+		
 		public function get fps(): Number
 		{
+			if (this._frameDuration == Number.POSITIVE_INFINITY)
+			{
+				return 0;
+			}
 			return 1 / this._frameDuration;
 		}
 
 		/**
-		 * Sets an individual frame rate for movie clip. If this value is lower than stage fps -  the movie clip will skip frames.
+		 * Sets an individual frame rate for <code>GAFMovieClip</code>. If this value is lower than stage fps -  the <code>GAFMovieClip</code> will skip frames.
 		 */
 		public function set fps(value: Number): void
 		{
-			this._frameDuration = 1 / value;
+			if (value <= 0)
+			{
+				this._frameDuration = Number.POSITIVE_INFINITY;
+			}
+			else
+			{
+				this._frameDuration = 1 / value;
+			}
 		}
 
-		public function get reversePlayback(): Boolean
+		public function get reverse(): Boolean
 		{
-			return _reversePlayback;
+			return _reverse;
 		}
 
 		/**
-		 * Should animation play in reverse mode
+		 * If <code>true</code> animation will be playing in reverse mode
 		 */
-		public function set reversePlayback(value: Boolean): void
+		public function set reverse(value: Boolean): void
 		{
-			_reversePlayback = value;
+			_reverse = value;
+			
+			var mc: GAFMovieClip;
+			for (var i: int = 0; i < this.numChildren - 1; i++)
+			{
+				mc = this.getChildAt(i) as GAFMovieClip;
+				if (mc)
+				{
+					mc.reverse = value;
+				}
+			}
+		}
+		
+		/**
+		 * Depth of display object in parent container
+		 * @private
+		 */
+		public function get zIndex(): uint
+		{
+			return _zIndex;
+		}
+
+		/**
+		 * Depth of display object in parent container
+		 * @private
+		 */
+		public function set zIndex(value: uint): void
+		{
+			_zIndex = value;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
 	/**
-	 * @author p0d04Va
+	 * @private
 	 */
 	public class WarningConstants
 	{

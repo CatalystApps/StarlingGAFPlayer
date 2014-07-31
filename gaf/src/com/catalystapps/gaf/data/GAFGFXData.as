@@ -1,15 +1,20 @@
 package com.catalystapps.gaf.data
 {
 	import starling.core.Starling;
-	import starling.textures.Texture;
-
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
+	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import flash.display.BitmapData;
+	import flash.filters.ColorMatrixFilter;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+
+	import starling.textures.Texture;
+
 	/**
-	 * Graphical data storage that used by <code>GAFAsset</code>. It contain all created textures and all
+	 * Graphical data storage that used by <code>GAFTimeline</code>. It contain all created textures and all
 	 * saved images as <code>BitmapData</code> (in case when <code>ZipToGAFAssetConverter.keepImagesInRAM = true</code> was set before asset conversion).
-	 * Used as shared graphical data storage between several GAFAssets if they are used the same texture atlas (bundle created using "Create bundle" option)
+	 * Used as shared graphical data storage between several GAFTimelines if they are used the same texture atlas (bundle created using "Create bundle" option)
 	 */
 	public class GAFGFXData
 	{
@@ -37,8 +42,8 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function GAFGFXData()
 		{
-			this._texturesDictionary = new Object();
-			this._imagesDictionary = new Object();
+			this._texturesDictionary = {};
+			this._imagesDictionary = {};
 		}
 		
 		//--------------------------------------------------------------------------
@@ -111,13 +116,13 @@ package com.catalystapps.gaf.data
 			// Dispose only if starling does not handle lost context
 			if (!Starling.handleLostContext)
 			{
-				for (var tmpScale: Number in _imagesDictionary)
+				for (var tmpScale: String in _imagesDictionary)
 				{
-					if (isNaN(scale) || scale == tmpScale)
+					if (isNaN(scale) || scale == Number(tmpScale))
 					{
-						for (var tmpCsf: Number in _imagesDictionary[tmpScale])
+						for (var tmpCsf: String in _imagesDictionary[tmpScale])
 						{
-							if (isNaN(csf) || csf == tmpCsf)
+							if (isNaN(csf) || csf == Number(tmpCsf))
 							{
 								for (var tmpImageID: String in _imagesDictionary[tmpScale][tmpCsf])
 								{
@@ -164,38 +169,44 @@ package com.catalystapps.gaf.data
 		{
 			var image: BitmapData;
 			
-			function createMissedObjects(dictionary: Object): void
+			function addTexture(dictionary: Object, img: BitmapData, imageAtlasID: String, debug: Boolean = false): void
 			{
-				if(!dictionary[scale])
+				if (debug)
 				{
-					dictionary[scale] = new Object();
+					img = setGrayScale(img.clone());
 				}
-				
-				if(!dictionary[scale][csf])
-				{
-					dictionary[scale][csf] = new Object();
-				}
-			}
-			
-			function addTexture(dictionary: Object, img: BitmapData, imageAtlasID: String): void
-			{
-				if(!dictionary[scale][csf][imageAtlasID])
+				if (!dictionary[scale][csf][imageAtlasID])
 				{
 					dictionary[scale][csf][imageAtlasID] = CTextureAtlas.textureFromImg(img, csf);
 				}
 			}
 			
+			function setGrayScale(obj: BitmapData): BitmapData
+			{
+				var matrix: Array = [
+					0.26231, 0.51799, 0.0697, 0, 81.775,
+					0.26231, 0.51799, 0.0697, 0, 81.775,
+					0.26231, 0.51799, 0.0697, 0, 81.775,
+					0, 0, 0, 1, 0];
+
+				var filter: ColorMatrixFilter = new ColorMatrixFilter(matrix);
+				obj.applyFilter(obj, new Rectangle(0, 0, obj.width, obj.height), new Point(0, 0), filter);
+
+				return obj;
+			}
+
 			////////////////////////////////////
 			
 			if(imageID)
 			{
 				image = this.getImage(scale, csf, imageID);
 				
-				if(image)
+				if (image)
 				{
-					createMissedObjects(this._texturesDictionary);
+					this._texturesDictionary[scale] ||= {};
+					this._texturesDictionary[scale][csf] ||= {};
 					
-					addTexture(this._texturesDictionary, image, imageID);
+					addTexture(this._texturesDictionary, image, imageID, DebugUtility.RENDERING_DEBUG);
 					
 					return true;
 				}
@@ -205,16 +216,16 @@ package com.catalystapps.gaf.data
 			else
 			{
 				var images: Object = this.getImages(scale, csf);
-				
-				if(images)
+				if (images)
 				{
-					createMissedObjects(this._texturesDictionary);
+					this._texturesDictionary[scale] ||= {};
+					this._texturesDictionary[scale][csf] ||= {};
 					
 					for(var imageAtlasID: String in images)
 					{
 						image = images[imageAtlasID];
 						
-						addTexture(this._texturesDictionary, image, imageAtlasID);
+						addTexture(this._texturesDictionary, image, imageAtlasID, DebugUtility.RENDERING_DEBUG);
 					}
 					
 					return true;
@@ -304,12 +315,14 @@ package com.catalystapps.gaf.data
 					}
 					else
 					{
-						for(var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
+						if (this._texturesDictionary[scale] && this._texturesDictionary[scale][csf])
 						{
-							this.disposeTextures(scale, csf, atlasIDToDispose);
+							for(var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
+							{
+								this.disposeTextures(scale, csf, atlasIDToDispose);
+							}
+							delete this._texturesDictionary[scale][csf];
 						}
-						
-						delete this._texturesDictionary[scale][csf];
 					}
 				}
 			}

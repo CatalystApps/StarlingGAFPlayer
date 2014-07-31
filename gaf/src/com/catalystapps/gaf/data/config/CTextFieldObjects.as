@@ -1,121 +1,98 @@
-package com.catalystapps.gaf.core
+/**
+ * Created by Nazar on 03.03.14.
+ */
+package com.catalystapps.gaf.data.config
 {
-	import com.catalystapps.gaf.data.GAFAsset;
-	import com.catalystapps.gaf.display.GAFMovieClip;
 	/**
-	 * Utility class that allows easily manage all <code>GAFAsset's</code>
+	 * @private
 	 */
-	public class GAFAssetsManager
+	public class CTextFieldObjects
 	{
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
-		private static var _assetsCollection: Object = {};
-		private static var _assetsTotal: uint = 0;
-		
+
+		private var _textFieldObjectsDictionary: Object;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
+		public function CTextFieldObjects()
+		{
+			_textFieldObjectsDictionary = {};
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
-		/**
-		 * Add <code>GAFAsset</code> into assets collection
-		 */
-		public static function addGAFAsset(asset: GAFAsset): void
+
+		public function addTextFieldObject(textFieldObject: CTextFieldObject): void
 		{
-			if(!_assetsCollection[asset.id])
+			if (!this._textFieldObjectsDictionary[textFieldObject.id])
 			{
-				_assetsCollection[asset.id] = asset;
-				
-				_assetsTotal++;
-			}
-			else
-			{
-				throw new Error("Trying to add asset that already exist in collection. Asset ID: " + asset.id);
+				this._textFieldObjectsDictionary[textFieldObject.id] = textFieldObject;
 			}
 		}
-		
-		/**
-		 * Returns instance of <code>GAFMovieClip</code>. In case when <code>GAFAsset</code> with specified ID is absent - returns <code>null</code>
-		 * 
-		 * @param id Asset ID
-		 * @param mappedAssetID To be defined
-		 */
-		public static function getGAFMovieClip(id: String, mappedAssetID: String = ""): GAFMovieClip
+
+		public function getAnimationObject(id: String): CAnimationObject
 		{
-			if(_assetsCollection[id])
+			if (this._textFieldObjectsDictionary[id])
 			{
-				return new GAFMovieClip(_assetsCollection[id], mappedAssetID);
+				return this._textFieldObjectsDictionary[id];
 			}
 			else
 			{
 				return null;
 			}
 		}
-		
-		/**
-		 * Check is there asset in collection
-		 * 
-		 * @param id Asset ID
-		 */
-		public static function hasGAFAsset(id: String): Boolean
-		{
-			if(_assetsCollection[id])
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		
-		/**
-		 * Total number of assets in collection
-		 */
-		public static function get assetsTotal(): uint
-		{
-			return _assetsTotal;
-		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
+
+		public function get textFieldObjectsDictionary(): Object
+		{
+			return _textFieldObjectsDictionary;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  STATIC METHODS
+		//
+		//--------------------------------------------------------------------------
+
 	}
 }

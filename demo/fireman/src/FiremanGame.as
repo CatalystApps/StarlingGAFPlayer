@@ -1,9 +1,9 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import starling.display.Sprite;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
-	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
 	import flash.events.ErrorEvent;
@@ -43,9 +43,9 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var gafAsset: GAFAsset = (event.target as ZipToGAFAssetConverter).gafAsset;
+			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafTimeline;
 			
-			var mc: GAFMovieClip = new GAFMovieClip(gafAsset);
+			var mc: GAFMovieClip = new GAFMovieClip(timeline);
 			
 			this.addChild(mc);
 			

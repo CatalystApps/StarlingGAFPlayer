@@ -1,42 +1,49 @@
 package com.catalystapps.gaf.data.config
 {
+	import com.catalystapps.gaf.event.SequenceEvent;
+
 	/**
 	 * @private
 	 */
 	public class CAnimationSequences
 	{
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// PUBLIC VARIABLES
+		//  PUBLIC VARIABLES
 		//
-		// --------------------------------------------------------------------------
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
+		//--------------------------------------------------------------------------
 		//
-		// PRIVATE VARIABLES
+		//  PRIVATE VARIABLES
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		private var _sequences: Vector.<CAnimationSequence>;
+
 		private var _sequencesStartDictionary: Object;
 		private var _sequencesEndDictionary: Object;
 
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// CONSTRUCTOR
+		//  CONSTRUCTOR
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		public function CAnimationSequences()
 		{
 			this._sequences = new Vector.<CAnimationSequence>();
 
-			this._sequencesStartDictionary = new Object();
-			this._sequencesEndDictionary = new Object();
+			this._sequencesStartDictionary = {};
+			this._sequencesEndDictionary = {};
 		}
 
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// PUBLIC METHODS
+		//  PUBLIC METHODS
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		public function addSequence(sequence: CAnimationSequence): void
 		{
 			this._sequences.push(sequence);
@@ -52,6 +59,21 @@ package com.catalystapps.gaf.data.config
 			}
 		}
 
+		public function hasEvent(frameNo: uint): SequenceEvent
+		{
+			if (this._sequencesEndDictionary[frameNo])
+			{
+				return new SequenceEvent(SequenceEvent.TYPE_SEQUENCE_END, this._sequencesEndDictionary[frameNo]);
+			}
+
+			if (this._sequencesStartDictionary[frameNo])
+			{
+				return new SequenceEvent(SequenceEvent.TYPE_SEQUENCE_START, this._sequencesStartDictionary[frameNo]);
+			}
+
+			return null;
+		}
+		
 		public function getSequenceStart(frameNo: uint): CAnimationSequence
 		{
 			return this._sequencesStartDictionary[frameNo];
@@ -66,7 +88,7 @@ package com.catalystapps.gaf.data.config
 		{
 			var result: uint = 0;
 
-			for each (var sequence: CAnimationSequence in this._sequences)
+			for each(var sequence: CAnimationSequence in this._sequences)
 			{
 				if (sequence.id == sequenceID)
 				{
@@ -76,25 +98,10 @@ package com.catalystapps.gaf.data.config
 
 			return result;
 		}
-		
-		public function getEndFrameNo(sequenceID: String): uint
-		{
-			var result: uint = 0;
-
-			for each (var sequence: CAnimationSequence in this._sequences)
-			{
-				if (sequence.id == sequenceID)
-				{
-					return sequence.endFrameNo;
-				}
-			}
-
-			return result;
-		}
 
 		public function getSecuenceByID(id: String): CAnimationSequence
 		{
-			for each (var sequence: CAnimationSequence in this._sequences)
+			for each(var sequence: CAnimationSequence in this._sequences)
 			{
 				if (sequence.id == id)
 				{
@@ -105,29 +112,34 @@ package com.catalystapps.gaf.data.config
 			return null;
 		}
 
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
 		//
-		// PRIVATE METHODS
+		//  PRIVATE METHODS
 		//
-		// --------------------------------------------------------------------------
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
+		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
-		// --------------------------------------------------------------------------
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
+		//--------------------------------------------------------------------------
 		//
-		// EVENT HANDLERS
+		//  EVENT HANDLERS
 		//
-		// --------------------------------------------------------------------------
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
+		//--------------------------------------------------------------------------
 		//
-		// GETTERS AND SETTERS
+		//  GETTERS AND SETTERS
 		//
-		// --------------------------------------------------------------------------
+		//--------------------------------------------------------------------------
+
 		public function get sequences(): Vector.<CAnimationSequence>
 		{
 			return _sequences;
 		}
+
 	}
 }

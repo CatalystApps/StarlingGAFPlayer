@@ -17,6 +17,8 @@ package com.catalystapps.gaf.data.config
 		// --------------------------------------------------------------------------
 		private var _instancesDictionary: Object;
 		private var _instances: Vector.<CAnimationFrameInstance>;
+		private var _actions: Vector.<CFrameAction>;
+
 		private var _frameNumber: uint;
 
 		// --------------------------------------------------------------------------
@@ -28,7 +30,7 @@ package com.catalystapps.gaf.data.config
 		{
 			this._frameNumber = frameNumber;
 
-			this._instancesDictionary = new Object();
+			this._instancesDictionary = {};
 			this._instances = new Vector.<CAnimationFrameInstance>();
 		}
 
@@ -85,6 +87,12 @@ package com.catalystapps.gaf.data.config
 			}
 		}
 
+		public function addAction(action: CFrameAction): void
+		{
+			_actions ||= new Vector.<CFrameAction>();
+			_actions.push(action);
+		}
+
 		public function sortInstances(): void
 		{
 			this._instances.sort(this.sortByZIndex);
@@ -139,6 +147,10 @@ package com.catalystapps.gaf.data.config
 		public function get frameNumber(): uint
 		{
 			return _frameNumber;
+		}
+		public function get actions(): Vector.<CFrameAction>
+		{
+			return _actions;
 		}
 	}
 }
