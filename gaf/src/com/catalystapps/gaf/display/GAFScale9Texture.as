@@ -3,6 +3,7 @@
  */
 package com.catalystapps.gaf.display
 {
+	import flash.utils.getQualifiedClassName;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 
@@ -70,7 +71,29 @@ package com.catalystapps.gaf.display
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-
+		public function copyFrom(newTexture: IGAFTexture): void
+		{
+			if (newTexture is GAFScale9Texture)
+			{
+				this._id = newTexture.id;
+				this._texture = newTexture.texture;
+				this._pivotMatrix.copyFrom(newTexture.pivotMatrix);
+				this._scale9Grid.copyFrom((newTexture as GAFScale9Texture).scale9Grid);
+				this._topLeft = (newTexture as GAFScale9Texture).topLeft;
+				this._topCenter = (newTexture as GAFScale9Texture).topCenter;
+				this._topRight = (newTexture as GAFScale9Texture).topRight;
+				this._middleLeft = (newTexture as GAFScale9Texture).middleLeft;
+				this._middleCenter = (newTexture as GAFScale9Texture).middleCenter;
+				this._middleRight = (newTexture as GAFScale9Texture).middleRight;
+				this._bottomLeft = (newTexture as GAFScale9Texture).bottomLeft;
+				this._bottomCenter = (newTexture as GAFScale9Texture).bottomCenter;
+				this._bottomRight = (newTexture as GAFScale9Texture).bottomRight;
+			}
+			else
+			{
+				throw new Error("Incompatiable types GAFScale9Texture and "+getQualifiedClassName(newTexture));
+			}
+		}
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS

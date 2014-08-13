@@ -1,8 +1,9 @@
 package com.catalystapps.gaf.display
 {
-	import flash.geom.Matrix;
-
+	import flash.utils.getQualifiedClassName;
 	import starling.textures.Texture;
+
+	import flash.geom.Matrix;
 
 	/**
 	 * @private
@@ -43,7 +44,19 @@ package com.catalystapps.gaf.display
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-
+		public function copyFrom(newTexture: IGAFTexture): void
+		{
+			if (newTexture is GAFTexture)
+			{
+				this._id = newTexture.id;
+				this._texture = newTexture.texture;
+				this._pivotMatrix.copyFrom(newTexture.pivotMatrix);
+			}
+			else
+			{
+				throw new Error("Incompatiable types GAFexture and "+getQualifiedClassName(newTexture));
+			}
+		}
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS

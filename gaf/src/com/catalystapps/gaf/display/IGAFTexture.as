@@ -19,5 +19,7 @@ package com.catalystapps.gaf.display
 		function get id(): String;
 
 		function clone(): IGAFTexture;
+
+		function copyFrom(newTexture: IGAFTexture): void;
 	}
 }

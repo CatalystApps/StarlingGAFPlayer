@@ -94,13 +94,7 @@ package com.catalystapps.gaf.data
 
 			return null;
 		}
-
-		//--------------------------------------------------------------------------
-		//
-		//  PRIVATE METHODS
-		//
-		//--------------------------------------------------------------------------
-
+		
 		public function addWarning(text: String): void
 		{
 			if (!text)
@@ -119,6 +113,24 @@ package com.catalystapps.gaf.data
 				this._warnings.push(text);
 			}
 		}
+		
+		public function getNamedPartID(name: String): String
+		{
+			for (var id: String in this._namedParts)
+			{
+				if (this._namedParts[id] == name)
+				{
+					return id;
+				}
+			}
+			return null;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE METHODS
+		//
+		//--------------------------------------------------------------------------
 
 		//--------------------------------------------------------------------------
 		//

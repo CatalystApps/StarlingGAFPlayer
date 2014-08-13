@@ -96,6 +96,13 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		public function changeTexture(newTexture: IGAFTexture): void
+		{
+			this.texture = newTexture.texture;
+			this.readjustSize();
+			this._assetTexture.copyFrom(newTexture);
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS

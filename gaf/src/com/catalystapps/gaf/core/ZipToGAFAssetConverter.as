@@ -1,6 +1,10 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.converters.IGAFAssetConfigConverter;
+	import deng.fzip.FZip;
+	import deng.fzip.FZipErrorEvent;
+	import deng.fzip.FZipFile;
+	import deng.fzip.FZipLibrary;
+
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.GAFTimeline;
@@ -9,12 +13,8 @@ package com.catalystapps.gaf.core
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
+	import com.catalystapps.gaf.data.converters.IGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
-
-	import deng.fzip.FZip;
-	import deng.fzip.FZipErrorEvent;
-	import deng.fzip.FZipFile;
-	import deng.fzip.FZipLibrary;
 
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -87,6 +87,14 @@ package com.catalystapps.gaf.core
 		 * By default loads in GPU memory only atlases for default scale and csf
 		 */
 		public static var actionWithAtlases: String = ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT;
+		
+		/**
+		 * Defines the values to use for specifying a texture format.
+		 * If you prefer to use 16 bit-per-pixel textures just set
+		 * <code>GAFGFXData.BGR_PACKED</code> or <code>GAFGFXData.BGRA_PACKED</code>.
+		 * It will cut texture memory usage in half.
+		 */
+		public var textureFormat: String = GAFGFXData.BGRA;
 
 		/**
 		 * Indicates keep or not to keep all atlases as BitmapData for further usage.
@@ -113,6 +121,7 @@ package com.catalystapps.gaf.core
 		private var gafAssetsIDs: Array;
 
 		private var pngImgs: Object;
+		private var atfData: Array;
 
 		private var gfxData: GAFGFXData;
 
@@ -189,7 +198,7 @@ package com.catalystapps.gaf.core
 				this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
 				this._zipLoader.addZip(this._zip);
 			}
-			else if(data is Array || getQualifiedClassName(data) == "flash.filesystem::File")
+			else if (data is Array || getQualifiedClassName(data) == "flash.filesystem::File")
 			{
 				this.gafAssetsConfigURLs = [];
 
@@ -214,7 +223,7 @@ package com.catalystapps.gaf.core
 					this.zipProcessError("No GAF animation files found", 5);
 				}
 			}
-			else if(data is Object && data.configs && data.atlases)
+			else if (data is Object && data.configs && data.atlases)
 			{
 				this.parseObject(data);
 			}
@@ -234,18 +243,18 @@ package com.catalystapps.gaf.core
 		{
 			this.pngImgs = {};
 
-			for each(var configObj: Object in data.configs)
+			for each (var configObj: Object in data.configs)
 			{
 				this.gafAssetsIDs.push(configObj.name);
 
 				var ba: ByteArray = configObj.config as ByteArray;
 				ba.position = 0;
 
-				if(configObj.type == "json")
+				if (configObj.type == "json")
 				{
 					this.gafAssetConfigSources[configObj.name] = ba.readUTFBytes(ba.length);
 				}
-				else if(configObj.type == "gaf")
+				else if (configObj.type == "gaf")
 				{
 					this.gafAssetConfigSources[configObj.name] = ba;
 				}
@@ -283,7 +292,7 @@ package com.catalystapps.gaf.core
 					{
 						var files: Array = data["getDirectoryListing"]();
 
-						for each(var file: * in files)
+						for each (var file: * in files)
 						{
 							if (file["exists"] && !file["isHidden"] && !file["isDirectory"])
 							{
@@ -481,12 +490,19 @@ package com.catalystapps.gaf.core
 			{
 				zipFile = this._zip.getFileAt(i);
 
-				if (zipFile.filename.indexOf(".png") != -1)
+				if (zipFile.filename.indexOf(".png") != -1
+				&&  zipFile.filename.indexOf(".atf") == -1)
 				{
 					fileName = zipFile.filename.substring(zipFile.filename.lastIndexOf("/") + 1);
 					bmp = this._zipLoader.getBitmapData(zipFile.filename);
 
 					this.pngImgs[fileName] = bmp;
+				}
+				else if (zipFile.filename.indexOf(".atf") != -1)
+				{
+					fileName = zipFile.filename.substring(zipFile.filename.lastIndexOf("/") + 1);
+					
+					this.atfData[fileName] = bmp;
 				}
 				else if (zipFile.filename.indexOf(".json") != -1)
 				{
@@ -639,11 +655,11 @@ package com.catalystapps.gaf.core
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
 				case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
-					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL, NaN, NaN, textureFormat);
 					break;
 
 				case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
-					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT, NaN, NaN, textureFormat);
 					break;
 			}
 

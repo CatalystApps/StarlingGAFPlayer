@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import flash.display3D.Context3DTextureFormat;
 	import starling.core.Starling;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.utils.DebugUtility;
@@ -18,6 +19,9 @@ package com.catalystapps.gaf.data
 	 */
 	public class GAFGFXData
 	{
+		public static const BGRA: String = Context3DTextureFormat.BGRA;
+		public static const BGR_PACKED: String = Context3DTextureFormat.BGR_PACKED;
+		public static const BGRA_PACKED: String = Context3DTextureFormat.BGRA_PACKED;
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
@@ -59,12 +63,12 @@ package com.catalystapps.gaf.data
 		{
 			if(!this._imagesDictionary[scale])
 			{
-				this._imagesDictionary[scale] = new Object();
+				this._imagesDictionary[scale] = {};
 			}
 			
 			if(!this._imagesDictionary[scale][csf])
 			{
-				this._imagesDictionary[scale][csf] = new Object();
+				this._imagesDictionary[scale][csf] = {};
 			}
 			
 			if(!this._imagesDictionary[scale][csf][imageID])
@@ -163,76 +167,48 @@ package com.catalystapps.gaf.data
 		}
 		
 		/** 
-		 * Creates texture from specified image. If imageID is not specified creates textures from all images for specified scale and csf
+		 * Creates textures from all images for specified scale and csf.
+		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
+		 * @see #createTexture()
 		 */
-		public function createTextures(scale: Number, csf: Number, imageID: String = null): Boolean
+		public function createTextures(scale: Number, csf: Number, format: String = BGRA): Boolean
 		{
-			var image: BitmapData;
-			
-			function addTexture(dictionary: Object, img: BitmapData, imageAtlasID: String, debug: Boolean = false): void
+			var images: Object = this.getImages(scale, csf);
+			if (images)
 			{
-				if (debug)
-				{
-					img = setGrayScale(img.clone());
-				}
-				if (!dictionary[scale][csf][imageAtlasID])
-				{
-					dictionary[scale][csf][imageAtlasID] = CTextureAtlas.textureFromImg(img, csf);
-				}
-			}
-			
-			function setGrayScale(obj: BitmapData): BitmapData
-			{
-				var matrix: Array = [
-					0.26231, 0.51799, 0.0697, 0, 81.775,
-					0.26231, 0.51799, 0.0697, 0, 81.775,
-					0.26231, 0.51799, 0.0697, 0, 81.775,
-					0, 0, 0, 1, 0];
-
-				var filter: ColorMatrixFilter = new ColorMatrixFilter(matrix);
-				obj.applyFilter(obj, new Rectangle(0, 0, obj.width, obj.height), new Point(0, 0), filter);
-
-				return obj;
-			}
-
-			////////////////////////////////////
-			
-			if(imageID)
-			{
-				image = this.getImage(scale, csf, imageID);
+				this._texturesDictionary[scale] ||= {};
+				this._texturesDictionary[scale][csf] ||= {};
 				
-				if (image)
+				for(var imageAtlasID: String in images)
 				{
-					this._texturesDictionary[scale] ||= {};
-					this._texturesDictionary[scale][csf] ||= {};
-					
-					addTexture(this._texturesDictionary, image, imageID, DebugUtility.RENDERING_DEBUG);
-					
-					return true;
+					addTexture(this._texturesDictionary[scale][csf], csf, images[imageAtlasID], imageAtlasID, format);
 				}
 				
-				return false;
+				return true;
 			}
-			else
+			
+			return false;
+		}
+		
+		/** 
+		 * Creates texture from specified image.
+		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
+		 * @see #createTextures()
+		 */
+		public function createTexture(scale: Number, csf: Number, imageID: String, format: String = BGRA): Boolean
+		{
+			var image: BitmapData = this.getImage(scale, csf, imageID);
+			if (image)
 			{
-				var images: Object = this.getImages(scale, csf);
-				if (images)
-				{
-					this._texturesDictionary[scale] ||= {};
-					this._texturesDictionary[scale][csf] ||= {};
-					
-					for(var imageAtlasID: String in images)
-					{
-						image = images[imageAtlasID];
-						
-						addTexture(this._texturesDictionary, image, imageAtlasID, DebugUtility.RENDERING_DEBUG);
-					}
-					
-					return true;
-				}
+				this._texturesDictionary[scale] ||= {};
+				this._texturesDictionary[scale][csf] ||= {};
 				
-				return false;
+				addTexture(this._texturesDictionary[scale][csf], csf, image, imageID, format);
+				
+				return true;
 			}
+			
+			return false;
 		}
 		
 		/**
@@ -255,8 +231,8 @@ package com.catalystapps.gaf.data
 			}
 			
 			// in case when there is no texture created
-			// creare texture and check if it successfully created
-			if(this.createTextures(scale, csf, imageID))
+			// create texture and check if it successfully created
+			if(this.createTexture(scale, csf, imageID))
 			{
 				return this._texturesDictionary[scale][csf][imageID];
 			}
@@ -334,6 +310,31 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
+		private function addTexture(dictionary: Object, csf: Number, img: BitmapData, imageID: String, format: String): void
+		{
+			if (DebugUtility.RENDERING_DEBUG)
+			{
+				img = setGrayScale(img.clone());
+			}
+			if (!dictionary[imageID])
+			{
+				dictionary[imageID] = CTextureAtlas.textureFromImg(img, csf, format);
+			}
+		}
+			
+		private function setGrayScale(image: BitmapData): BitmapData
+		{
+			var matrix: Array = [
+				0.26231, 0.51799, 0.0697, 0, 81.775,
+				0.26231, 0.51799, 0.0697, 0, 81.775,
+				0.26231, 0.51799, 0.0697, 0, 81.775,
+				0, 0, 0, 1, 0];
+
+			var filter: ColorMatrixFilter = new ColorMatrixFilter(matrix);
+			image.applyFilter(image, new Rectangle(0, 0, image.width, image.height), new Point(0, 0), filter);
+
+			return image;
+		}
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS

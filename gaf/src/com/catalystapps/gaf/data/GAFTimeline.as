@@ -1,15 +1,11 @@
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.display.GAFImage;
-	import com.catalystapps.gaf.display.GAFScale9Image;
-	import com.catalystapps.gaf.display.GAFScale9Texture;
-	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.core.gaf_internal;
-	import com.catalystapps.gaf.display.IGAFTexture;
-	import com.catalystapps.gaf.display.IGAFImage;
+	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	import com.catalystapps.gaf.display.IGAFTexture;
 	
 	/**
 	 * <p>GAFTimeline represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation. 
@@ -70,23 +66,18 @@ package com.catalystapps.gaf.data
 		// --------------------------------------------------------------------------
 		
 		/** @private */
-		public function getAnimationPartByName(name: String): IGAFImage
+		public function getTextureByName(animationObjectName: String): IGAFTexture
 		{
-			var image: IGAFImage;
-			var part: CAnimationObject = this._config.animationObjects.getAnimationObject(this._config.namedParts[name]);
-			if (part)
+			var instanceID: String = this._config.getNamedPartID(animationObjectName);
+			if (instanceID)
 			{
-				var texture: IGAFTexture = textureAtlas.getTexture(part.regionID);
-				if (texture is GAFScale9Texture && !part.mask) // GAFScale9Image doesn't work as mask
+				var part: CAnimationObject = this._config.animationObjects.getAnimationObject(instanceID);
+				if (part)
 				{
-					image = new GAFScale9Image(texture as GAFScale9Texture);
-				}
-				else
-				{
-					image = new GAFImage(texture);
+					return textureAtlas.getTexture(part.regionID);
 				}
 			}
-			return image;
+			return null;
 		}
 		
 		/**
@@ -98,15 +89,16 @@ package com.catalystapps.gaf.data
 		}
 		
 		/**
-		 * Load all all graphical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
+		 * Load all graphical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
 		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
 		 * before asset conversion)
 		 * 
-		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
-		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
-		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param content - content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
+		 * @param scale - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
+		 * @param csf - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
+		 * @param format - defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = GAFGFXData.BGRA): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
@@ -123,7 +115,7 @@ package com.catalystapps.gaf.data
 					{
 						for each(csfConfig in scaleConfig.allContentScaleFactors)
 						{
-							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf);
+							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf, format);
 							
 							textures = this._gafgfxData.getTextures(scaleConfig.scale, csfConfig.csf);
 							if (textures)
@@ -142,7 +134,7 @@ package com.catalystapps.gaf.data
 						return;
 					}
 
-					if (this._gafgfxData.createTextures(this.scale, this.contentScaleFactor))
+					if (this._gafgfxData.createTextures(this.scale, this.contentScaleFactor, format))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale, this.contentScaleFactor), csfConfig);
 					}
@@ -158,7 +150,7 @@ package com.catalystapps.gaf.data
 					}
 
 					
-					if (this._gafgfxData.createTextures(scale, csf))
+					if (this._gafgfxData.createTextures(scale, csf, format))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);
 					}

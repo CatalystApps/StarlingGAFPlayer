@@ -7,6 +7,7 @@ package com.catalystapps.gaf.event
 	/**
 	 * SequenceEvent object is dispatched into the event flow when when any sequence events occur.
 	 */
+	[Deprecated("use GAFMovieClip.EVENT_TYPE_SEQUENCE_START and GAFMovieClip.EVENT_TYPE_SEQUENCE_END instead")]
 	public class SequenceEvent extends Event
 	{
 		//--------------------------------------------------------------------------

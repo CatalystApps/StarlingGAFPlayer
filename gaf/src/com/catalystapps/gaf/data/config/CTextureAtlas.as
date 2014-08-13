@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
+	import flash.utils.ByteArray;
+	import flash.display3D.Context3DTextureFormat;
 	import com.catalystapps.gaf.core.GAFTextureMappingManager;
 	import com.catalystapps.gaf.display.GAFScale9Texture;
 	import com.catalystapps.gaf.display.GAFTexture;
@@ -49,9 +51,14 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
-		public static function textureFromImg(img: BitmapData, csf: Number): Texture
+		public static function textureFromImg(img: BitmapData, csf: Number, format: String = Context3DTextureFormat.BGRA): Texture
 		{
-			return Texture.fromBitmapData(img, false, false, csf);
+			return Texture.fromBitmapData(img, false, false, csf, format);
+		}
+		
+		public static function textureFromATF(data: ByteArray, csf: Number, useMipMaps: Boolean = true): Texture
+		{
+			return Texture.fromAtfData(data, csf, useMipMaps);
 		}
 
 		public static function createFromTextures(texturesDictionary: Object,

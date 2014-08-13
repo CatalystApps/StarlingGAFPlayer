@@ -3,7 +3,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import starling.display.QuadBatch;
-	import flash.geom.Point;
 	import starling.core.Starling;
 	import starling.animation.IAnimatable;
 	import com.catalystapps.gaf.data.GAFBundle;
@@ -126,7 +125,10 @@ package com.catalystapps.gaf.display
 			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafBundle);
 			
 			this.boundsAndPivot = new QuadBatch();
-			this.updateBounds(this.config.bounds);
+			if (this.config.bounds)
+			{
+				this.updateBounds(this.config.bounds);
+			}
 			
 			if (fps > 0)
 			{
@@ -814,23 +816,24 @@ package com.catalystapps.gaf.display
 		
 		private function updateBounds(bounds: Rectangle): void
 		{
+			var scale: Number = this.config.textureAtlas.scale;
 			this.boundsAndPivot.reset();
 			//bounds
-			var quad: Quad = new Quad(bounds.width, 2, 0xff0000);
-			quad.x = bounds.x;
-			quad.y = bounds.y;
+			var quad: Quad = new Quad(bounds.width * scale, 2, 0xff0000);
+			quad.x = bounds.x * scale;
+			quad.y = bounds.y * scale;
 			this.boundsAndPivot.addQuad(quad);
-			quad = new Quad(bounds.width, 2, 0xff0000);
-			quad.x = bounds.x;
-			quad.y = bounds.bottom - 2;
+			quad = new Quad(bounds.width * scale, 2, 0xff0000);
+			quad.x = bounds.x * scale;
+			quad.y = bounds.bottom * scale - 2;
 			this.boundsAndPivot.addQuad(quad);
-			quad = new Quad(2, bounds.height, 0xff0000);
-			quad.x = bounds.x;
-			quad.y = bounds.y;
+			quad = new Quad(2, bounds.height * scale, 0xff0000);
+			quad.x = bounds.x * scale;
+			quad.y = bounds.y * scale;
 			this.boundsAndPivot.addQuad(quad);
-			quad = new Quad(2, bounds.height, 0xff0000);
-			quad.x = bounds.right - 2;
-			quad.y = bounds.y;
+			quad = new Quad(2, bounds.height * scale, 0xff0000);
+			quad.x = bounds.right * scale - 2;
+			quad.y = bounds.y * scale;
 			this.boundsAndPivot.addQuad(quad);
 			//pivot point
 			quad = new Quad(5, 5, 0xff0000);

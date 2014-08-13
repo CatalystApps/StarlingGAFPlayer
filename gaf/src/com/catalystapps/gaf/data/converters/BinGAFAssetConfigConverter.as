@@ -448,18 +448,6 @@ package com.catalystapps.gaf.data.converters
 							matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
 									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
 
-							///////////////////////////////////////////
-
-							function checkAndInitFilter(): void
-							{
-								if (!filter)
-								{
-									filter = new CFilter();
-								}
-							};
-
-							///////////////////////////////////////////
-
 							filter = null;
 
 							if (hasColorTransform)
@@ -469,14 +457,14 @@ package com.catalystapps.gaf.data.converters
 									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
 									tagContent.readFloat()];
 								params.fixed = true;
-								checkAndInitFilter();
+								filter ||= new CFilter();
 
 								filter.addColorTransform(params);
 							}
 
 							if (hasEffect)
 							{
-								checkAndInitFilter();
+								filter ||= new CFilter();
 
 								filterLength = tagContent.readByte();
 								for (var k: uint = 0; k < filterLength; k++)
