@@ -474,7 +474,7 @@ package com.catalystapps.gaf.display
 			var displayObject: IGAFDisplayObject;
 			var maskedDisplayObject: GAFPixelMaskDisplayObject;
 			
-			if (DebugUtility.RENDERING_DEBUG || config.debugRegions)
+			if (config.debugRegions)
 			{
 				// Non optimized way when there are debug regions
 				this.clearDisplayList();
