@@ -819,22 +819,26 @@ package com.catalystapps.gaf.display
 			var scale: Number = this.config.textureAtlas.scale;
 			this.boundsAndPivot.reset();
 			//bounds
-			var quad: Quad = new Quad(bounds.width * scale, 2, 0xff0000);
-			quad.x = bounds.x * scale;
-			quad.y = bounds.y * scale;
-			this.boundsAndPivot.addQuad(quad);
-			quad = new Quad(bounds.width * scale, 2, 0xff0000);
-			quad.x = bounds.x * scale;
-			quad.y = bounds.bottom * scale - 2;
-			this.boundsAndPivot.addQuad(quad);
-			quad = new Quad(2, bounds.height * scale, 0xff0000);
-			quad.x = bounds.x * scale;
-			quad.y = bounds.y * scale;
-			this.boundsAndPivot.addQuad(quad);
-			quad = new Quad(2, bounds.height * scale, 0xff0000);
-			quad.x = bounds.right * scale - 2;
-			quad.y = bounds.y * scale;
-			this.boundsAndPivot.addQuad(quad);
+			if (bounds.width > 0
+			&&  bounds.height > 0)
+			{
+				var quad: Quad = new Quad(bounds.width * scale, 2, 0xff0000);
+				quad.x = bounds.x * scale;
+				quad.y = bounds.y * scale;
+				this.boundsAndPivot.addQuad(quad);
+				quad = new Quad(bounds.width * scale, 2, 0xff0000);
+				quad.x = bounds.x * scale;
+				quad.y = bounds.bottom * scale - 2;
+				this.boundsAndPivot.addQuad(quad);
+				quad = new Quad(2, bounds.height * scale, 0xff0000);
+				quad.x = bounds.x * scale;
+				quad.y = bounds.y * scale;
+				this.boundsAndPivot.addQuad(quad);
+				quad = new Quad(2, bounds.height * scale, 0xff0000);
+				quad.x = bounds.right * scale - 2;
+				quad.y = bounds.y * scale;
+				this.boundsAndPivot.addQuad(quad);
+			}
 			//pivot point
 			quad = new Quad(5, 5, 0xff0000);
 			this.boundsAndPivot.addQuad(quad);

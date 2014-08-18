@@ -385,7 +385,8 @@ package com.catalystapps.gaf.core
 									{
 										var url: String = folderURL + source.source;
 
-										if (this.atlasSourceURLs.indexOf(url) == -1)
+										if (source.source != "no_atlas"
+										&&  this.atlasSourceURLs.indexOf(url) == -1)
 										{
 											this.atlasSourceURLs.push(url);
 										}
@@ -399,7 +400,7 @@ package com.catalystapps.gaf.core
 
 			if (this.atlasSourceURLs.length)
 			{
-				this.loadPNG();
+				this.loadAtlas();
 			}
 			else
 			{
@@ -407,15 +408,14 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function loadPNG(): void
+		private function loadAtlas(): void
 		{
-			this.atlasSourceLoader = new Loader();
-			var url: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
+			var request: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
 
+			this.atlasSourceLoader = new Loader();
 			this.atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
 			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadIOError);
-
-			this.atlasSourceLoader.load(url, new LoaderContext());
+			this.atlasSourceLoader.load(request, new LoaderContext());
 		}
 
 		private function onPNGLoadIOError(event: IOErrorEvent): void
@@ -438,7 +438,7 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				this.loadPNG();
+				this.loadAtlas();
 			}
 		}
 
@@ -502,7 +502,7 @@ package com.catalystapps.gaf.core
 				{
 					fileName = zipFile.filename.substring(zipFile.filename.lastIndexOf("/") + 1);
 					
-					this.atfData[fileName] = bmp;
+					this.atfData[fileName] = zipFile.content;
 				}
 				else if (zipFile.filename.indexOf(".json") != -1)
 				{
@@ -630,6 +630,10 @@ package com.catalystapps.gaf.core
 						{
 							for each (var taSource: CTextureAtlasSource in cCSF.sources)
 							{
+								if (taSource.source == "no_atlas")
+								{
+									continue;
+								}
 								if (this.pngImgs[taSource.source])
 								{
 									this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id,
