@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import flash.utils.ByteArray;
 	import flash.display3D.Context3DTextureFormat;
 	import starling.core.Starling;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
@@ -19,6 +20,7 @@ package com.catalystapps.gaf.data
 	 */
 	public class GAFGFXData
 	{
+		public static const ATF: String = "ATF";
 		public static const BGRA: String = Context3DTextureFormat.BGRA;
 		public static const BGR_PACKED: String = Context3DTextureFormat.BGR_PACKED;
 		public static const BGRA_PACKED: String = Context3DTextureFormat.BGRA_PACKED;
@@ -36,6 +38,7 @@ package com.catalystapps.gaf.data
 		
 		private var _texturesDictionary: Object;
 		private var _imagesDictionary: Object;
+		private var _atfDictionary: Object;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -48,6 +51,7 @@ package com.catalystapps.gaf.data
 		{
 			this._texturesDictionary = {};
 			this._imagesDictionary = {};
+			this._atfDictionary = {};
 		}
 		
 		//--------------------------------------------------------------------------
@@ -61,20 +65,9 @@ package com.catalystapps.gaf.data
 		 */
 		public function addImage(scale: Number, csf: Number, imageID: String, image: BitmapData): void
 		{
-			if(!this._imagesDictionary[scale])
-			{
-				this._imagesDictionary[scale] = {};
-			}
-			
-			if(!this._imagesDictionary[scale][csf])
-			{
-				this._imagesDictionary[scale][csf] = {};
-			}
-			
-			if(!this._imagesDictionary[scale][csf][imageID])
-			{
-				this._imagesDictionary[scale][csf][imageID] = image;
-			}
+			this._imagesDictionary[scale] ||= {};
+			this._imagesDictionary[scale][csf] ||= {};
+			this._imagesDictionary[scale][csf][imageID] ||= image;
 		}
 		
 		/**
@@ -167,12 +160,111 @@ package com.catalystapps.gaf.data
 		}
 		
 		/** 
+		 * Add ATF data to storage. Unique key for ATF is combination scale + csf + atfID
+		 */
+		public function addATFData(scale: Number, csf: Number, atfID: String, data: ByteArray): void
+		{
+			this._atfDictionary[scale] ||= {};
+			this._atfDictionary[scale][csf] ||= {};
+			this._atfDictionary[scale][csf][atfID] ||= data;
+		}
+
+		/**
+		 * Returns ATF data as ByteArray by unique key consist of scale + csf + atfID
+		 */
+		public function getATFData(scale: Number, csf: Number, atfID: String): ByteArray
+		{
+			if(this._atfDictionary)
+			{
+				if(this._atfDictionary[scale])
+				{
+					if(this._atfDictionary[scale][csf])
+					{
+						return this._atfDictionary[scale][csf][atfID];
+					}
+				}
+			}
+			return null;
+		}
+		
+		/**
+		 * Returns ATFs for specified scale and csf in Object as combination key-value where key - is atfID and value - is ATF file content as ByteArray
+		 */
+		public function getATFs(scale: Number, csf: Number): Object
+		{
+			if(this._atfDictionary)
+			{
+				if(this._atfDictionary[scale])
+				{
+					return this._atfDictionary[scale][csf];
+				}
+			}
+			
+			return null;
+		}
+		
+		/**
+		 * Removes specified ATF or ATFs for specified combination scale and csf. If nothing was specified - removes all ATFs
+		 */
+		public function removeATFs(scale: Number = NaN, csf: Number = NaN, atfID: String = null): void
+		{
+			// Dispose only if starling does not handle lost context
+			if (!Starling.handleLostContext)
+			{
+				for (var tmpScale: String in _atfDictionary)
+				{
+					if (isNaN(scale) || scale == Number(tmpScale))
+					{
+						for (var tmpCSF: String in _atfDictionary[tmpScale])
+						{
+							if (isNaN(csf) || csf == Number(tmpCSF))
+							{
+								for (var tmpATFid: String in _atfDictionary[tmpScale][tmpCSF])
+								{
+									if (!atfID || atfID == tmpATFid)
+									{
+										var tmpByteArray: ByteArray = _atfDictionary[tmpScale][tmpCSF][tmpATFid];
+										tmpByteArray.clear();
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (isNaN(scale))
+			{
+				this._atfDictionary = null;
+			}
+			else
+			{
+				if (isNaN(csf))
+				{
+					delete this._atfDictionary[scale];
+				}
+				else
+				{
+					if (atfID)
+					{
+						delete this._atfDictionary[scale][csf][atfID];
+					}
+					else
+					{
+						delete this._atfDictionary[scale][csf];
+					}
+				}
+			}
+		}
+		
+		/** 
 		 * Creates textures from all images for specified scale and csf.
 		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
 		 * @see #createTexture()
 		 */
 		public function createTextures(scale: Number, csf: Number, format: String = BGRA): Boolean
 		{
+			var result: Boolean;
 			var images: Object = this.getImages(scale, csf);
 			if (images)
 			{
@@ -181,13 +273,30 @@ package com.catalystapps.gaf.data
 				
 				for(var imageAtlasID: String in images)
 				{
-					addTexture(this._texturesDictionary[scale][csf], csf, images[imageAtlasID], imageAtlasID, format);
+					if (images[imageAtlasID])
+					{
+						addTexture(this._texturesDictionary[scale][csf], csf, images[imageAtlasID], imageAtlasID, format);
+					}
 				}
-				
-				return true;
+				result = true;
 			}
 			
-			return false;
+			var atfs: Object = this.getATFs(scale, csf);
+			if (atfs)
+			{
+				this._texturesDictionary[scale] ||= {};
+				this._texturesDictionary[scale][csf] ||= {};
+				
+				for(var atfAtlasID: String in atfs)
+				{
+					if (atfs[atfAtlasID])
+					{
+						addATFTexture(this._texturesDictionary[scale][csf], csf, atfs[atfAtlasID], atfAtlasID);
+					}
+				}
+				result = true;
+			}
+			return result;
 		}
 		
 		/** 
@@ -206,6 +315,17 @@ package com.catalystapps.gaf.data
 				addTexture(this._texturesDictionary[scale][csf], csf, image, imageID, format);
 				
 				return true;
+			}
+			else
+			{
+				var atfData: ByteArray = this.getATFData(scale, csf, imageID);
+				if (atfData)
+				{
+					this._texturesDictionary[scale] ||= {};
+					this._texturesDictionary[scale][csf] ||= {};
+				
+					addATFTexture(this._texturesDictionary[scale][csf], csf, atfData, imageID);
+				}
 			}
 			
 			return false;
@@ -319,6 +439,18 @@ package com.catalystapps.gaf.data
 			if (!dictionary[imageID])
 			{
 				dictionary[imageID] = CTextureAtlas.textureFromImg(img, csf, format);
+			}
+		}
+		
+		private function addATFTexture(dictionary: Object, csf: Number, data: ByteArray, imageID: String): void
+		{
+			if (DebugUtility.RENDERING_DEBUG)
+			{
+//				img = setGrayScale(img.clone());
+			}
+			if (!dictionary[imageID])
+			{
+				dictionary[imageID] = CTextureAtlas.textureFromATF(data, csf);
 			}
 		}
 			

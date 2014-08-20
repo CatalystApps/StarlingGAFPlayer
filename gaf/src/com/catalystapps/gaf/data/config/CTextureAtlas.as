@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.config
 {
+	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.display3D.Context3DTextureFormat;
 	import com.catalystapps.gaf.core.GAFTextureMappingManager;
@@ -56,7 +57,7 @@ package com.catalystapps.gaf.data.config
 			return Texture.fromBitmapData(img, false, false, csf, format);
 		}
 		
-		public static function textureFromATF(data: ByteArray, csf: Number, useMipMaps: Boolean = true): Texture
+		public static function textureFromATF(data: ByteArray, csf: Number, useMipMaps: Boolean = false): Texture
 		{
 			return Texture.fromAtfData(data, csf, useMipMaps);
 		}

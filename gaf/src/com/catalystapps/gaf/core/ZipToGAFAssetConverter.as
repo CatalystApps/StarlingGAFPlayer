@@ -121,7 +121,7 @@ package com.catalystapps.gaf.core
 		private var gafAssetsIDs: Array;
 
 		private var pngImgs: Object;
-		private var atfData: Array;
+		private var atfData: Object;
 
 		private var gfxData: GAFGFXData;
 
@@ -140,6 +140,7 @@ package com.catalystapps.gaf.core
 		private var atlasSourceURLs: Array;
 		private var atlasSourceIndex: uint = 0;
 		private var atlasSourceLoader: Loader;
+		private var atfSourceLoader: URLLoader;
 
 		//--------------------------------------------------------------------------
 		//
@@ -159,6 +160,7 @@ package com.catalystapps.gaf.core
 			this.gafAssetsIDs = [];
 
 			this.pngImgs = {};
+			this.atfData = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -400,7 +402,14 @@ package com.catalystapps.gaf.core
 
 			if (this.atlasSourceURLs.length)
 			{
-				this.loadAtlas();
+				if (textureFormat == GAFGFXData.ATF)
+				{
+					this.loadATF();
+				}
+				else
+				{
+					this.loadPNG();
+				}
 			}
 			else
 			{
@@ -408,17 +417,30 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function loadAtlas(): void
+		private function loadPNG(): void
 		{
 			var request: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
-
+			
 			this.atlasSourceLoader = new Loader();
 			this.atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
-			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadIOError);
+			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
 			this.atlasSourceLoader.load(request, new LoaderContext());
 		}
+		
+		private function loadATF(): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var atfURL: String = url.substring(0, url.lastIndexOf(".png")) + ".atf";
+			var request: URLRequest = new URLRequest(atfURL);
 
-		private function onPNGLoadIOError(event: IOErrorEvent): void
+			this.atfSourceLoader = new URLLoader();
+			this.atfSourceLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			this.atfSourceLoader.addEventListener(Event.COMPLETE, this.onATFLoadComplete);
+			this.atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
+			this.atfSourceLoader.load(request);
+		}
+
+		private function onAtlasLoadIOError(event: IOErrorEvent): void
 		{
 			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
 		}
@@ -438,7 +460,26 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				this.loadAtlas();
+				this.loadPNG();
+			}
+		}
+		
+		private function onATFLoadComplete(event: Event): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
+
+			this.atfData[fileName] = this.atfSourceLoader.data;
+
+			this.atlasSourceIndex++;
+
+			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
+			{
+				this.createGAFTimelines();
+			}
+			else
+			{
+				this.loadATF();
 			}
 		}
 
@@ -482,6 +523,7 @@ package com.catalystapps.gaf.core
 			var bmp: BitmapData;
 
 			this.pngImgs = {};
+			this.atfData = {};
 
 			this.gafAssetConfigSources = {};
 			this.gafAssetsIDs = [];
@@ -489,32 +531,32 @@ package com.catalystapps.gaf.core
 			for (var i: uint = 0; i < length; i++)
 			{
 				zipFile = this._zip.getFileAt(i);
+				fileName = zipFile.filename;
 
-				if (zipFile.filename.indexOf(".png") != -1
-				&&  zipFile.filename.indexOf(".atf") == -1)
+				if (fileName.indexOf(".png") != -1)
 				{
-					fileName = zipFile.filename.substring(zipFile.filename.lastIndexOf("/") + 1);
+					fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
 					bmp = this._zipLoader.getBitmapData(zipFile.filename);
 
 					this.pngImgs[fileName] = bmp;
 				}
-				else if (zipFile.filename.indexOf(".atf") != -1)
+				else if (fileName.toLowerCase().indexOf(".atf") != -1)
 				{
-					fileName = zipFile.filename.substring(zipFile.filename.lastIndexOf("/") + 1);
+					fileName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.toLowerCase().lastIndexOf(".atf")) + ".png";
 					
 					this.atfData[fileName] = zipFile.content;
 				}
-				else if (zipFile.filename.indexOf(".json") != -1)
+				else if (fileName.indexOf(".json") != -1)
 				{
-					this.gafAssetsIDs.push(zipFile.filename);
+					this.gafAssetsIDs.push(fileName);
 
-					this.gafAssetConfigSources[zipFile.filename] = zipFile.getContentAsString();
+					this.gafAssetConfigSources[fileName] = zipFile.getContentAsString();
 				}
-				else if (zipFile.filename.indexOf(".gaf") != -1)
+				else if (fileName.indexOf(".gaf") != -1)
 				{
-					this.gafAssetsIDs.push(zipFile.filename);
+					this.gafAssetsIDs.push(fileName);
 
-					this.gafAssetConfigSources[zipFile.filename] = zipFile.content;
+					this.gafAssetConfigSources[fileName] = zipFile.content;
 				}
 			}
 			///////////////////////////////////
@@ -605,7 +647,14 @@ package com.catalystapps.gaf.core
 
 			if (!ZipToGAFAssetConverter.keepImagesInRAM)
 			{
-				this.gfxData.removeImages();
+				if (textureFormat == GAFGFXData.ATF)
+				{
+					this.gfxData.removeATFs();
+				}
+				else
+				{
+					this.gfxData.removeImages();
+				}
 			}
 
 			if (!this._gafBundle.timelines.length)
@@ -639,9 +688,14 @@ package com.catalystapps.gaf.core
 									this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id,
 									                      this.pngImgs[taSource.source]);
 								}
+								else if (this.atfData[taSource.source])
+								{
+									this.gfxData.addATFData(cScale.scale, cCSF.csf, taSource.id,
+									                      this.atfData[taSource.source]);
+								}
 								else
 								{
-									this.zipProcessError("There is no PNG file '" + taSource.source + "' in zip", 3);
+									this.zipProcessError("There is no texture atlas file '" + taSource.source + "' in zip", 3);
 								}
 							}
 						}
