@@ -471,10 +471,10 @@ package com.catalystapps.gaf.data.converters
 					prevFrame = currentFrame;
 				}
 			
-			for(missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject.animationFrameCount; missedFrameNumber++)
-			{
-				animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
-			}
+				for(missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject['animationFrameCount']; missedFrameNumber++)
+				{
+					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+				}
 			}
 
 			timelineConfig.animationConfigFrames = animationConfigFrames;

@@ -168,6 +168,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
 		{
+			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
+			{
+				return;
+			}
+			
 			var csfConfig: CTextureAtlasCSF;
 			
 			switch(content)
@@ -290,6 +295,11 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function get textureAtlas(): CTextureAtlas
 		{
+			if (!this._config.textureAtlas)
+			{
+				return null;
+			}
+			
 			if (!this._config.textureAtlas.contentScaleFactor.atlas)
 			{
 				this.loadInVideoMemory(CONTENT_DEFAULT);
@@ -313,11 +323,13 @@ package com.catalystapps.gaf.data
 		 */
 		public function set scale(scale: Number): void
 		{
+			if (!_config.textureAtlas)
+			{
+				return;
+			}
 			var csf: Number = this.contentScaleFactor;
-			
 			var taScale: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
-			
-			if(taScale)
+			if (taScale)
 			{
 				_config.textureAtlas = taScale;
 				
@@ -340,7 +352,11 @@ package com.catalystapps.gaf.data
 		
 		public function get scale(): Number
 		{
-			return _config.textureAtlas.scale;
+			if (_config.textureAtlas)
+			{
+				return _config.textureAtlas.scale;
+			}
+			return 1;
 		}
 		
 		/**
@@ -350,6 +366,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function set contentScaleFactor(csf: Number): void
 		{
+			if (!_config.textureAtlas)
+			{
+				return;
+			}
+			
 			var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
 			
 			if(taCSF)
@@ -364,7 +385,11 @@ package com.catalystapps.gaf.data
 		
 		public function get contentScaleFactor(): Number
 		{
-			return this._config.textureAtlas.contentScaleFactor.csf;
+			if (_config.textureAtlas)
+			{
+				return _config.textureAtlas.contentScaleFactor.csf;
+			}
+			return 1;
 		}
 		
 		/**

@@ -117,11 +117,11 @@ package com.catalystapps.gaf.display
 		 */
 		public function GAFMovieClip(gafTimeline: GAFTimeline, mappedAssetID: String = "", fps: int = -1, addToJuggler: Boolean = true)
 		{
-			this._addToJuggler = addToJuggler;
-			this._mappedAssetID = mappedAssetID;
 			this.scale = gafTimeline.scale;
 			this.config = gafTimeline.config;
-
+			this._addToJuggler = addToJuggler;
+			this._mappedAssetID = mappedAssetID;
+			
 			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafBundle);
 			
 			this.boundsAndPivot = new QuadBatch();
@@ -129,7 +129,6 @@ package com.catalystapps.gaf.display
 			{
 				this.updateBounds(this.config.bounds);
 			}
-			
 			if (fps > 0)
 			{
 				this.fps = fps;
@@ -731,7 +730,7 @@ package com.catalystapps.gaf.display
 			this.maskedImagesDictionary = {};
 
 			this._currentFrame = 0;
-			this._totalFrames = this.config.animationConfigFrames.frames.length;
+			this._totalFrames = this.config.framesCount;
 			this.fps = this.config.stageConfig ? this.config.stageConfig.fps : Starling.current.nativeStage.frameRate;
 
 			var animationObjectsDictionary: Object = this.config.animationObjects.animationObjectsDictionary;
@@ -816,27 +815,26 @@ package com.catalystapps.gaf.display
 		
 		private function updateBounds(bounds: Rectangle): void
 		{
-			var scale: Number = this.config.textureAtlas.scale;
 			this.boundsAndPivot.reset();
 			//bounds
 			if (bounds.width > 0
 			&&  bounds.height > 0)
 			{
-				var quad: Quad = new Quad(bounds.width * scale, 2, 0xff0000);
-				quad.x = bounds.x * scale;
-				quad.y = bounds.y * scale;
+				var quad: Quad = new Quad(bounds.width * this.scale, 2, 0xff0000);
+				quad.x = bounds.x * this.scale;
+				quad.y = bounds.y * this.scale;
 				this.boundsAndPivot.addQuad(quad);
-				quad = new Quad(bounds.width * scale, 2, 0xff0000);
-				quad.x = bounds.x * scale;
-				quad.y = bounds.bottom * scale - 2;
+				quad = new Quad(bounds.width * this.scale, 2, 0xff0000);
+				quad.x = bounds.x * this.scale;
+				quad.y = bounds.bottom * this.scale - 2;
 				this.boundsAndPivot.addQuad(quad);
-				quad = new Quad(2, bounds.height * scale, 0xff0000);
-				quad.x = bounds.x * scale;
-				quad.y = bounds.y * scale;
+				quad = new Quad(2, bounds.height * this.scale, 0xff0000);
+				quad.x = bounds.x * this.scale;
+				quad.y = bounds.y * this.scale;
 				this.boundsAndPivot.addQuad(quad);
-				quad = new Quad(2, bounds.height * scale, 0xff0000);
-				quad.x = bounds.right * scale - 2;
-				quad.y = bounds.y * scale;
+				quad = new Quad(2, bounds.height * this.scale, 0xff0000);
+				quad.x = bounds.right * this.scale - 2;
+				quad.y = bounds.y * this.scale;
 				this.boundsAndPivot.addQuad(quad);
 			}
 			//pivot point
