@@ -45,6 +45,10 @@ package com.catalystapps.gaf.display
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		public function invalidateSize(): void
+		{
+		}
 		
 		public function set debugColors(value: Vector.<uint>): void
 		{

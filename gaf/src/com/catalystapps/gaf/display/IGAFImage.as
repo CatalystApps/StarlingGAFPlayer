@@ -9,5 +9,6 @@ package com.catalystapps.gaf.display
 	public interface IGAFImage extends IGAFDisplayObject
 	{
 		function get assetTexture(): IGAFTexture;
+		function invalidateSize(): void;
 	}
 }

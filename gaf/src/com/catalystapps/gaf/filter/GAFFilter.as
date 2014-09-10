@@ -5,7 +5,6 @@ package com.catalystapps.gaf.filter
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.ICFilterData;
 	import com.catalystapps.gaf.utils.VectorUtility;
-	import com.catalystapps.gaf.utils.VectorUtility;
 
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
@@ -61,6 +60,7 @@ package com.catalystapps.gaf.filter
 		private var sTmpWeights: Vector.<Number> = new Vector.<Number>(5, true);
 
 		private var _currentScale: Number = 1;
+		private var mResolution: Number = 1;
 
 		public function GAFFilter(resolution: Number = 1)
 		{
@@ -134,6 +134,7 @@ package com.catalystapps.gaf.filter
 			mColor = new <Number>[1, 1, 1, 1];
 			mBlurX = 0;
 			mBlurY = 0;
+			mResolution = 1;
 		}
 
 		private function resetColorMatrixFilter(): void
@@ -145,10 +146,14 @@ package com.catalystapps.gaf.filter
 
 		private function updateBlurFilter(cBlurFilterData: CBlurFilterData): void
 		{
-			mBlurX = cBlurFilterData.blurX * _currentScale;
-			mBlurY = cBlurFilterData.blurY * _currentScale;
-			offsetX = Math.cos(cBlurFilterData.angle) * cBlurFilterData.distance * _currentScale;
-			offsetY = Math.sin(cBlurFilterData.angle) * cBlurFilterData.distance * _currentScale;
+			var multiplier: Number = _currentScale > 1 ? 1 / _currentScale : _currentScale;
+			mResolution = _currentScale > 1 ? multiplier : 1;
+			mBlurX = cBlurFilterData.blurX * multiplier;
+			mBlurY = cBlurFilterData.blurY * multiplier;
+			
+			resolution = mResolution;
+			offsetX = Math.cos(cBlurFilterData.angle) * _currentScale;
+			offsetY = Math.sin(cBlurFilterData.angle) * _currentScale;
 
 			setUniformColor((cBlurFilterData.color > -1), cBlurFilterData.color, cBlurFilterData.alpha);
 		}

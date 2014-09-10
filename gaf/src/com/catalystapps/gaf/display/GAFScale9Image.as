@@ -7,6 +7,7 @@
  */
 package com.catalystapps.gaf.display
 {
+	import starling.textures.Texture;
 	import feathers.core.IValidating;
 	import feathers.core.ValidationQueue;
 	import feathers.utils.display.getDisplayObjectDepthFromStage;
@@ -516,6 +517,19 @@ package com.catalystapps.gaf.display
 			this.height = this._frame.height * this._textureScale / this.scaleY;
 		}
 
+		public function invalidateSize(): void
+		{
+			if (parent)
+			{
+				var matrix: Matrix = parent.transformationMatrix;
+				var mtx: Matrix = matrix.clone();
+				mtx.invert();
+				this.transformationMatrix.concat(mtx);
+				this.width *= Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
+				this.height *= Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d);
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
@@ -633,6 +647,49 @@ package com.catalystapps.gaf.display
 			super.flatten();
 		}
 
+		/**
+		 * @private
+		 */
+		override public function get width(): Number
+		{
+			return this._width;
+		}
+
+		/**
+		 * @private
+		 */
+		override public function set width(value: Number): void
+		{
+			if (this._width == value)
+			{
+				return;
+			}
+			this._width = this._hitArea.width = value;
+			this._layoutChanged = true;
+			this.invalidate();
+		}
+
+		/**
+		 * @private
+		 */
+		override public function get height(): Number
+		{
+			return this._height;
+		}
+
+		/**
+		 * @private
+		 */
+		override public function set height(value: Number): void
+		{
+			if (this._height == value)
+			{
+				return;
+			}
+			this._height = this._hitArea.height = value;
+			this._layoutChanged = true;
+			this.invalidate();
+		}
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
@@ -698,55 +755,17 @@ package com.catalystapps.gaf.display
 				return;
 			}
 			this._textures = value;
-			this._frame = this._textures.texture.frame;
+			var texture: Texture = this._textures.texture;
+			this._frame = texture.frame;
+			if(!this._frame)
+			{
+				this._frame = new Rectangle(0, 0, texture.width, texture.height);
+			}
 			this._layoutChanged = true;
 			this._renderingChanged = true;
 			this.invalidate();
 		}
 
-		/**
-		 * @private
-		 */
-		override public function get width(): Number
-		{
-			return this._width;
-		}
-
-		/**
-		 * @private
-		 */
-		override public function set width(value: Number): void
-		{
-			if (this._width == value)
-			{
-				return;
-			}
-			this._width = this._hitArea.width = value;
-			this._layoutChanged = true;
-			this.invalidate();
-		}
-
-		/**
-		 * @private
-		 */
-		override public function get height(): Number
-		{
-			return this._height;
-		}
-
-		/**
-		 * @private
-		 */
-		override public function set height(value: Number): void
-		{
-			if (this._height == value)
-			{
-				return;
-			}
-			this._height = this._hitArea.height = value;
-			this._layoutChanged = true;
-			this.invalidate();
-		}
 
 		/**
 		 * The amount to scale the texture. Useful for DPI changes.

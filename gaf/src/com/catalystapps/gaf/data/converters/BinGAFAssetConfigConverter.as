@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.GAF;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	import flash.events.Event;
@@ -445,6 +446,10 @@ package com.catalystapps.gaf.data.converters
 							stateID = tagContent.readUnsignedInt();
 							zIndex = tagContent.readInt();
 							alpha = tagContent.readFloat();
+							if (GAF.use99alpha && alpha == 1)
+							{
+								alpha = 0.99;
+							}
 							matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
 									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
 

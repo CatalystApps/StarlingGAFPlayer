@@ -143,7 +143,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		/**
+		/** @private
 		 * Returns the child display object that exists with the specified ID. Use to obtain animation's parts
 		 *
 		 * @param id Child ID
@@ -154,7 +154,7 @@ package com.catalystapps.gaf.display
 			return this.displayObjectsDictionary[id];
 		}
 
-		/**
+		/** @private
 		 * Returns the mask display object that exists with the specified ID. Use to obtain animation's masks
 		 *
 		 * @param id Mask ID
@@ -847,6 +847,12 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
+		
+		/** Returns a child object with a certain name (non-recursively). */
+		override public function getChildByName(name: String): DisplayObject
+		{
+			return super.getChildByName(name);
+		}
 
 		/**
 		 * Disposes all resources of the display object instance. Note: this method won't delete used texture atlases from GPU memory.
@@ -895,7 +901,7 @@ package com.catalystapps.gaf.display
 
 			for (var i: uint = 0; i < this.numChildren; i++)
 			{
-				var child: GAFTextField = this.getChildAt(i) as GAFTextField;
+				var child: IGAFImage = this.getChildAt(i) as IGAFImage;
 				if (child)
 				{
 					child.invalidateSize();

@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import flash.utils.setTimeout;
 	import flash.events.Event;
@@ -324,6 +325,8 @@ package com.catalystapps.gaf.data.converters
 			var missedFrameNumber: uint;
 			var io: Array;
 			
+			timelineConfig.framesCount = jsonObject.animationFrameCount;
+			
 			if (jsonObject.animationConfigFrames && jsonObject.animationConfigFrames.length)
 			{
 				for each(f in jsonObject.animationConfigFrames)
@@ -432,8 +435,12 @@ package com.catalystapps.gaf.data.converters
 							}
 						}
 						
-						instance = new CAnimationFrameInstance(stateID);						
-//						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), io[7], maskID, filter);
+						if (GAF.use99alpha && alpha == 1)
+						{
+							alpha = 0.99;
+						}
+						
+						instance = new CAnimationFrameInstance(stateID);
 						instance.update(io[0], new Matrix(io[1], io[2], io[3], io[4], io[5], io[6]), alpha, maskID, filter);
 						
 						if(maskID && filter)
@@ -471,7 +478,7 @@ package com.catalystapps.gaf.data.converters
 					prevFrame = currentFrame;
 				}
 			
-				for(missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= jsonObject['animationFrameCount']; missedFrameNumber++)
+				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= timelineConfig.framesCount; missedFrameNumber++)
 				{
 					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 				}
