@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CBlurFilterData;
+	import flash.events.ErrorEvent;
 	import com.catalystapps.gaf.data.GAF;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
@@ -107,6 +109,13 @@ package com.catalystapps.gaf.data.converters
 			_config.versionMajor = _bytes.readByte();
 			_config.versionMinor = _bytes.readByte();
 			_config.fileLength = _bytes.readUnsignedInt();
+			
+			if (_config.versionMajor > GAFAssetConfig.MAX_VERSION)
+			{
+				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, WarningConstants.UNSUPPORTED_FILE +
+							"Library version: " + GAFAssetConfig.MAX_VERSION + ", file version: " + _config.versionMajor));
+				return;
+			}
 
 			switch (_config.compression)
 			{
@@ -393,6 +402,9 @@ package com.catalystapps.gaf.data.converters
 
 			var filterLength: int;
 			var filterType: uint;
+			
+			var blurFilter: CBlurFilterData;
+			var blurFilters: Object = {};
 
 			if (framesCount)
 			{
@@ -463,7 +475,6 @@ package com.catalystapps.gaf.data.converters
 									tagContent.readFloat()];
 								params.fixed = true;
 								filter ||= new CFilter();
-
 								filter.addColorTransform(params);
 							}
 
@@ -484,6 +495,18 @@ package com.catalystapps.gaf.data.converters
 											break;
 										case BinGAFAssetConfigConverter.FILTER_BLUR:
 											warning = readBlurFilter(tagContent, filter);
+											blurFilter = filter.filterConfigs[filter.filterConfigs.length - 1] as CBlurFilterData;
+											if (blurFilter.blurX >= 2 && blurFilter.blurY >= 2)
+											{
+												if (!(stateID in blurFilters))
+												{
+													blurFilters[stateID] = blurFilter;
+												}
+											}
+											else
+											{
+												blurFilters[stateID] = null;
+											}
 											break;
 										case BinGAFAssetConfigConverter.FILTER_GLOW:
 											warning = readGlowFilter(tagContent, filter);
@@ -553,6 +576,23 @@ package com.catalystapps.gaf.data.converters
 				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= timelineConfig.framesCount; missedFrameNumber++)
 				{
 					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+				}
+				
+				for each (currentFrame in animationConfigFrames.frames)
+				{
+					for each (instance in currentFrame.instances)
+					{
+						if (blurFilters[instance.id])
+						{
+							blurFilter = instance.filter.getBlurFilter();
+							if (blurFilter.resolution == 1)
+							{
+								blurFilter.blurX *= 0.5;
+								blurFilter.blurY *= 0.5;
+								blurFilter.resolution = 0.75;
+							}
+						}
+					}
 				}
 			}
 

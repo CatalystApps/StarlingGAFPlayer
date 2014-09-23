@@ -151,7 +151,7 @@ package com.catalystapps.gaf.filter
 			mBlurX = cBlurFilterData.blurX * multiplier;
 			mBlurY = cBlurFilterData.blurY * multiplier;
 			
-			resolution = mResolution;
+			resolution = cBlurFilterData.resolution * mResolution;
 			offsetX = Math.cos(cBlurFilterData.angle) * _currentScale;
 			offsetY = Math.sin(cBlurFilterData.angle) * _currentScale;
 

@@ -1,5 +1,8 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CBlurFilterData;
+	import flash.events.ErrorEvent;
+	import flash.geom.Point;
 	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import flash.utils.setTimeout;
@@ -325,6 +328,9 @@ package com.catalystapps.gaf.data.converters
 			var missedFrameNumber: uint;
 			var io: Array;
 			
+			var blurFilter: CBlurFilterData;
+			var blurFilters: Object = {};
+			
 			timelineConfig.framesCount = jsonObject.animationFrameCount;
 			
 			if (jsonObject.animationConfigFrames && jsonObject.animationConfigFrames.length)
@@ -365,18 +371,6 @@ package com.catalystapps.gaf.data.converters
 							maskID = state["m"];
 						}
 						
-						///////////////////////////////////////////
-						
-						function checkAndInitFilter(): void
-						{
-							if(!filter)
-							{
-								filter = new CFilter();
-							}
-						};
-						
-						///////////////////////////////////////////
-						
 						filter = null;
 						
 						stateConfig = state["st"];
@@ -392,29 +386,38 @@ package com.catalystapps.gaf.data.converters
 							var params: Vector.<Number> = Vector.<Number>(String(state["c"]).replace(" ", "").split(","));
 							alpha = Math.max(Math.min(alpha + params[0], 1), 0);
 							
-							checkAndInitFilter();
-							
+							filter = new CFilter();
 							filter.addColorTransform(params);
 						}
 						
 						if(state.hasOwnProperty("e"))
 						{
 							var warning: String;
+							
+							filter ||= new CFilter();
 
 							for each (var filterConfig: Object in state["e"])
 							{
 								switch (filterConfig["t"])
 								{
 									case JsonGAFAssetConfigConverter.FILTER_BLUR:
-										checkAndInitFilter();
 										warning = filter.addBlurFilter(filterConfig["x"], filterConfig["y"]);
+										if (blurFilter.blurX >= 2 && blurFilter.blurY >= 2)
+										{
+											if (!(stateID in blurFilters))
+											{
+												blurFilters[stateID] = blurFilter;
+											}
+										}
+										else
+										{
+											blurFilters[stateID] = null;
+										}
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_COLOR_TRANSFORM:
-										checkAndInitFilter();
 										warning = filter.addColorMatrixFilter(Vector.<Number>(filterConfig["matrix"]));
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_DROP_SHADOW:
-										checkAndInitFilter();
 										warning = filter.addDropShadowFilter(filterConfig["x"], filterConfig["y"],
 												filterConfig["color"],
 												filterConfig["alpha"],
@@ -422,7 +425,6 @@ package com.catalystapps.gaf.data.converters
 												filterConfig["distance"]);
 										break;
 									case JsonGAFAssetConfigConverter.FILTER_GLOW:
-										checkAndInitFilter();
 										warning = filter.addGlowFilter(filterConfig["x"], filterConfig["y"],
 												filterConfig["color"], filterConfig["alpha"]);
 										break;
@@ -482,6 +484,23 @@ package com.catalystapps.gaf.data.converters
 				{
 					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 				}
+				
+				for each (currentFrame in animationConfigFrames.frames)
+				{
+					for each (instance in currentFrame.instances)
+					{
+						if (blurFilters[instance.id])
+						{
+							blurFilter = instance.filter.getBlurFilter();
+							if (blurFilter.resolution == 1)
+							{
+								blurFilter.blurX *= 0.5;
+								blurFilter.blurY *= 0.5;
+								blurFilter.resolution = 0.75;
+							}
+						}
+					}
+				}
 			}
 
 			timelineConfig.animationConfigFrames = animationConfigFrames;
@@ -528,6 +547,12 @@ package com.catalystapps.gaf.data.converters
 		private function parse(): void
 		{
 			var jsonObject: Object = JSON.parse(json);
+			
+			if (jsonObject.version && String(jsonObject.version).split(".")[0] > GAFAssetConfig.MAX_VERSION)
+			{
+				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, WarningConstants.UNSUPPORTED_FILE +
+							"Library version: " + GAFAssetConfig.MAX_VERSION + ", file version: " + jsonObject.version));
+			}
 
 			_config = new GAFAssetConfig(assetID);
 
@@ -556,14 +581,25 @@ package com.catalystapps.gaf.data.converters
 				convertConfig(timelineConfig, jsonObject, defaultScale, defaultContentScaleFactor);
 				_config.timelines.push(timelineConfig);
 			}
-
+			
 			if (jsonObject.stageConfig)
 			{
 				var stageConfig: CStage = new CStage().clone(jsonObject.stageConfig);
-				for each (timelineConfig in _config.timelines)
-				{
-					timelineConfig.stageConfig = stageConfig;
-				}
+			}
+			if (jsonObject.pivotPoint)
+			{
+				var pivotPoint: Point = new Point(jsonObject.pivotPoint.x, jsonObject.pivotPoint.y);
+			}
+			if (jsonObject.boundingBox)
+			{
+				var boundingBox: Rectangle = new Rectangle(jsonObject.boundingBox.x, jsonObject.boundingBox.y, jsonObject.boundingBox.width, jsonObject.boundingBox.height);
+			}
+			
+			for each (timelineConfig in _config.timelines)
+			{
+				timelineConfig.stageConfig = stageConfig;
+				timelineConfig.pivot ||= pivotPoint;
+				timelineConfig.bounds ||= boundingBox; 
 			}
 
 			///////////////////////////////////////////////////////////////

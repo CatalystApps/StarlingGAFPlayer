@@ -10,6 +10,8 @@ package com.catalystapps.gaf.data
 	 */
 	public class GAFAssetConfig
 	{
+		public static const MAX_VERSION: uint = 4;
+		
 		private var _id: String;
 		private var _compression: int;
 		private var _versionMajor: uint;

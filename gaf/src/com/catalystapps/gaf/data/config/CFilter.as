@@ -154,14 +154,8 @@ package com.catalystapps.gaf.data.config
 
 			return "";
 		}
-
-		//--------------------------------------------------------------------------
-		//
-		//  PRIVATE METHODS
-		//
-		//--------------------------------------------------------------------------
 		
-		private function getBlurFilter(): CBlurFilterData
+		public function getBlurFilter(): CBlurFilterData
 		{
 			for each (var filterConfig: ICFilterData in _filterConfigs)
 			{
@@ -173,6 +167,12 @@ package com.catalystapps.gaf.data.config
 
 			return null;
 		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE METHODS
+		//
+		//--------------------------------------------------------------------------
 
 		private function getColorMatrixFilter(): CColorMatrixFilterData
 		{

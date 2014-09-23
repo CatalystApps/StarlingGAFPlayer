@@ -272,12 +272,6 @@ package com.catalystapps.gaf.core
 			this.convertConfig();
 		}
 
-		//--------------------------------------------------------------------------
-		//
-		//
-		//
-		//--------------------------------------------------------------------------
-
 		private function processFile(data: *): void
 		{
 			if (getQualifiedClassName(data) == "flash.filesystem::File")
@@ -338,27 +332,6 @@ package com.catalystapps.gaf.core
 			this.gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIoError);
 			this.gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigUrlLoaderComplete);
 			this.gafAssetsConfigURLLoader.load(new URLRequest(url));
-
-		}
-
-		private function onConfigUrlLoaderComplete(event: Event): void
-		{
-			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
-
-			this.gafAssetsIDs.push(url);
-
-			this.gafAssetConfigSources[url] = this.gafAssetsConfigURLLoader.data;
-
-			this.gafAssetsConfigIndex++;
-
-			if (this.gafAssetsConfigIndex >= this.gafAssetsConfigURLs.length)
-			{
-				this.convertConfig();
-			}
-			else
-			{
-				this.loadConfig();
-			}
 		}
 
 		private function findAllAtlasURLs(): void
@@ -440,49 +413,6 @@ package com.catalystapps.gaf.core
 			this.atfSourceLoader.load(request);
 		}
 
-		private function onAtlasLoadIOError(event: IOErrorEvent): void
-		{
-			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
-		}
-
-		private function onPNGLoadComplete(event: Event): void
-		{
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
-
-			this.pngImgs[fileName] = (this.atlasSourceLoader.content as Bitmap).bitmapData;
-
-			this.atlasSourceIndex++;
-
-			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
-			{
-				this.createGAFTimelines();
-			}
-			else
-			{
-				this.loadPNG();
-			}
-		}
-		
-		private function onATFLoadComplete(event: Event): void
-		{
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
-
-			this.atfData[fileName] = this.atfSourceLoader.data;
-
-			this.atlasSourceIndex++;
-
-			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
-			{
-				this.createGAFTimelines();
-			}
-			else
-			{
-				this.loadATF();
-			}
-		}
-
 		private function getFolderURL(url: String): String
 		{
 			var cutURL: String = url.split("?")[0];
@@ -490,12 +420,6 @@ package com.catalystapps.gaf.core
 			var lastIndex: int = cutURL.lastIndexOf("/");
 
 			return cutURL.slice(0, lastIndex + 1);
-		}
-
-		private function onConfigIoError(event: IOErrorEvent): void
-		{
-			this.zipProcessError("Error occurred while loading " + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex],
-			                     5);
 		}
 
 		private function isConfigURL(url: String): Boolean
@@ -559,7 +483,6 @@ package com.catalystapps.gaf.core
 					this.gafAssetConfigSources[fileName] = zipFile.content;
 				}
 			}
-			///////////////////////////////////
 
 			this.convertConfig();
 		}
@@ -583,34 +506,8 @@ package com.catalystapps.gaf.core
 			}
 			
 			converter.addEventListener(Event.COMPLETE, onConverted);
+			converter.addEventListener(ErrorEvent.ERROR, onConvertError);
 			converter.convert();
-		}
-
-		private function onConverted(event: Event): void
-		{
-			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
-			var converter: IGAFAssetConfigConverter = event.target as IGAFAssetConfigConverter;
-			converter.removeEventListener(Event.COMPLETE, onConverted);
-			
-			this.gafAssetConfigs[configID] = converter.config.timelines;
-
-			this.currentConfigIndex++;
-
-			if (this.currentConfigIndex >= this.gafAssetsIDs.length)
-			{
-				if (this.gafAssetsConfigURLs && gafAssetsConfigURLs.length)
-				{
-					this.findAllAtlasURLs();
-				}
-				else
-				{
-					this.createGAFTimelines();
-				}
-			}
-			else
-			{
-				this.configConvertTimeout = setTimeout(this.convertConfig, 40);
-			}
 		}
 
 		private function createGAFTimelines(): void
@@ -629,8 +526,6 @@ package com.catalystapps.gaf.core
 				{
 					timelines.push(this.createTimeline(config));
 				}
-
-				///////////////////////////////////
 
 				if (!this._gafBundle)
 				{
@@ -667,8 +562,6 @@ package com.catalystapps.gaf.core
 
 		private function createTimeline(config: GAFTimelineConfig): GAFTimeline
 		{
-			///////////////////////////////////
-
 			for each (var cScale: CTextureAtlasScale in config.allTextureAtlases)
 			{
 				if (isNaN(this._defaultScale) || this._defaultScale == cScale.scale)
@@ -703,12 +596,8 @@ package com.catalystapps.gaf.core
 				}
 			}
 
-			///////////////////////////////////
-
 			var timeline: GAFTimeline = new GAFTimeline(config);
 			timeline.gafgfxData = this.gfxData;
-
-			///////////////////////////////////
 
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
@@ -720,8 +609,6 @@ package com.catalystapps.gaf.core
 					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT, NaN, NaN, textureFormat);
 					break;
 			}
-
-			///////////////////////////////////
 
 			return timeline;
 		}
@@ -781,6 +668,110 @@ package com.catalystapps.gaf.core
 		private function onParseError(event: FZipErrorEvent): void
 		{
 			this.zipProcessError("onParseError", 1);
+		}
+
+		private function onConvertError(event: ErrorEvent): void
+		{
+			if (this.hasEventListener(ErrorEvent.ERROR))
+			{
+				this.dispatchEvent(event);
+			}
+			else throw new Error(event.text);
+		}
+
+		private function onConverted(event: Event): void
+		{
+			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
+			var converter: IGAFAssetConfigConverter = event.target as IGAFAssetConfigConverter;
+			converter.removeEventListener(Event.COMPLETE, onConverted);
+			
+			this.gafAssetConfigs[configID] = converter.config.timelines;
+
+			this.currentConfigIndex++;
+
+			if (this.currentConfigIndex >= this.gafAssetsIDs.length)
+			{
+				if (this.gafAssetsConfigURLs && gafAssetsConfigURLs.length)
+				{
+					this.findAllAtlasURLs();
+				}
+				else
+				{
+					this.createGAFTimelines();
+				}
+			}
+			else
+			{
+				this.configConvertTimeout = setTimeout(this.convertConfig, 40);
+			}
+		}
+
+		private function onAtlasLoadIOError(event: IOErrorEvent): void
+		{
+			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
+		}
+
+		private function onPNGLoadComplete(event: Event): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
+
+			this.pngImgs[fileName] = (this.atlasSourceLoader.content as Bitmap).bitmapData;
+
+			this.atlasSourceIndex++;
+
+			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
+			{
+				this.createGAFTimelines();
+			}
+			else
+			{
+				this.loadPNG();
+			}
+		}
+		
+		private function onATFLoadComplete(event: Event): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
+
+			this.atfData[fileName] = this.atfSourceLoader.data;
+
+			this.atlasSourceIndex++;
+
+			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
+			{
+				this.createGAFTimelines();
+			}
+			else
+			{
+				this.loadATF();
+			}
+		}
+
+		private function onConfigIoError(event: IOErrorEvent): void
+		{
+			this.zipProcessError("Error occurred while loading " + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex], 5);
+		}
+
+		private function onConfigUrlLoaderComplete(event: Event): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+
+			this.gafAssetsIDs.push(url);
+
+			this.gafAssetConfigSources[url] = this.gafAssetsConfigURLLoader.data;
+
+			this.gafAssetsConfigIndex++;
+
+			if (this.gafAssetsConfigIndex >= this.gafAssetsConfigURLs.length)
+			{
+				this.convertConfig();
+			}
+			else
+			{
+				this.loadConfig();
+			}
 		}
 
 		//--------------------------------------------------------------------------
