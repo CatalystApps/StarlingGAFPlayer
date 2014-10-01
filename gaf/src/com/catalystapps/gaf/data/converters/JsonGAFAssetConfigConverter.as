@@ -402,11 +402,11 @@ package com.catalystapps.gaf.data.converters
 								{
 									case JsonGAFAssetConfigConverter.FILTER_BLUR:
 										warning = filter.addBlurFilter(filterConfig["x"], filterConfig["y"]);
-										if (blurFilter.blurX >= 2 && blurFilter.blurY >= 2)
+										if (filterConfig["x"] >= 2 && filterConfig["y"] >= 2)
 										{
 											if (!(stateID in blurFilters))
 											{
-												blurFilters[stateID] = blurFilter;
+												blurFilters[stateID] = filter;
 											}
 										}
 										else

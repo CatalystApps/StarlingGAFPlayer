@@ -521,12 +521,16 @@ package com.catalystapps.gaf.display
 		{
 			if (parent)
 			{
+//				var tx: Number = this.x;
+//				var ty: Number = this.y;
 				var matrix: Matrix = parent.transformationMatrix;
 				var mtx: Matrix = matrix.clone();
 				mtx.invert();
 				this.transformationMatrix.concat(mtx);
 				this.width *= Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
 				this.height *= Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d);
+//				this.x = tx;
+//				this.y = ty;
 			}
 		}
 

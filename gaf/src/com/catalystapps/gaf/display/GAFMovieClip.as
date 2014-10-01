@@ -52,6 +52,8 @@ package com.catalystapps.gaf.display
 		public static const EVENT_TYPE_SEQUENCE_END: String = "typeSequenceEnd";
 		public static const EVENT_TYPE_SEQUENCE_SKIP_START: String = "typeSequenceSkipStart";
 		public static const EVENT_TYPE_SEQUENCE_SKIP_END: String = "typeSequenceSkipEnd";
+		
+		private static const defaultMatrix: Matrix = new Matrix();
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
@@ -679,7 +681,7 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				return new Matrix();
+				return defaultMatrix;
 			}
 		}
 		
