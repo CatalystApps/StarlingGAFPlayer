@@ -199,22 +199,31 @@ package com.catalystapps.gaf.data.converters
 			///////////////////////////////////////////////////////////////
 			
 			var animationObjects: CAnimationObjects = new CAnimationObjects();
-			var regionID: Object;
+			var regionDef: Object;
+			var regionID: String;
+			var regionType: String;
 			
 			if(jsonObject.animationObjects)
 			{
 				for(var ao: String in jsonObject.animationObjects)
 				{
-					regionID = jsonObject.animationObjects[ao];
-					if (regionID is String) // old version
+					regionDef = jsonObject.animationObjects[ao];
+					if (regionDef is String) // old version
 					{
-						animationObjects.addAnimationObject(new CAnimationObject(ao, regionID as String,
-								CAnimationObject.TYPE_TEXTURE, false));
+						regionID = regionDef as String;
+						regionType = CAnimationObject.TYPE_TEXTURE;
 					}
 					else
 					{
-						animationObjects.addAnimationObject(new CAnimationObject(ao, jsonObject.animationObjects[ao].id,
-								jsonObject.animationObjects[ao].type, false));
+						regionID = jsonObject.animationObjects[ao].id;
+						regionType = jsonObject.animationObjects[ao].type;
+					}
+					animationObjects.addAnimationObject(new CAnimationObject(ao, regionID, regionType, false));
+					
+					//find region in textureAtlas. If it's missing - show warning
+					if (!timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(regionID))
+					{
+						timelineConfig.addWarning(WarningConstants.REGION_NOT_FOUND);
 					}
 				}
 			}
