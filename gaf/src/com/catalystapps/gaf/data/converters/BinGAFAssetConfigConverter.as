@@ -844,11 +844,6 @@ package com.catalystapps.gaf.data.converters
 					type = getAnimationObjectTypeString(tagContent.readUnsignedShort());
 				}
 				timelineConfig.animationObjects.addAnimationObject(new CAnimationObject(objectID + "", regionID + "", type, false));
-				//find region in textureAtlas. If it's missing - show warning
-				if (!timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(regionID + ""))
-				{
-					timelineConfig.addWarning(WarningConstants.REGION_NOT_FOUND);
-				}
 			}
 		}
 
