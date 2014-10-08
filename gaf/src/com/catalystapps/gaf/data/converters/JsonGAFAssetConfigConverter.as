@@ -201,7 +201,7 @@ package com.catalystapps.gaf.data.converters
 			var animationObjects: CAnimationObjects = new CAnimationObjects();
 			var regionDef: Object;
 			var regionID: String;
-			var regionType: String;
+			var regionType: String = CAnimationObject.TYPE_TEXTURE;
 			
 			if(jsonObject.animationObjects)
 			{
@@ -211,20 +211,15 @@ package com.catalystapps.gaf.data.converters
 					if (regionDef is String) // old version
 					{
 						regionID = regionDef as String;
-						regionType = CAnimationObject.TYPE_TEXTURE;
 					}
 					else
 					{
-						regionID = jsonObject.animationObjects[ao].id;
-						regionType = jsonObject.animationObjects[ao].type;
+						regionID = regionDef.id;
+						regionType = regionDef.type;
 					}
 					animationObjects.addAnimationObject(new CAnimationObject(ao, regionID, regionType, false));
 					
-					//find region in textureAtlas. If it's missing - show warning
-					if (!timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(regionID))
-					{
-						timelineConfig.addWarning(WarningConstants.REGION_NOT_FOUND);
-					}
+					checkForMissedRegions(timelineConfig, regionType, regionID);
 				}
 			}
 			
@@ -232,17 +227,19 @@ package com.catalystapps.gaf.data.converters
 			{
 				for(var am: String in jsonObject.animationMasks)
 				{
-					regionID = jsonObject.animationMasks[am];
-					if (regionID is String) // old version
+					regionDef = jsonObject.animationMasks[am];
+					if (regionDef is String) // old version
 					{
-						animationObjects.addAnimationObject(new CAnimationObject(am, regionID as String,
-								CAnimationObject.TYPE_TEXTURE, true));
+						regionID = regionDef as String;
 					}
 					else
 					{
-						animationObjects.addAnimationObject(new CAnimationObject(am, jsonObject.animationMasks[am].id,
-								jsonObject.animationMasks[am].type, true));
+						regionID = regionDef.id;
+						regionType = regionDef.type;
 					}
+					animationObjects.addAnimationObject(new CAnimationObject(am, regionID, regionType, true));
+					
+					checkForMissedRegions(timelineConfig, regionType, regionID);
 				}
 			}
 			
@@ -546,12 +543,12 @@ package com.catalystapps.gaf.data.converters
 		public function convert(): void
 		{
 			setTimeout(parse, 1);
-	}
+		}
 		
 		public function get config(): GAFAssetConfig
 		{
 			return _config;
-}
+		}
 
 		private function parse(): void
 		{
@@ -614,6 +611,17 @@ package com.catalystapps.gaf.data.converters
 			///////////////////////////////////////////////////////////////
 			
 			dispatchEvent(new Event(Event.COMPLETE));
+		}
+		
+		// find region in textureAtlas. If it's missing - show warning
+		private static function checkForMissedRegions(timelineConfig: GAFTimelineConfig, regionType: String, regionID: String): void
+		{
+			if (regionType == CAnimationObject.TYPE_TEXTURE
+			&&  timelineConfig.textureAtlas.contentScaleFactor.elements
+			&& !timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(regionID))
+			{
+				timelineConfig.addWarning(WarningConstants.REGION_NOT_FOUND);
+			}
 		}
 	}
 }

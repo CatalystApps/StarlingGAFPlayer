@@ -198,16 +198,36 @@ package com.catalystapps.gaf.data.converters
 				}
 				
 				_config.timelines[0].stageConfig = _config.stageConfig;
+				
+				checkForMissedRegions(timelineConfig);
 			}
 			else
 			{
 				for each (timelineConfig in _config.timelines)
 				{
 					timelineConfig.stageConfig = _config.stageConfig;
+					
+					checkForMissedRegions(timelineConfig);
 				}
 			}
 			
 			dispatchEvent(new Event(Event.COMPLETE));
+		}
+
+		private function checkForMissedRegions(timelineConfig: GAFTimelineConfig): void
+		{
+			if (timelineConfig.textureAtlas.contentScaleFactor.elements)
+			{
+				for each (var ao: CAnimationObject in timelineConfig.animationObjects.animationObjectsDictionary)
+				{
+					if (ao.type == CAnimationObject.TYPE_TEXTURE
+					&& !timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(ao.regionID))
+					{
+						timelineConfig.addWarning(WarningConstants.REGION_NOT_FOUND);
+						break;
+					}
+				}
+			}
 		}
 
 		private function parseTags(tagsBytes: ByteArray, onComplete: Function, ...args): void
