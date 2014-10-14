@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import deng.fzip.FZip;
 	import deng.fzip.FZipErrorEvent;
 	import deng.fzip.FZipFile;
@@ -350,11 +351,11 @@ package com.catalystapps.gaf.core
 
 					for each(var scale: CTextureAtlasScale in config.allTextureAtlases)
 					{
-						if (isNaN(this._defaultScale) || scale.scale == this._defaultScale)
+						if (isNaN(this._defaultScale) || MathUtility.equals(scale.scale, this._defaultScale))
 						{
 							for each (var csf: CTextureAtlasCSF in scale.allContentScaleFactors)
 							{
-								if (isNaN(this._defaultContentScaleFactor) || csf.csf == this._defaultContentScaleFactor)
+								if (isNaN(this._defaultContentScaleFactor) || MathUtility.equals(csf.csf, this._defaultContentScaleFactor))
 								{
 									for each (var source: CTextureAtlasSource in csf.sources)
 									{
@@ -564,11 +565,11 @@ package com.catalystapps.gaf.core
 		{
 			for each (var cScale: CTextureAtlasScale in config.allTextureAtlases)
 			{
-				if (isNaN(this._defaultScale) || this._defaultScale == cScale.scale)
+				if (isNaN(this._defaultScale) || MathUtility.equals(this._defaultScale, cScale.scale))
 				{
 					for each(var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
 					{
-						if (isNaN(this._defaultContentScaleFactor) || this._defaultContentScaleFactor == cCSF.csf)
+						if (isNaN(this._defaultContentScaleFactor) || MathUtility.equals(this._defaultContentScaleFactor, cCSF.csf))
 						{
 							for each (var taSource: CTextureAtlasSource in cCSF.sources)
 							{

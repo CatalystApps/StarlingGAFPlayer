@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import flash.utils.ByteArray;
 	import flash.display3D.Context3DTextureFormat;
 	import starling.core.Starling;
@@ -115,11 +116,11 @@ package com.catalystapps.gaf.data
 			{
 				for (var tmpScale: String in _imagesDictionary)
 				{
-					if (isNaN(scale) || scale == Number(tmpScale))
+					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
 					{
 						for (var tmpCsf: String in _imagesDictionary[tmpScale])
 						{
-							if (isNaN(csf) || csf == Number(tmpCsf))
+							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCsf)))
 							{
 								for (var tmpImageID: String in _imagesDictionary[tmpScale][tmpCsf])
 								{
@@ -213,11 +214,11 @@ package com.catalystapps.gaf.data
 			{
 				for (var tmpScale: String in _atfDictionary)
 				{
-					if (isNaN(scale) || scale == Number(tmpScale))
+					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
 					{
 						for (var tmpCSF: String in _atfDictionary[tmpScale])
 						{
-							if (isNaN(csf) || csf == Number(tmpCSF))
+							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCSF)))
 							{
 								for (var tmpATFid: String in _atfDictionary[tmpScale][tmpCSF])
 								{

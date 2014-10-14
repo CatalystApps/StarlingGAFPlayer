@@ -7,6 +7,7 @@
  */
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import starling.textures.Texture;
 	import feathers.core.IValidating;
 	import feathers.core.ValidationQueue;
@@ -791,7 +792,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function set textureScale(value: Number): void
 		{
-			if (this._textureScale == value)
+			if (MathUtility.equals(this._textureScale, value))
 			{
 				return;
 			}

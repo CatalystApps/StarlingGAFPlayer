@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.config
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	/**
 	 * @private
 	 */
@@ -41,7 +42,7 @@ package com.catalystapps.gaf.data.config
 		
 		public function dispose(): void
 		{
-			for each(var cTextureAtlasCSF: CTextureAtlasCSF in this._allContentScaleFactors)
+			for each (var cTextureAtlasCSF: CTextureAtlasCSF in this._allContentScaleFactors)
 			{
 				cTextureAtlasCSF.dispose();
 			}
@@ -49,9 +50,9 @@ package com.catalystapps.gaf.data.config
 		
 		public function getTextureAtlasForCSF(csf: Number): CTextureAtlasCSF
 		{
-			for each(var textureAtlas: CTextureAtlasCSF in this._allContentScaleFactors)
+			for each (var textureAtlas: CTextureAtlasCSF in this._allContentScaleFactors)
 			{
-				if(textureAtlas.csf == csf)
+				if (MathUtility.equals(textureAtlas.csf, csf))
 				{
 					return textureAtlas;
 				}

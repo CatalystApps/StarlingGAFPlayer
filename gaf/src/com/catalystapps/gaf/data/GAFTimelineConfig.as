@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
@@ -86,7 +87,7 @@ package com.catalystapps.gaf.data
 		{
 			for each(var cTextureAtlas: CTextureAtlasScale in this._allTextureAtlases)
 			{
-				if (cTextureAtlas.scale == scale)
+				if (MathUtility.equals(cTextureAtlas.scale, scale))
 				{
 					return cTextureAtlas;
 				}

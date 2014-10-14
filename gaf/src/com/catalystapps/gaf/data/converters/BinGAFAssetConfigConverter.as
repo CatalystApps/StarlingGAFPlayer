@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import flash.events.ErrorEvent;
 	import com.catalystapps.gaf.data.GAF;
@@ -342,7 +343,7 @@ package com.catalystapps.gaf.data.converters
 						item = new CTextureAtlasCSF(csf, scale);
 
 						if ((!isNaN(_defaultContentScaleFactor)
-						&& _defaultContentScaleFactor == csf)
+						&& MathUtility.equals(_defaultContentScaleFactor, csf))
 						|| !textureAtlas.contentScaleFactor)
 						{
 							textureAtlas.contentScaleFactor = item;
@@ -351,7 +352,7 @@ package com.catalystapps.gaf.data.converters
 						textureAtlas.allContentScaleFactors.push(item);
 					}
 					timelineConfig.allTextureAtlases.push(textureAtlas);
-					if (!isNaN(_defaultScale) && _defaultScale == scale)
+					if (!isNaN(_defaultScale) && MathUtility.equals(_defaultScale, scale))
 					{
 						timelineConfig.textureAtlas = textureAtlas;
 					}
@@ -700,7 +701,7 @@ package com.catalystapps.gaf.data.converters
 
 				for each (item in contentScaleFactors)
 				{
-					if (item.csf == csf)
+					if (MathUtility.equals(item.csf, csf))
 					{
 						return item;
 					}
@@ -709,7 +710,7 @@ package com.catalystapps.gaf.data.converters
 				item = new CTextureAtlasCSF(csf, scale);
 				contentScaleFactors.push(item);
 
-				if (!isNaN(defaultContentScaleFactor) && defaultContentScaleFactor == csf)
+				if (!isNaN(defaultContentScaleFactor) && MathUtility.equals(defaultContentScaleFactor, csf))
 				{
 					textureAtlas.contentScaleFactor = item;
 				}
@@ -796,7 +797,7 @@ package com.catalystapps.gaf.data.converters
 
 			timelineConfig.allTextureAtlases.push(textureAtlas);
 
-			if (!isNaN(defaultScale) && defaultScale == scale)
+			if (!isNaN(defaultScale) && MathUtility.equals(defaultScale, scale))
 			{
 				timelineConfig.textureAtlas = textureAtlas;
 			}
