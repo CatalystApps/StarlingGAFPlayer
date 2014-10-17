@@ -36,7 +36,7 @@ package com.catalystapps.gaf.utils
 			{
 				colors.push(RENDERING_FILTER_COLOR);
 			}
-			if (instance.alpha < 1 || alphaLess1)
+			if (instance.alpha < CAnimationFrameInstance.MAX_ALPHA || alphaLess1)
 			{
 				colors.push(RENDERING_ALPHA_COLOR);
 			}

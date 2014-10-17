@@ -528,7 +528,7 @@ package com.catalystapps.gaf.display
 							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
 								updateAlphaMaskedAndHasFilter(
-												displayObject as GAFMovieClip, instance.alpha < 1 || this._alphaLess1,
+												displayObject as GAFMovieClip, instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLess1,
 												true, (instance.filter != null) || this._hasFilter);
 							}
 
@@ -588,7 +588,7 @@ package com.catalystapps.gaf.display
 							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
 								updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
-															  instance.alpha < 1 || this._alphaLess1,
+															  instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLess1,
 															  this._masked,
 															  (instance.filter != null) || this._hasFilter);
 							}

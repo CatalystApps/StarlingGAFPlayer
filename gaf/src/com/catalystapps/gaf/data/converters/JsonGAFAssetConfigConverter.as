@@ -3,7 +3,6 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import flash.events.ErrorEvent;
 	import flash.geom.Point;
-	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import flash.utils.setTimeout;
 	import flash.events.Event;
@@ -443,9 +442,9 @@ package com.catalystapps.gaf.data.converters
 							}
 						}
 						
-						if (GAF.use99alpha && alpha == 1)
+						if (alpha == 1)
 						{
-							alpha = 0.99;
+							alpha = CAnimationFrameInstance.MAX_ALPHA;
 						}
 						
 						instance = new CAnimationFrameInstance(stateID);

@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.config
 {
+	import com.catalystapps.gaf.data.GAF;
 	import flash.geom.Matrix;
 
 	/**
@@ -7,6 +8,7 @@ package com.catalystapps.gaf.data.config
 	 */
 	public class CAnimationFrameInstance
 	{
+		public static const MAX_ALPHA: Number = GAF.use99alpha ? 0.99 : 1;
 		// --------------------------------------------------------------------------
 		//
 		// PUBLIC VARIABLES

@@ -3,7 +3,6 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import flash.events.ErrorEvent;
-	import com.catalystapps.gaf.data.GAF;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	import flash.events.Event;
@@ -479,9 +478,9 @@ package com.catalystapps.gaf.data.converters
 							stateID = tagContent.readUnsignedInt();
 							zIndex = tagContent.readInt();
 							alpha = tagContent.readFloat();
-							if (GAF.use99alpha && alpha == 1)
+							if (alpha == 1)
 							{
-								alpha = 0.99;
+								alpha = CAnimationFrameInstance.MAX_ALPHA;
 							}
 							matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
 									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
@@ -603,10 +602,10 @@ package com.catalystapps.gaf.data.converters
 				{
 					for each (instance in currentFrame.instances)
 					{
-						if (blurFilters[instance.id])
+						if (blurFilters[instance.id] && instance.filter)
 						{
 							blurFilter = instance.filter.getBlurFilter();
-							if (blurFilter.resolution == 1)
+							if (blurFilter && blurFilter.resolution == 1)
 							{
 								blurFilter.blurX *= 0.5;
 								blurFilter.blurY *= 0.5;
