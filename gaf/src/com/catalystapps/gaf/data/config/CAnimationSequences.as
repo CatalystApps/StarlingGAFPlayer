@@ -1,7 +1,5 @@
 package com.catalystapps.gaf.data.config
 {
-	import com.catalystapps.gaf.event.SequenceEvent;
-
 	/**
 	 * @private
 	 */
@@ -58,21 +56,6 @@ package com.catalystapps.gaf.data.config
 				this._sequencesEndDictionary[sequence.endFrameNo] = sequence;
 			}
 		}
-
-		public function hasEvent(frameNo: uint): SequenceEvent
-		{
-			if (this._sequencesEndDictionary[frameNo])
-			{
-				return new SequenceEvent(SequenceEvent.TYPE_SEQUENCE_END, this._sequencesEndDictionary[frameNo]);
-			}
-
-			if (this._sequencesStartDictionary[frameNo])
-			{
-				return new SequenceEvent(SequenceEvent.TYPE_SEQUENCE_START, this._sequencesStartDictionary[frameNo]);
-			}
-
-			return null;
-		}
 		
 		public function getSequenceStart(frameNo: uint): CAnimationSequence
 		{
@@ -99,7 +82,7 @@ package com.catalystapps.gaf.data.config
 			return result;
 		}
 
-		public function getSecuenceByID(id: String): CAnimationSequence
+		public function getSequenceByID(id: String): CAnimationSequence
 		{
 			for each(var sequence: CAnimationSequence in this._sequences)
 			{

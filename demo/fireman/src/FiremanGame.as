@@ -1,9 +1,9 @@
 package
 {
-	import com.catalystapps.gaf.data.GAFTimeline;
 	import starling.display.Sprite;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
+	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
 	import flash.events.ErrorEvent;

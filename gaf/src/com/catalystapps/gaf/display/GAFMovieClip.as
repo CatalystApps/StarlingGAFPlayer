@@ -30,16 +30,10 @@ package com.catalystapps.gaf.display
 	import starling.textures.TextureSmoothing;
 
 	/** Dispatched when playhead reached first frame of sequence */
-	[Event(name="typeSequenceStart", type="com.catalystapps.gaf.event.SequenceEvent")]
+	[Event(name="typeSequenceStart", type="starling.events.Event")]
 
 	/** Dispatched when playhead reached end frame of sequence */
-	[Event(name="typeSequenceEnd", type="com.catalystapps.gaf.event.SequenceEvent")]
-	
-	/** Dispatched when playhead skip first frame of sequence, the data property of the event is the <code>CAnimationSequence</code> instance related to the event */
-	[Event(name = "typeSequenceSkipStart", type = "starling.events.Event")]
-	
-	/** Dispatched when playhead skip end frame of sequence, the data property of the event is the <code>CAnimationSequence</code> instance related to the event */
-	[Event(name = "typeSequenceSkipEnd", type = "starling.events.Event")]
+	[Event(name="typeSequenceEnd", type="starling.events.Event")]
 
 	/**
 	 * GAFMovieClip represents animation display object that is ready to be used in Starling display list. It has
@@ -50,8 +44,6 @@ package com.catalystapps.gaf.display
 	{
 		public static const EVENT_TYPE_SEQUENCE_START: String = "typeSequenceStart";
 		public static const EVENT_TYPE_SEQUENCE_END: String = "typeSequenceEnd";
-		public static const EVENT_TYPE_SEQUENCE_SKIP_START: String = "typeSequenceSkipStart";
-		public static const EVENT_TYPE_SEQUENCE_SKIP_END: String = "typeSequenceSkipEnd";
 		
 		private static const defaultMatrix: Matrix = new Matrix();
 		//--------------------------------------------------------------------------
@@ -252,7 +244,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
-			this.playingSequence = this.config.animationSequences.getSecuenceByID(id);
+			this.playingSequence = this.config.animationSequences.getSequenceByID(id);
 
 			if (this.playingSequence)
 			{
@@ -362,21 +354,20 @@ package com.catalystapps.gaf.display
 					}
 					else
 					{
-						// If we are skipping, we send our own events
-						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_START))
+						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
 						{
 							sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
 							if (sequence)
 							{
-								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_START, false, sequence);
+								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
 							}
 						}
-						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_SKIP_END))
+						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END))
 						{
 							sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
 							if (sequence)
 							{
-								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_SKIP_END, false, sequence);
+								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
 							}
 						}
 					}
@@ -926,7 +917,7 @@ package com.catalystapps.gaf.display
 			if (this._nextFrame >= this._startFrame && this._nextFrame <= this._finalFrame)
 			{
 				this._currentFrame = this._nextFrame;
-				this._lastFrameTime = this._lastFrameTime + this._frameDuration;
+				this._lastFrameTime += this._frameDuration;
 			}
 			else
 			{
@@ -937,7 +928,7 @@ package com.catalystapps.gaf.display
 				else
 				{
 					this._currentFrame = this._reverse ? this._finalFrame : this._startFrame;
-					this._lastFrameTime = this._lastFrameTime + this._frameDuration;
+					this._lastFrameTime += this._frameDuration;
 				}
 			}
 		}
