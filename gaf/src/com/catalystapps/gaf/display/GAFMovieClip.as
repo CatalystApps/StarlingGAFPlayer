@@ -236,6 +236,21 @@ package com.catalystapps.gaf.display
 		}
 
 		/**
+		 * Returns id of the sequence where animation is right now. If there is no sequences - returns null.
+		 *
+		 * @return String
+		 */
+		public function get currentSequence(): String
+		{
+			var sequence: CAnimationSequence = this.config.animationSequences.getSequenceByFrame(this.currentFrame);
+			if (sequence)
+			{
+				return sequence.id;
+			}
+			return null;
+		}
+
+		/**
 		 * Set sequence to play
 		 *
 		 * @param id Sequence ID

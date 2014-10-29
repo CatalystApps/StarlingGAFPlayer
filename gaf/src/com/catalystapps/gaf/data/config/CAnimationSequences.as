@@ -94,6 +94,19 @@ package com.catalystapps.gaf.data.config
 
 			return null;
 		}
+		
+		public function getSequenceByFrame(frameNo: uint): CAnimationSequence
+		{
+			for (var i: int = 0; i < _sequences.length; i++)
+			{
+				if (_sequences[i].isSequenceFrame(frameNo))
+				{
+					return _sequences[i];
+				}
+			}
+
+			return null;
+		}
 
 		//--------------------------------------------------------------------------
 		//
