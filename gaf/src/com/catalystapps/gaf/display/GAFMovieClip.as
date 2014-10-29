@@ -236,7 +236,7 @@ package com.catalystapps.gaf.display
 		}
 
 		/**
-		 * Returns id of the sequence where animation is right now. If there is no sequences - returns null.
+		 * Returns id of the sequence where animation is right now. If there is no sequences - returns <code>null</code>.
 		 *
 		 * @return String
 		 */
@@ -343,7 +343,8 @@ package com.catalystapps.gaf.display
 			this.play();
 		}
 		
-		/** Advances all objects by a certain time (in seconds).
+		/** @private
+		 * Advances all objects by a certain time (in seconds).
 		 * @see starling.animation.IAnimatable
 		 */
 		public function advanceTime(time: Number): void

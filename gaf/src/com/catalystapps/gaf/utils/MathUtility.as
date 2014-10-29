@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.utils
 {
 	/**
-	 * @author Programmer
+	 * @private
 	 */
 	public class MathUtility
 	{
