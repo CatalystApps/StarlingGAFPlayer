@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.core.gaf_internal;
 	/**
 	 * The GAF class defines global GAF library settings
 	 */
@@ -13,5 +14,7 @@ package com.catalystapps.gaf.data
 		 * (the number of draw calls depends on objects order in display list)
 		 */
 		public static var use99alpha: Boolean;
+		
+		gaf_internal static var useDeviceFonts: Boolean;
 	}
 }

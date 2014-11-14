@@ -43,105 +43,25 @@ package com.catalystapps.gaf.display
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-
-		/**
-		 * @private
-		 */
 		private static const HELPER_MATRIX: Matrix = new Matrix();
-
-		/**
-		 * @private
-		 */
 		private static const HELPER_POINT: Point = new Point();
-
-		/**
-		 * @private
-		 */
 		private static var helperImage: Image;
-
-		/**
-		 * @private
-		 */
 		private var _propertiesChanged: Boolean = true;
-
-		/**
-		 * @private
-		 */
 		private var _layoutChanged: Boolean = true;
-
-		/**
-		 * @private
-		 */
 		private var _renderingChanged: Boolean = true;
-
-		/**
-		 * @private
-		 */
 		private var _frame: Rectangle;
-
-		/**
-		 * @private
-		 */
 		private var _textures: GAFScale9Texture;
-
-		/**
-		 * @private
-		 */
 		private var _width: Number = NaN;
-
-		/**
-		 * @private
-		 */
 		private var _height: Number = NaN;
-
-		/**
-		 * @private
-		 */
 		private var _textureScale: Number = 1;
-
-		/**
-		 * @private
-		 */
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
-
-		/**
-		 * @private
-		 */
 		private var _color: uint = 0xffffff;
-
-		/**
-		 * @private
-		 */
 		private var _useSeparateBatch: Boolean = true;
-
-		/**
-		 * @private
-		 */
 		private var _hitArea: Rectangle;
-
-		/**
-		 * @private
-		 */
 		private var _batch: QuadBatch;
-
-		/**
-		 * @private
-		 */
 		private var _isValidating: Boolean = false;
-
-		/**
-		 * @private
-		 */
 		private var _isInvalid: Boolean = false;
-
-		/**
-		 * @private
-		 */
 		private var _validationQueue: ValidationQueue;
-
-		/**
-		 * @private
-		 */
 		private var _depth: int = -1;
 
 		private var _debugColors: Vector.<uint>;
@@ -274,19 +194,8 @@ package com.catalystapps.gaf.display
 					helperImage = new Image(this._textures.middleCenter);
 				}
 				helperImage.smoothing = this._smoothing;
-				if (this._debugColors)
-				{
-					helperImage.setVertexColor(0, this._debugColors[0]);
-					helperImage.setVertexColor(1, this._debugColors[1]);
-					helperImage.setVertexColor(2, this._debugColors[2]);
-					helperImage.setVertexColor(3, this._debugColors[3]);
-
-					helperImage.setVertexAlpha(0, this._debugAlphas[0]);
-					helperImage.setVertexAlpha(1, this._debugAlphas[1]);
-					helperImage.setVertexAlpha(2, this._debugAlphas[2]);
-					helperImage.setVertexAlpha(3, this._debugAlphas[3]);
-				}
-				else
+				
+				if (!setDebugVertexColors([0,1,2,3]))
 				{
 					helperImage.color = this._color;
 				}
@@ -315,11 +224,7 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.color = this._debugColors[0];
-							helperImage.alpha = this._debugAlphas[0];
-						}
+						setDebugColor(0);
 						helperImage.texture = this._textures.topLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -331,18 +236,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.setVertexColor(0, this._debugColors[0]);
-							helperImage.setVertexColor(1, this._debugColors[1]);
-							helperImage.setVertexColor(2, this._debugColors[0]);
-							helperImage.setVertexColor(3, this._debugColors[1]);
-
-							helperImage.setVertexAlpha(0, this._debugAlphas[0]);
-							helperImage.setVertexAlpha(1, this._debugAlphas[1]);
-							helperImage.setVertexAlpha(2, this._debugAlphas[0]);
-							helperImage.setVertexAlpha(3, this._debugAlphas[1]);
-						}
+						setDebugVertexColors([0,1,0,1]);
 						helperImage.texture = this._textures.topCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -354,11 +248,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.color = this._debugColors[1];
-							helperImage.alpha = this._debugAlphas[1];
-						}
+						setDebugColor(1);
 						helperImage.texture = this._textures.topRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;
@@ -373,18 +263,7 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.setVertexColor(0, this._debugColors[0]);
-							helperImage.setVertexColor(1, this._debugColors[0]);
-							helperImage.setVertexColor(2, this._debugColors[2]);
-							helperImage.setVertexColor(3, this._debugColors[2]);
-
-							helperImage.setVertexAlpha(0, this._debugAlphas[0]);
-							helperImage.setVertexAlpha(1, this._debugAlphas[0]);
-							helperImage.setVertexAlpha(2, this._debugAlphas[2]);
-							helperImage.setVertexAlpha(3, this._debugAlphas[2]);
-						}
+						setDebugVertexColors([0,0,2,2]);
 						helperImage.texture = this._textures.middleLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -396,18 +275,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.setVertexColor(0, this._debugColors[0]);
-							helperImage.setVertexColor(1, this._debugColors[1]);
-							helperImage.setVertexColor(2, this._debugColors[2]);
-							helperImage.setVertexColor(3, this._debugColors[3]);
-
-							helperImage.setVertexAlpha(0, this._debugAlphas[0]);
-							helperImage.setVertexAlpha(1, this._debugAlphas[1]);
-							helperImage.setVertexAlpha(2, this._debugAlphas[2]);
-							helperImage.setVertexAlpha(3, this._debugAlphas[3]);
-						}
+						setDebugVertexColors([0,1,2,3]);
 						helperImage.texture = this._textures.middleCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -419,18 +287,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.setVertexColor(0, this._debugColors[1]);
-							helperImage.setVertexColor(1, this._debugColors[1]);
-							helperImage.setVertexColor(2, this._debugColors[3]);
-							helperImage.setVertexColor(3, this._debugColors[3]);
-
-							helperImage.setVertexAlpha(0, this._debugAlphas[1]);
-							helperImage.setVertexAlpha(1, this._debugAlphas[1]);
-							helperImage.setVertexAlpha(2, this._debugAlphas[3]);
-							helperImage.setVertexAlpha(3, this._debugAlphas[3]);
-						}
+						setDebugVertexColors([1,1,3,3]);
 						helperImage.texture = this._textures.middleRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;
@@ -445,11 +302,7 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.color = this._debugColors[2];
-							helperImage.alpha = this._debugAlphas[2];
-						}
+						setDebugColor(2);
 						helperImage.texture = this._textures.bottomLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -461,18 +314,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.setVertexColor(0, this._debugColors[2]);
-							helperImage.setVertexColor(1, this._debugColors[3]);
-							helperImage.setVertexColor(2, this._debugColors[2]);
-							helperImage.setVertexColor(3, this._debugColors[3]);
-
-							helperImage.setVertexAlpha(0, this._debugAlphas[2]);
-							helperImage.setVertexAlpha(1, this._debugAlphas[3]);
-							helperImage.setVertexAlpha(2, this._debugAlphas[2]);
-							helperImage.setVertexAlpha(3, this._debugAlphas[3]);
-						}
+						setDebugVertexColors([2,3,2,3]);
 						helperImage.texture = this._textures.bottomCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -484,11 +326,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
-						if (this._debugColors)
-						{
-							helperImage.color = this._debugColors[3];
-							helperImage.alpha = this._debugAlphas[3];
-						}
+						setDebugColor(3);
 						helperImage.texture = this._textures.bottomRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;
@@ -502,7 +340,7 @@ package com.catalystapps.gaf.display
 
 			this._propertiesChanged = false;
 			this._layoutChanged = false;
-			this._renderingChanged = false;
+			this._renderingChanged = false; 
 			this._isInvalid = false;
 			this._isValidating = false;
 		}
@@ -520,19 +358,17 @@ package com.catalystapps.gaf.display
 
 		public function invalidateSize(): void
 		{
-			if (parent)
-			{
-//				var tx: Number = this.x;
-//				var ty: Number = this.y;
-				var matrix: Matrix = parent.transformationMatrix;
-				var mtx: Matrix = matrix.clone();
-				mtx.invert();
-				this.transformationMatrix.concat(mtx);
-				this.width *= Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
-				this.height *= Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d);
-//				this.x = tx;
-//				this.y = ty;
-			}
+//			if (parent)
+//			{
+//				var matrix: Matrix = parent.transformationMatrix;
+//				var mtx: Matrix = matrix.clone();
+//				mtx.invert();
+//				this.transformationMatrix.concat(mtx);
+//				this.width *= Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
+//				this.height *= Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d);
+//				this.x = this.transformationMatrix.tx;
+//				this.y = this.transformationMatrix.ty;
+//			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -557,13 +393,39 @@ package com.catalystapps.gaf.display
 			}
 			this._validationQueue.addControl(this, false);
 		}
+		
+		private function setDebugColor(idx: int): void
+		{
+			if (this._debugColors)
+			{
+				helperImage.color = this._debugColors[idx];
+				helperImage.alpha = this._debugAlphas[idx];
+			}
+		}
+
+		private function setDebugVertexColors(indexes: Array): Boolean
+		{
+			if (this._debugColors)
+			{
+				var i: int;
+				for (i = 0; i < indexes.length; i++)
+				{
+					helperImage.setVertexColor(i, this._debugColors[indexes[i]]);
+					helperImage.setVertexAlpha(i, this._debugAlphas[indexes[i]]);
+				}
+			}
+			return this._debugColors;
+		}
 
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-
+		
+		/**
+		 * @private
+		 */
 		override public function set transformationMatrix(matrix: Matrix): void
 		{
 			super.transformationMatrix = matrix;
@@ -576,57 +438,38 @@ package com.catalystapps.gaf.display
 		 */
 		public override function getBounds(targetSpace: DisplayObject, resultRect: Rectangle = null): Rectangle
 		{
-			if (!resultRect)
-			{
-				resultRect = new Rectangle();
-			}
-
-			var minX: Number = Number.MAX_VALUE, maxX: Number = -Number.MAX_VALUE;
-			var minY: Number = Number.MAX_VALUE, maxY: Number = -Number.MAX_VALUE;
+			resultRect ||= new Rectangle();
 
 			if (targetSpace == this) // optimization
 			{
-				minX = this._hitArea.x;
-				minY = this._hitArea.y;
-				maxX = this._hitArea.x + this._hitArea.width;
-				maxY = this._hitArea.y + this._hitArea.height;
+				resultRect.copyFrom(this._hitArea);
 			}
 			else
 			{
+				var minX: Number = Number.MAX_VALUE, maxX: Number = -Number.MAX_VALUE;
+				var minY: Number = Number.MAX_VALUE, maxY: Number = -Number.MAX_VALUE;
+
 				this.getTransformationMatrix(targetSpace, HELPER_MATRIX);
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, this._hitArea.x, this._hitArea.y, HELPER_POINT);
-				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
-				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
-				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
-				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, this._hitArea.x, this._hitArea.y + this._hitArea.height,
-				                           HELPER_POINT);
-				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
-				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
-				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
-				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, this._hitArea.x + this._hitArea.width, this._hitArea.y,
-				                           HELPER_POINT);
-				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
-				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
-				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
-				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, this._hitArea.x + this._hitArea.width,
-				                           this._hitArea.y + this._hitArea.height, HELPER_POINT);
-				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
-				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
-				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
-				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
+				
+				var coordsX: Number;
+				var coordsY: Number;
+				
+				for (var i: int = 0; i < 4; i++)
+				{
+					coordsX = i < 2 ? this._hitArea.x : this._hitArea.right;
+					coordsY = i % 2 < 1 ? this._hitArea.y : this._hitArea.bottom;
+					MatrixUtil.transformCoords(HELPER_MATRIX, coordsX, coordsY, HELPER_POINT);
+					minX = Math.min(minX, HELPER_POINT.x);
+					maxX = Math.max(maxX, HELPER_POINT.x);
+					minY = Math.min(minY, HELPER_POINT.y);
+					maxY = Math.max(maxY, HELPER_POINT.y);
+				}
+				
+				resultRect.x = minX;
+				resultRect.y = minY;
+				resultRect.width = maxX - minX;
+				resultRect.height = maxY - minY;
 			}
-
-			resultRect.x = minX;
-			resultRect.y = minY;
-			resultRect.width = maxX - minX;
-			resultRect.height = maxY - minY;
 
 			return resultRect;
 		}
@@ -701,17 +544,11 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		/**
-		 * @private
-		 */
 		private function flattenHandler(event: Event): void
 		{
 			this.validate();
 		}
 
-		/**
-		 * @private
-		 */
 		private function addedToStageHandler(event: Event): void
 		{
 			this._depth = getDisplayObjectDepthFromStage(this);
@@ -770,7 +607,6 @@ package com.catalystapps.gaf.display
 			this._renderingChanged = true;
 			this.invalidate();
 		}
-
 
 		/**
 		 * The amount to scale the texture. Useful for DPI changes.
@@ -899,11 +735,17 @@ package com.catalystapps.gaf.display
 			return this._depth;
 		}
 		
+		/**
+		 * @private
+		 */
 		public function get zIndex(): uint
 		{
 			return _zIndex;
 		}
-
+		
+		/**
+		 * @private
+		 */
 		public function set zIndex(value: uint): void
 		{
 			_zIndex = value;

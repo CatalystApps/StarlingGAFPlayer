@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.display
 {
+	import starling.display.DisplayObjectContainer;
+	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import starling.display.QuadBatch;
@@ -17,9 +19,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.DebugUtility;
-
-	import feathers.controls.text.TextFieldTextEditor;
-	import feathers.core.ITextEditor;
 
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
@@ -76,7 +75,7 @@ package com.catalystapps.gaf.display
 
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
 
-		private var _alphaLess1: Boolean;
+		private var _alphaLessMax: Boolean;
 		private var _masked: Boolean;
 		private var _hasFilter: Boolean;
 		private var _useClipping: Boolean;
@@ -86,6 +85,7 @@ package com.catalystapps.gaf.display
 		private var _lastFrameTime: Number = 0;
 		private var _frameDuration: Number;
 		private var _reverse: Boolean;
+		private var _reset: Boolean;
 		private var _nextFrame: int;
 		private var _startFrame: int;
 		private var _finalFrame: int;
@@ -277,40 +277,84 @@ package com.catalystapps.gaf.display
 		}
 
 		/**
-		 * Moves the playhead in the timeline of the movie clip.
+		 * Moves the playhead in the timeline of the movie clip <code>play()</code> or <code>play(false)</code>.
+		 * Or moves the playhead in the timeline of the movie clip and all child movie clips <code>play(true)</code>.
+		 * Use <code>play(true)</code> in case when animation contain nested timelines for correct playback right after
+		 * initialization (like you see in the original swf file).
+		 * @param applyToAllChildren Specifies whether playhead should be moved in the timeline of the movie clip
+		 * (<code>false</code>) or also in the timelines of all child movie clips (<code>true</code>).
 		 */
-		public function play(): void
+		public function play(applyToAllChildren: Boolean = false): void
 		{
 			if (this._totalFrames > 1)
 			{
 				this._inPlay = true;
 			}
 			
-			var mc: GAFMovieClip;
-			for (var i: int = 0; i < this.numChildren - 1; i++)
+			if (applyToAllChildren)
 			{
-				mc = this.getChildAt(i) as GAFMovieClip;
-				if (mc)
+				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
+				if (frameConfig.actions)
 				{
-					mc.play();
+					var action: CFrameAction;
+					for (var a: int = 0; a < frameConfig.actions.length; a++)
+					{
+						action = frameConfig.actions[a];
+						if (action.type == CFrameAction.STOP
+						|| (action.type == CFrameAction.GOTO_AND_STOP
+						&& int(action.params[0]) == this.currentFrame))
+						{
+							this._inPlay = false;
+							return;
+						}
+					}
+				}
+				var child: DisplayObjectContainer;
+				for (var i: int = 0; i < this.numChildren; i++)
+				{
+					child = this.getChildAt(i) as DisplayObjectContainer;
+					if (child is GAFMovieClip)
+					{
+						(child as GAFMovieClip).play(true);
+					}
+					else if (child is GAFPixelMaskDisplayObject
+						 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+					{
+						((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).play(true);
+					}
 				}
 			}
+			
+			this._reset = false;
 		}
 
 		/**
-		 * Stops the playhead in the movie clip.
+		 * Stops the playhead in the movie clip <code>stop()</code> or <code>stop(false)</code>.
+		 * Or stops the playhead in the movie clip and in all child movie clips <code>stop(true)</code>.
+		 * Use <code>stop(true)</code> in case when animation contain nested timelines for full stop the
+		 * playhead in the movie clip and in all child movie clips.
+		 * @param applyToAllChildren Specifies whether playhead should be stopped in the timeline of the
+		 * movie clip (<code>false</code>) or also in the timelines of all child movie clips (<code>true</code>)
 		 */
-		public function stop(): void
+		public function stop(applyToAllChildren: Boolean = false): void
 		{
 			this._inPlay = false;
 			
-			var mc: GAFMovieClip;
-			for (var i: int = 0; i < this.numChildren - 1; i++)
+			if (applyToAllChildren)
 			{
-				mc = this.getChildAt(i) as GAFMovieClip;
-				if (mc)
+				var child: DisplayObjectContainer;
+				for (var i: int = 0; i < this.numChildren; i++)
 				{
-					mc.stop();
+					child = this.getChildAt(i) as DisplayObjectContainer;
+					if (child is GAFMovieClip)
+					{
+						(child as GAFMovieClip).stop(true);
+					}
+					else if (child is GAFPixelMaskDisplayObject
+						 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+					{
+						((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).stop(true);
+					}
 				}
 			}
 		}
@@ -324,8 +368,6 @@ package com.catalystapps.gaf.display
 		{
 			this.checkAndSetCurrentFrame(frame);
 
-			this.draw();
-
 			this.stop();
 		}
 
@@ -337,8 +379,6 @@ package com.catalystapps.gaf.display
 		public function gotoAndPlay(frame: *): void
 		{
 			this.checkAndSetCurrentFrame(frame);
-
-			this.draw();
 
 			this.play();
 		}
@@ -362,6 +402,8 @@ package com.catalystapps.gaf.display
 					isSkipping = (i + 1) != nbFrames;
 					
 					changeCurrentFrame();
+					
+					runActions();
 
 					if (!isSkipping)
 					{
@@ -390,6 +432,51 @@ package com.catalystapps.gaf.display
 				}
 			}
 		}
+
+		private function runActions(): void
+		{
+			var actions: Vector.<CFrameAction> = this.config.animationConfigFrames.frames[this._currentFrame].actions;
+			if (actions)
+			{
+				var action: CFrameAction;
+				for (var a: int = 0; a < actions.length; a++)
+				{
+					action = actions[a];
+					switch (action.type)
+					{
+						case CFrameAction.STOP:
+							this.stop();
+							break;
+						case CFrameAction.PLAY:
+							this.play();
+							break;
+						case CFrameAction.GOTO_AND_STOP:
+							this.gotoAndStop(action.params[0]);
+							break;
+						case CFrameAction.GOTO_AND_PLAY:
+							this.gotoAndPlay(action.params[0]);
+							break;
+						case CFrameAction.DISPATCH_EVENT:
+							var type: String = action.params[0];
+							if (this.hasEventListener(type))
+							{
+								switch (action.params.length)
+								{
+									case 4:
+										var data: Object = action.params[3];
+									case 3:
+									// cancelable param is not used
+									case 2:
+										var bubbles: Boolean = Boolean(action.params[1]);
+										break;
+								}
+								this.dispatchEventWith(type, bubbles, data);
+							}
+							break;
+					}
+				}
+			}
+		}
 		
 		/** Shows bounds of a whole animation with a pivot point.
 		 * Used for debug purposes.
@@ -410,7 +497,7 @@ package com.catalystapps.gaf.display
 		//
 		//  PRIVATE METHODS
 		//
-		//--------------------------------------------------------------------------
+		// --------------------------------------------------------------------------
 
 		private function checkAndSetCurrentFrame(frame: *): void
 		{
@@ -437,6 +524,10 @@ package com.catalystapps.gaf.display
 			{
 				this.playingSequence = null;
 			}
+			
+			runActions();
+			
+			draw();
 		}
 
 		private function clearDisplayList(): void
@@ -449,12 +540,12 @@ package com.catalystapps.gaf.display
 			}
 		}
 		
-		private function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLess1: Boolean, masked: Boolean, hasFilter: Boolean): void
+		private function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLessMax: Boolean, masked: Boolean, hasFilter: Boolean): void
 		{
 			var changed: Boolean;
-			if (mc._alphaLess1 != alphaLess1)
+			if (mc._alphaLessMax != alphaLessMax)
 			{
-				mc._alphaLess1 = alphaLess1;
+				mc._alphaLessMax = alphaLessMax;
 				changed = true;
 			}
 			if (mc._masked != masked)
@@ -496,7 +587,6 @@ package com.catalystapps.gaf.display
 					displayObject.alpha = 0;
 				}
 
-				
 				for each (maskedDisplayObject in this.maskedImagesDictionary)
 				{
 					for (i = (maskedDisplayObject.numChildren - 1); i >= 0; i--)
@@ -527,6 +617,17 @@ package com.catalystapps.gaf.display
 
 					if (displayObject)
 					{
+						if (displayObject is GAFMovieClip)
+						{
+							if (instance.alpha < 0)
+							{
+								(displayObject as GAFMovieClip).reset();
+							}
+							else if ((displayObject as GAFMovieClip)._reset)
+							{
+								(displayObject as GAFMovieClip).play(true);
+							}
+						}
 						displayObject.alpha = instance.alpha;
 						displayObject.visible = true;
 
@@ -535,7 +636,7 @@ package com.catalystapps.gaf.display
 							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
 								updateAlphaMaskedAndHasFilter(
-												displayObject as GAFMovieClip, instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLess1,
+												displayObject as GAFMovieClip, instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
 												true, (instance.filter != null) || this._hasFilter);
 							}
 
@@ -595,7 +696,7 @@ package com.catalystapps.gaf.display
 							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
 								updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
-															  instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLess1,
+															  instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
 															  this._masked,
 															  (instance.filter != null) || this._hasFilter);
 							}
@@ -617,7 +718,7 @@ package com.catalystapps.gaf.display
 						if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
 						{
 							var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
-									instance, this._alphaLess1, this._masked, this._hasFilter);
+									instance, this._alphaLessMax, this._masked, this._hasFilter);
 							(displayObject as IGAFDebug).debugColors = colors;
 						}
 					}
@@ -676,6 +777,27 @@ package com.catalystapps.gaf.display
 				if (sequence)
 				{
 					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
+				}
+			}
+		}
+
+		private function reset(): void
+		{
+			this.gotoAndStop(1);
+			this._reset = true;
+			
+			var child: DisplayObjectContainer;
+			for (var i: int = 0; i < this.numChildren; i++)
+			{
+				child = this.getChildAt(i) as DisplayObjectContainer;
+				if (child is GAFMovieClip)
+				{
+					(child as GAFMovieClip).reset();
+				}
+				else if (child is GAFPixelMaskDisplayObject
+					 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+				{
+					((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).reset();
 				}
 			}
 		}
@@ -763,31 +885,10 @@ package com.catalystapps.gaf.display
 						break;
 					case CAnimationObject.TYPE_TEXTFIELD:
 						var tfObj: CTextFieldObject = this.config.textFields.textFieldObjectsDictionary[animationObjectConfig.regionID];
-						var tf: GAFTextField = new GAFTextField(tfObj.width, tfObj.height);
-						tf.text = tfObj.text;
-						tf.restrict = tfObj.restrict;
-						tf.isEditable = tfObj.editable;
-						tf.displayAsPassword = tfObj.displayAsPassword;
-						tf.maxChars = tfObj.maxChars;
-
-						tf.textEditorProperties.textFormat = tfObj.textFormat;
-						tf.textEditorProperties.embedFonts = tfObj.embedFonts;
-						tf.textEditorProperties.multiline = tfObj.multiline;
-						tf.textEditorProperties.wordWrap = tfObj.wordWrap;
-						tf.textEditorFactory = function (): ITextEditor
-						{
-							return new TextFieldTextEditor();
-						};
-						displayObject = tf;
+						displayObject = new GAFTextField(tfObj);
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
-						var mc: GAFMovieClip = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this.config.assetID, animationObjectConfig.regionID));
-						if (!mc.inPlay)
-						{
-							mc.play();
-						}
-
-						displayObject = mc;
+						displayObject = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this.config.assetID, animationObjectConfig.regionID));
 						break;
 				}
 
@@ -1070,6 +1171,21 @@ package com.catalystapps.gaf.display
 			{
 				this._frameDuration = 1 / value;
 			}
+
+			var child: DisplayObjectContainer;
+			for (var i: int = 0; i < this.numChildren; i++)
+			{
+				child = this.getChildAt(i) as DisplayObjectContainer;
+				if (child is GAFMovieClip)
+				{
+					(child as GAFMovieClip).fps = value;
+				}
+				else if (child is GAFPixelMaskDisplayObject
+					 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+				{
+					((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).fps = value;
+				}
+			}
 		}
 
 		public function get reverse(): Boolean
@@ -1084,13 +1200,18 @@ package com.catalystapps.gaf.display
 		{
 			_reverse = value;
 			
-			var mc: GAFMovieClip;
-			for (var i: int = 0; i < this.numChildren - 1; i++)
+			var child: DisplayObjectContainer;
+			for (var i: int = 0; i < this.numChildren; i++)
 			{
-				mc = this.getChildAt(i) as GAFMovieClip;
-				if (mc)
+				child = this.getChildAt(i) as DisplayObjectContainer;
+				if (child is GAFMovieClip)
 				{
-					mc.reverse = value;
+					(child as GAFMovieClip).reverse = value;
+				}
+				else if (child is GAFPixelMaskDisplayObject
+					 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+				{
+					((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).reverse = value;
 				}
 			}
 		}

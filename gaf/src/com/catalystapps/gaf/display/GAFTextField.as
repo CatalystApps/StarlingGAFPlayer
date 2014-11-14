@@ -3,6 +3,10 @@
  */
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.core.gaf_internal;
+	import com.catalystapps.gaf.data.GAF;
+	import feathers.core.ITextEditor;
+	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import feathers.controls.TextInput;
@@ -39,22 +43,38 @@ package com.catalystapps.gaf.display
 
 		/**
 		 * GAFTextField represents text field that is part of the <code>GAFMovieClip</code>
-		 * @param width
-		 * @param height
+		 * @param config
 		 */
-		public function GAFTextField(width: Number = NaN, height: Number = NaN)
+		public function GAFTextField(config: CTextFieldObject)
 		{
 			super();
 
-			if (!isNaN(width))
+			if (!isNaN(config.width))
 			{
-				this.width = width;
+				this.width = config.width;
 			}
 
-			if (!isNaN(height))
+			if (!isNaN(config.height))
 			{
-				this.height = height;
+				this.height = config.height;
 			}
+			
+			this.text = config.text;
+			this.restrict = config.restrict;
+			this.isEditable = config.editable;
+			this.displayAsPassword = config.displayAsPassword;
+			this.maxChars = config.maxChars;
+
+			this.textEditorProperties.textFormat = config.textFormat;
+			this.textEditorProperties.embedFonts = GAF.gaf_internal::useDeviceFonts ? false : config.embedFonts;
+			this.textEditorProperties.multiline = config.multiline;
+			this.textEditorProperties.wordWrap = config.wordWrap;
+			this.textEditorFactory = function (): ITextEditor
+			{
+				return new TextFieldTextEditor();
+			};
+			
+			this.invalidateSize();
 		}
 
 		//--------------------------------------------------------------------------
