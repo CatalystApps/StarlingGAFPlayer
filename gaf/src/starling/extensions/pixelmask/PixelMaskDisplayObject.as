@@ -20,7 +20,7 @@ package starling.extensions.pixelmask
 		private static const MASK_MODE_NORMAL:String = "mask";
 		private static const MASK_MODE_INVERTED:String = "maskinverted";
 
-		protected var _mask:DisplayObject;
+		private var _mask:DisplayObject;
 		private var _renderTexture:RenderTexture;
 		private var _maskRenderTexture:RenderTexture;
 
