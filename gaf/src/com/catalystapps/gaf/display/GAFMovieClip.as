@@ -407,12 +407,12 @@ package com.catalystapps.gaf.display
 					//here we skip the drawing of all frames to be played right now, but the last one
 					for (var i: int = 0; i < framesToPlay; ++i)
 					{
-						changeCurrentFrame((i + 1) != framesToPlay);
+						this.changeCurrentFrame((i + 1) != framesToPlay);
 					}
 				}
 				else
 				{
-					changeCurrentFrame(false);
+					this.changeCurrentFrame(false);
 				}
 			}
 		}
@@ -535,9 +535,9 @@ package com.catalystapps.gaf.display
 				this.playingSequence = null;
 			}
 
-			runActions();
+			this.runActions();
 
-			draw();
+			this.draw();
 		}
 
 		private function clearDisplayList(): void
@@ -645,9 +645,10 @@ package com.catalystapps.gaf.display
 						{
 							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
-								updateAlphaMaskedAndHasFilter(
-												displayObject as GAFMovieClip, instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
-												true, (instance.filter != null) || this._hasFilter);
+								this.updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
+																   instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
+																   true,
+																   (instance.filter != null) || this._hasFilter);
 							}
 
 							var maskObject: IGAFDisplayObject = this.masksDictionary[instance.maskID];
@@ -705,10 +706,10 @@ package com.catalystapps.gaf.display
 						{
 							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
 							{
-								updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
-															  instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
-															  this._masked,
-															  (instance.filter != null) || this._hasFilter);
+								this.updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
+																   instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
+																   this._masked,
+																   (instance.filter != null) || this._hasFilter);
 							}
 
 							mustReorder ||= (displayObject.zIndex != zIndex);
@@ -738,7 +739,7 @@ package com.catalystapps.gaf.display
 
 			if (mustReorder)
 			{
-				sortChildren(sortDisplayObjects);
+				this.sortChildren(sortDisplayObjects);
 			}
 
 			for each (maskedDisplayObject in this.maskedImagesDictionary)
@@ -769,10 +770,10 @@ package com.catalystapps.gaf.display
 						break;
 				}
 
-				addChild(debugView);
+				this.addChild(debugView);
 			}
 
-			checkSequence();
+			this.checkSequence();
 		}
 
 		private function reset(): void
@@ -1029,6 +1030,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		/** @private */
 		override public function render(support: RenderSupport, parentAlpha: Number): void
 		{
 			try
@@ -1042,7 +1044,7 @@ package com.catalystapps.gaf.display
 				{
 					if (this.hasEventListener(ErrorEvent.ERROR))
 					{
-						dispatchEventWith(ErrorEvent.ERROR, true, error.message);
+						this.dispatchEventWith(ErrorEvent.ERROR, true, error.message);
 					}
 					else
 					{
@@ -1086,7 +1088,7 @@ package com.catalystapps.gaf.display
 				}
 			}
 
-			runActions();
+			this.runActions();
 
 			if (!isSkipping)
 			{
@@ -1095,7 +1097,7 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				checkSequence();
+				this.checkSequence();
 			}
 		}
 
