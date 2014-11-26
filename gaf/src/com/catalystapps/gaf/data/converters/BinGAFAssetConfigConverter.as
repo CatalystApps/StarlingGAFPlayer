@@ -216,7 +216,7 @@ package com.catalystapps.gaf.data.converters
 
 		private function checkForMissedRegions(timelineConfig: GAFTimelineConfig): void
 		{
-			if (timelineConfig.textureAtlas.contentScaleFactor.elements)
+			if (timelineConfig.textureAtlas && timelineConfig.textureAtlas.contentScaleFactor.elements)
 			{
 				for each (var ao: CAnimationObject in timelineConfig.animationObjects.animationObjectsDictionary)
 				{

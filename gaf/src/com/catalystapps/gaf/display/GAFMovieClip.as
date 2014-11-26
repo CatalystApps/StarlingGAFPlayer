@@ -1,5 +1,8 @@
 package com.catalystapps.gaf.display
 {
+	import flash.events.ErrorEvent;
+	import flash.errors.IllegalOperationError;
+	import starling.core.RenderSupport;
 	import starling.display.DisplayObjectContainer;
 	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.core.gaf_internal;
@@ -72,15 +75,16 @@ package com.catalystapps.gaf.display
 
 		private var _inPlay: Boolean;
 		private var _loop: Boolean = true;
+		private var _skipFrames: Boolean = true;
 
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
 
-		private var _alphaLessMax: Boolean;
 		private var _masked: Boolean;
 		private var _hasFilter: Boolean;
 		private var _useClipping: Boolean;
+		private var _alphaLessMax: Boolean;
 		
-		private var _elapsedTime: Number = 0;
+		private var _currentTime: Number = 0;
 		// Hold the current time spent animating
 		private var _lastFrameTime: Number = 0;
 		private var _frameDuration: Number;
@@ -291,7 +295,8 @@ package com.catalystapps.gaf.display
 				this._inPlay = true;
 			}
 			
-			if (applyToAllChildren)
+			if (applyToAllChildren
+			&& this.config.animationConfigFrames.frames.length > 0)
 			{
 				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
 				if (frameConfig.actions)
@@ -340,7 +345,8 @@ package com.catalystapps.gaf.display
 		{
 			this._inPlay = false;
 			
-			if (applyToAllChildren)
+			if (applyToAllChildren
+			&& this.config.animationConfigFrames.frames.length > 0)
 			{
 				var child: DisplayObjectContainer;
 				for (var i: int = 0; i < this.numChildren; i++)
@@ -387,54 +393,57 @@ package com.catalystapps.gaf.display
 		 * Advances all objects by a certain time (in seconds).
 		 * @see starling.animation.IAnimatable
 		 */
-		public function advanceTime(time: Number): void
+		public function advanceTime(passedTime: Number): void
 		{
 			if (_inPlay && _frameDuration != Number.POSITIVE_INFINITY)
 			{
-				this._elapsedTime += time;
+				this._currentTime += passedTime;
 
-				var nbFrames: int = (this._elapsedTime - this._lastFrameTime) / _frameDuration;
-				var isSkipping: Boolean;
-				var sequence: CAnimationSequence;
-
-				for (var i: int = 0; i < nbFrames; ++i)
+				var framesToPlay: int = (this._currentTime - this._lastFrameTime) / _frameDuration;
+				trace("framesToPlay", framesToPlay);
+				if (skipFrames)
 				{
-					isSkipping = (i + 1) != nbFrames;
-					
-					changeCurrentFrame();
-					
-					runActions();
+					//here we skip the drawing of all frames to be played right now, but the last one
+					for (var i: int = 0; i < framesToPlay; ++i)
+					{
+						changeCurrentFrame((i + 1) != framesToPlay);
+					}
+				}
+				else
+				{
+					changeCurrentFrame(false);
+				}
+			}
+		}
 
-					if (!isSkipping)
-					{
-						// Draw will trigger events if any
-						this.draw();
-					}
-					else
-					{
-						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
-						{
-							sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
-							if (sequence)
-							{
-								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
-							}
-						}
-						if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END))
-						{
-							sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
-							if (sequence)
-							{
-								this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
-							}
-						}
-					}
+		private function checkSequence(): void
+		{
+			var sequence: CAnimationSequence;
+			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
+			{
+				sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
+				if (sequence)
+				{
+					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
+				}
+			}
+			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END))
+			{
+				sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
+				if (sequence)
+				{
+					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
 				}
 			}
 		}
 
 		private function runActions(): void
 		{
+			if (this.config.animationConfigFrames.frames.length == 0)
+			{
+				return;
+			}
+			
 			var actions: Vector.<CFrameAction> = this.config.animationConfigFrames.frames[this._currentFrame].actions;
 			if (actions)
 			{
@@ -762,23 +771,7 @@ package com.catalystapps.gaf.display
 				addChild(debugView);
 			}
 			
-			var sequence: CAnimationSequence;
-			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
-			{
-				sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
-				if (sequence)
-				{
-					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
-				}
-			}
-			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END))
-			{
-				sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
-				if (sequence)
-				{
-					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
-				}
-			}
+			checkSequence();
 		}
 
 		private function reset(): void
@@ -1019,13 +1012,40 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		override public function render(support: RenderSupport, parentAlpha: Number): void
+		{
+			try
+			{
+				super.render(support, parentAlpha);
+			}
+			catch(error: Error)
+			{
+				if (error is IllegalOperationError
+				&& (error.message as String).indexOf("not possible to stack filters") != -1)
+				{
+					if (this.hasEventListener(ErrorEvent.ERROR))
+					{
+						dispatchEventWith(ErrorEvent.ERROR, true, error.message);
+					}
+					else
+					{
+						throw error;
+					}
+				}
+				else
+				{
+					throw error;
+				}
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
 
-		private function changeCurrentFrame(): void
+		private function changeCurrentFrame(isSkipping: Boolean): void
 		{
 			this._nextFrame = this._currentFrame + (this._reverse ? -1 : 1);
 			this._startFrame = (this.playingSequence ? this.playingSequence.startFrameNo : 1) - 1;
@@ -1047,6 +1067,18 @@ package com.catalystapps.gaf.display
 					this._currentFrame = this._reverse ? this._finalFrame : this._startFrame;
 					this._lastFrameTime += this._frameDuration;
 				}
+			}
+			
+			runActions();
+	
+			if (!isSkipping)
+			{
+				// Draw will trigger events if any
+				this.draw();
+			}
+			else
+			{
+				checkSequence();
 			}
 		}
 
@@ -1232,6 +1264,21 @@ package com.catalystapps.gaf.display
 		public function set zIndex(value: uint): void
 		{
 			_zIndex = value;
+		}
+
+		public function get skipFrames(): Boolean
+		{
+			return _skipFrames;
+		}
+
+		/**
+		 * Indicates whether GAFMovieClip instance should skip frames when application fps drops down or play every frame not depending on application fps.
+		 * Value false will force GAFMovieClip to play each frame not depending on application fps (the same behavior as in regular Flash Movie Clip).
+		 * Value true will force GAFMovieClip to play animation "in time". And when application fps drops down it will start skipping frames (default behavior).
+		 */
+		public function set skipFrames(value: Boolean): void
+		{
+			_skipFrames = value;
 		}
 	}
 }
