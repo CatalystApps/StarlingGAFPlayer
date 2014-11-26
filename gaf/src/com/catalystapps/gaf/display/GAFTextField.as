@@ -23,6 +23,8 @@ package com.catalystapps.gaf.display
 	public class GAFTextField extends TextInput implements IGAFDebug, IGAFDisplayObject
 	{
 		private var _zIndex: uint;
+
+		private var _pivotMatrix: Matrix;
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
@@ -49,6 +51,10 @@ package com.catalystapps.gaf.display
 		{
 			super();
 
+			_pivotMatrix = new Matrix();
+			_pivotMatrix.tx = config.pivotPoint.x;
+			_pivotMatrix.ty = config.pivotPoint.y;
+
 			if (!isNaN(config.width))
 			{
 				this.width = config.width;
@@ -58,7 +64,7 @@ package com.catalystapps.gaf.display
 			{
 				this.height = config.height;
 			}
-			
+
 			this.text = config.text;
 			this.restrict = config.restrict;
 			this.isEditable = config.editable;
@@ -73,7 +79,7 @@ package com.catalystapps.gaf.display
 			{
 				return new TextFieldTextEditor();
 			};
-			
+
 			this.invalidateSize();
 		}
 
@@ -188,6 +194,11 @@ package com.catalystapps.gaf.display
 		public function set zIndex(value: uint): void
 		{
 			_zIndex = value;
+		}
+
+		public function get pivotMatrix(): Matrix
+		{
+			return _pivotMatrix;
 		}
 		//--------------------------------------------------------------------------
 		//

@@ -65,15 +65,15 @@ package com.catalystapps.gaf.data.converters
 		private static const FILTER_BLUR: uint = 1;
 		private static const FILTER_GLOW: uint = 2;
 		private static const FILTER_COLOR_MATRIX: uint = 6;
-		
+
 		private var _assetID: String;
 		private var _bytes: ByteArray;
 		private var _defaultScale: Number;
 		private var _defaultContentScaleFactor: Number;
 		private var _config: GAFAssetConfig;
-		
+
 		private var time: uint;
-		
+
 
 		// --------------------------------------------------------------------------
 		//
@@ -87,13 +87,13 @@ package com.catalystapps.gaf.data.converters
 			_bytes = bytes;
 			_assetID = assetID;
 		}
-		
+
 		public function convert(): void
 		{
 			time = uint.MAX_VALUE;
 			checkTimeout(parseStart);
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
@@ -109,7 +109,7 @@ package com.catalystapps.gaf.data.converters
 			_config.versionMajor = _bytes.readByte();
 			_config.versionMinor = _bytes.readByte();
 			_config.fileLength = _bytes.readUnsignedInt();
-			
+
 			if (_config.versionMajor > GAFAssetConfig.MAX_VERSION)
 			{
 				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, WarningConstants.UNSUPPORTED_FILE +
@@ -123,10 +123,10 @@ package com.catalystapps.gaf.data.converters
 					decompressConfig();
 					break;
 			}
-			
+
 			checkTimeout(parseContinue);
 		}
-		
+
 		private function decompressConfig(): void
 		{
 			var uncompressedBA: ByteArray = new ByteArray();
@@ -138,7 +138,7 @@ package com.catalystapps.gaf.data.converters
 
 			_bytes = uncompressedBA;
 		}
-		
+
 		/**
 		 * runs <b>nextFunction</b> with <b>args</b> after a small delay (in the next stack)
 		 */
@@ -196,9 +196,9 @@ package com.catalystapps.gaf.data.converters
 				{
 					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
 				}
-				
+
 				_config.timelines[0].stageConfig = _config.stageConfig;
-				
+
 				checkForMissedRegions(timelineConfig);
 			}
 			else
@@ -206,11 +206,11 @@ package com.catalystapps.gaf.data.converters
 				for each (timelineConfig in _config.timelines)
 				{
 					timelineConfig.stageConfig = _config.stageConfig;
-					
+
 					checkForMissedRegions(timelineConfig);
 				}
 			}
-			
+
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 
@@ -308,7 +308,7 @@ package com.catalystapps.gaf.data.converters
 			timelineConfig.framesCount = tagContent.readUnsignedInt();
 			timelineConfig.bounds = new Rectangle(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
 			timelineConfig.pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
-			
+
 			var hasLinkage: Boolean = tagContent.readBoolean();
 			if (hasLinkage)
 			{
@@ -321,7 +321,7 @@ package com.catalystapps.gaf.data.converters
 			nestedTags.endian = Endian.LITTLE_ENDIAN;
 			nestedTags.writeBytes(tagContent, tagContent.position, tagContent.bytesAvailable);
 			nestedTags.position = 0;
-			
+
 			parseTags(nestedTags, onParseTimelineComplete, timelineConfig);
 		}
 
@@ -367,24 +367,24 @@ package com.catalystapps.gaf.data.converters
 				timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
 			}
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get config(): GAFAssetConfig
 		{
 			return _config;
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  STATIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private static function readStageConfig(tagContent: ByteArray, config: GAFAssetConfig): void
 		{
 			var stageConfig: CStage = new CStage();
@@ -422,7 +422,7 @@ package com.catalystapps.gaf.data.converters
 
 			var filterLength: int;
 			var filterType: uint;
-			
+
 			var blurFilter: CBlurFilterData;
 			var blurFilters: Object = {};
 
@@ -468,7 +468,7 @@ package com.catalystapps.gaf.data.converters
 					if (hasChangesInDisplayList)
 					{
 						statesCount = tagContent.readUnsignedInt();
-						
+
 						for (var j: uint = 0; j < statesCount; j++)
 						{
 							hasColorTransform = tagContent.readBoolean();
@@ -574,7 +574,7 @@ package com.catalystapps.gaf.data.converters
 						{
 							action = new CFrameAction();
 							action.type = tagContent.readUnsignedInt();
-							
+
 							if (action.type > 1) // if not stop(); or play(); and has params
 							{
 								var paramsCount: int = tagContent.readUnsignedInt();
@@ -583,7 +583,7 @@ package com.catalystapps.gaf.data.converters
 									action.params.push(tagContent.readUTF());
 								}
 							}
-							
+
 							currentFrame.addAction(action);
 						}
 					}
@@ -597,7 +597,7 @@ package com.catalystapps.gaf.data.converters
 				{
 					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 				}
-				
+
 				for each (currentFrame in animationConfigFrames.frames)
 				{
 					for each (instance in currentFrame.instances)
@@ -899,6 +899,8 @@ package com.catalystapps.gaf.data.converters
 		private static function readTextFields(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
+			var pivotX: Number;
+			var pivotY: Number;
 			var textFieldID: int;
 			var width: Number;
 			var height: Number;
@@ -917,6 +919,8 @@ package com.catalystapps.gaf.data.converters
 			for (var i: uint = 0; i < length; i++)
 			{
 				textFieldID = tagContent.readUnsignedInt();
+				pivotX = tagContent.readFloat();
+				pivotY = tagContent.readFloat();
 				width = tagContent.readFloat();
 				height = tagContent.readFloat();
 
@@ -1001,6 +1005,8 @@ package com.catalystapps.gaf.data.converters
 
 				var textFieldObject: CTextFieldObject = new CTextFieldObject(textFieldID.toString(), text, textFormat,
 						width, height);
+				textFieldObject.pivotPoint.x = -pivotX;
+				textFieldObject.pivotPoint.y = -pivotY;
 				textFieldObject.embedFonts = embedFonts;
 				textFieldObject.multiline = multiline;
 				textFieldObject.wordWrap = wordWrap;

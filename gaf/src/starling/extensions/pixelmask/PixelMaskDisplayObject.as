@@ -12,26 +12,23 @@ package starling.extensions.pixelmask
 	import starling.events.Event;
 	import starling.textures.RenderTexture;
 
-	/**
-	 * @private
-	 */
 	public class PixelMaskDisplayObject extends DisplayObjectContainer
 	{
-		private static const MASK_MODE_NORMAL:String = "mask";
-		private static const MASK_MODE_INVERTED:String = "maskinverted";
+		protected static const MASK_MODE_NORMAL:String = "mask";
+		protected static const MASK_MODE_INVERTED:String = "maskinverted";
 
-		private var _mask:DisplayObject;
-		private var _renderTexture:RenderTexture;
-		private var _maskRenderTexture:RenderTexture;
+		protected var _mask:DisplayObject;
+		protected var _renderTexture:RenderTexture;
+		protected var _maskRenderTexture:RenderTexture;
 
-		private var _image:Image;
-		private var _maskImage:Image;
+		protected var _image:Image;
+		protected var _maskImage:Image;
 
-		private var _superRenderFlag:Boolean = false;
-		private var _inverted:Boolean = false;
-		private var _scaleFactor:Number;
-		private var _isAnimated:Boolean = true;
-		private var _maskRendered:Boolean = false;
+		protected var _superRenderFlag:Boolean = false;
+		protected var _inverted:Boolean = false;
+		protected var _scaleFactor:Number;
+		protected var _isAnimated:Boolean = true;
+		protected var _maskRendered:Boolean = false;
 
 		public function PixelMaskDisplayObject(scaleFactor:Number=-1, isAnimated:Boolean=true)
 		{
@@ -46,7 +43,7 @@ package starling.extensions.pixelmask
 			// Handle lost context. By using the conventional event, we can make a weak listener.
 			// This avoids memory leaks when people forget to call "dispose" on the object.
 			Starling.current.stage3D.addEventListener(Event.CONTEXT3D_CREATE,
-				onContextCreated, false, 0, true);
+					onContextCreated, false, 0, true);
 		}
 
 		public function get isAnimated():Boolean
@@ -103,12 +100,7 @@ package starling.extensions.pixelmask
 			}
 		}
 
-		public function get mask(): DisplayObject
-		{
-			return _mask;
-		}
-
-		private function clearRenderTextures() : void
+		protected function clearRenderTextures() : void
 		{
 			// clean up old render textures and images
 			if (_maskRenderTexture) {
@@ -128,7 +120,7 @@ package starling.extensions.pixelmask
 			}
 		}
 
-		private function refreshRenderTextures(e:Event=null) : void
+		protected function refreshRenderTextures(e:Event=null) : void
 		{
 			if (_mask) {
 
@@ -171,14 +163,14 @@ package starling.extensions.pixelmask
 			}
 		}
 
-		private static var _a:Number;
-		private static var _b:Number;
-		private static var _c:Number;
-		private static var _d:Number;
-		private static var _tx:Number;
-		private static var _ty:Number;
+		protected static var _a:Number;
+		protected static var _b:Number;
+		protected static var _c:Number;
+		protected static var _d:Number;
+		protected static var _tx:Number;
+		protected static var _ty:Number;
 
-		private function drawRenderTextures(object:DisplayObject=null, matrix:Matrix=null, alpha:Number=1.0) : void
+		protected function drawRenderTextures(object:DisplayObject=null, matrix:Matrix=null, alpha:Number=1.0) : void
 		{
 			_a = this.transformationMatrix.a;
 			_b = this.transformationMatrix.b;

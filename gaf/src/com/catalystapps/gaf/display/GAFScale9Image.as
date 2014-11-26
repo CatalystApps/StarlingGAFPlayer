@@ -8,7 +8,7 @@
 package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.utils.MathUtility;
-	import starling.textures.Texture;
+
 	import feathers.core.IValidating;
 	import feathers.core.ValidationQueue;
 	import feathers.utils.display.getDisplayObjectDepthFromStage;
@@ -24,8 +24,29 @@ package com.catalystapps.gaf.display
 	import starling.display.QuadBatch;
 	import starling.display.Sprite;
 	import starling.events.Event;
+	import starling.textures.Texture;
 	import starling.textures.TextureSmoothing;
 	import starling.utils.MatrixUtil;
+
+	[Exclude(name="numChildren",kind="property")]
+	[Exclude(name="isFlattened",kind="property")]
+	[Exclude(name="addChild",kind="method")]
+	[Exclude(name="addChildAt",kind="method")]
+	[Exclude(name="broadcastEvent",kind="method")]
+	[Exclude(name="broadcastEventWith",kind="method")]
+	[Exclude(name="contains",kind="method")]
+	[Exclude(name="getChildAt",kind="method")]
+	[Exclude(name="getChildByName",kind="method")]
+	[Exclude(name="getChildIndex",kind="method")]
+	[Exclude(name="removeChild",kind="method")]
+	[Exclude(name="removeChildAt",kind="method")]
+	[Exclude(name="removeChildren",kind="method")]
+	[Exclude(name="setChildIndex",kind="method")]
+	[Exclude(name="sortChildren",kind="method")]
+	[Exclude(name="swapChildren",kind="method")]
+	[Exclude(name="swapChildrenAt",kind="method")]
+	[Exclude(name="flatten",kind="method")]
+	[Exclude(name="unflatten",kind="method")]
 
 	/**
 	 * @private
@@ -169,15 +190,18 @@ package com.catalystapps.gaf.display
 		 */
 		public function validate(): void
 		{
-			if (!this._validationQueue || !this.stage || !this._isInvalid)
+			if(!this._isInvalid)
 			{
 				return;
 			}
-			if (this._isValidating)
+			if(this._isValidating)
 			{
-				//we were already validating, and something else told us to
-				//validate. that's bad.
-				this._validationQueue.addControl(this, true);
+				if(this._validationQueue)
+				{
+					//we were already validating, and something else told us to
+					//validate. that's bad.
+					this._validationQueue.addControl(this, true);
+				}
 				return;
 			}
 			this._isValidating = true;
@@ -194,31 +218,35 @@ package com.catalystapps.gaf.display
 					helperImage = new Image(this._textures.middleCenter);
 				}
 				helperImage.smoothing = this._smoothing;
-				
-				if (!setDebugVertexColors([0,1,2,3]))
+
+				if (!setDebugVertexColors([0, 1, 2, 3]))
 				{
 					helperImage.color = this._color;
 				}
 
 				const grid: Rectangle = this._textures.scale9Grid;
-				var scaledLeftWidth: Number = grid.x * this._textureScale / this.scaleX;
-				var scaledTopHeight: Number = grid.y * this._textureScale / this.scaleY;
-				var scaledRightWidth: Number = (this._frame.width - grid.x - grid.width) * this._textureScale / this.scaleX;
-				var scaledBottomHeight: Number = (this._frame.height - grid.y - grid.height) * this._textureScale / this.scaleY;
-				const scaledCenterWidth: Number = this._width - scaledLeftWidth - scaledRightWidth;
-				const scaledMiddleHeight: Number = this._height - scaledTopHeight - scaledBottomHeight;
-				if (scaledCenterWidth < 0)
+				var scaledLeftWidth: Number = grid.x * this._textureScale;
+				var scaledRightWidth: Number = (this._frame.width - grid.x - grid.width) * this._textureScale;
+				var sumLeftAndRight: Number = scaledLeftWidth + scaledRightWidth;
+				if (sumLeftAndRight > this._width)
 				{
-					var offset: Number = scaledCenterWidth / 2;
-					scaledLeftWidth += offset;
-					scaledRightWidth += offset;
+					var distortionScale: Number = (this._width / sumLeftAndRight);
+					scaledLeftWidth *= distortionScale;
+					scaledRightWidth *= distortionScale;
+					sumLeftAndRight + scaledLeftWidth + scaledRightWidth;
 				}
-				if (scaledMiddleHeight < 0)
+				var scaledCenterWidth: Number = this._width - sumLeftAndRight;
+				var scaledTopHeight: Number = grid.y * this._textureScale;
+				var scaledBottomHeight: Number = (this._frame.height - grid.y - grid.height) * this._textureScale;
+				var sumTopAndBottom: Number = scaledTopHeight + scaledBottomHeight;
+				if (sumTopAndBottom > this._height)
 				{
-					offset = scaledMiddleHeight / 2;
-					scaledTopHeight += offset;
-					scaledBottomHeight += offset;
+					distortionScale = (this._height / sumTopAndBottom);
+					scaledTopHeight *= distortionScale;
+					scaledBottomHeight *= distortionScale;
+					sumTopAndBottom = scaledTopHeight + scaledBottomHeight;
 				}
+				var scaledMiddleHeight: Number = this._height - sumTopAndBottom;
 
 				if (scaledTopHeight > 0)
 				{
@@ -236,7 +264,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
-						setDebugVertexColors([0,1,0,1]);
+						setDebugVertexColors([0, 1, 0, 1]);
 						helperImage.texture = this._textures.topCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -263,7 +291,7 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						setDebugVertexColors([0,0,2,2]);
+						setDebugVertexColors([0, 0, 2, 2]);
 						helperImage.texture = this._textures.middleLeft;
 						helperImage.readjustSize();
 						helperImage.width = scaledLeftWidth;
@@ -275,7 +303,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
-						setDebugVertexColors([0,1,2,3]);
+						setDebugVertexColors([0, 1, 2, 3]);
 						helperImage.texture = this._textures.middleCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -287,7 +315,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledRightWidth > 0)
 					{
-						setDebugVertexColors([1,1,3,3]);
+						setDebugVertexColors([1, 1, 3, 3]);
 						helperImage.texture = this._textures.middleRight;
 						helperImage.readjustSize();
 						helperImage.width = scaledRightWidth;
@@ -314,7 +342,7 @@ package com.catalystapps.gaf.display
 
 					if (scaledCenterWidth > 0)
 					{
-						setDebugVertexColors([2,3,2,3]);
+						setDebugVertexColors([2, 3, 2, 3]);
 						helperImage.texture = this._textures.bottomCenter;
 						helperImage.readjustSize();
 						helperImage.width = scaledCenterWidth;
@@ -340,7 +368,7 @@ package com.catalystapps.gaf.display
 
 			this._propertiesChanged = false;
 			this._layoutChanged = false;
-			this._renderingChanged = false; 
+			this._renderingChanged = false;
 			this._isInvalid = false;
 			this._isValidating = false;
 		}
@@ -393,7 +421,7 @@ package com.catalystapps.gaf.display
 			}
 			this._validationQueue.addControl(this, false);
 		}
-		
+
 		private function setDebugColor(idx: int): void
 		{
 			if (this._debugColors)
@@ -422,7 +450,7 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * @private
 		 */
@@ -450,10 +478,10 @@ package com.catalystapps.gaf.display
 				var minY: Number = Number.MAX_VALUE, maxY: Number = -Number.MAX_VALUE;
 
 				this.getTransformationMatrix(targetSpace, HELPER_MATRIX);
-				
+
 				var coordsX: Number;
 				var coordsY: Number;
-				
+
 				for (var i: int = 0; i < 4; i++)
 				{
 					coordsX = i < 2 ? this._hitArea.x : this._hitArea.right;
@@ -464,7 +492,7 @@ package com.catalystapps.gaf.display
 					minY = Math.min(minY, HELPER_POINT.y);
 					maxY = Math.max(maxY, HELPER_POINT.y);
 				}
-				
+
 				resultRect.x = minX;
 				resultRect.y = minY;
 				resultRect.width = maxX - minX;
@@ -484,15 +512,6 @@ package com.catalystapps.gaf.display
 				return null;
 			}
 			return this._hitArea.containsPoint(localPoint) ? this : null;
-		}
-
-		/**
-		 * @private
-		 */
-		override public function flatten(): void
-		{
-			this.validate();
-			super.flatten();
 		}
 
 		/**
@@ -538,6 +557,7 @@ package com.catalystapps.gaf.display
 			this._layoutChanged = true;
 			this.invalidate();
 		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
@@ -599,7 +619,7 @@ package com.catalystapps.gaf.display
 			this._textures = value;
 			var texture: Texture = this._textures.texture;
 			this._frame = texture.frame;
-			if(!this._frame)
+			if (!this._frame)
 			{
 				this._frame = new Rectangle(0, 0, texture.width, texture.height);
 			}
@@ -734,7 +754,7 @@ package com.catalystapps.gaf.display
 		{
 			return this._depth;
 		}
-		
+
 		/**
 		 * @private
 		 */
@@ -742,7 +762,7 @@ package com.catalystapps.gaf.display
 		{
 			return _zIndex;
 		}
-		
+
 		/**
 		 * @private
 		 */

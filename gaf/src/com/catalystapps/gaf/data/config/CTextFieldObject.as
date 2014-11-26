@@ -3,8 +3,9 @@
  */
 package com.catalystapps.gaf.data.config
 {
+	import flash.geom.Point;
 	import flash.text.TextFormat;
-	
+
 	/**
 	 * @private
 	 */
@@ -35,6 +36,7 @@ package com.catalystapps.gaf.data.config
 		private var _displayAsPassword: Boolean;
 		private var _maxChars: int;
 		private var _textFormat: TextFormat;
+		private var _pivotPoint: Point;
 
 		//--------------------------------------------------------------------------
 		//
@@ -51,6 +53,8 @@ package com.catalystapps.gaf.data.config
 
 			_width = width;
 			_height = height;
+
+			_pivotPoint = new Point();
 		}
 
 		//--------------------------------------------------------------------------
@@ -217,6 +221,16 @@ package com.catalystapps.gaf.data.config
 		public function set maxChars(value: int): void
 		{
 			_maxChars = value;
+		}
+
+		public function get pivotPoint(): Point
+		{
+			return _pivotPoint;
+		}
+
+		public function set pivotPoint(value: Point): void
+		{
+			_pivotPoint = value;
 		}
 	}
 }
