@@ -400,8 +400,7 @@ package com.catalystapps.gaf.display
 				this._currentTime += passedTime;
 
 				var framesToPlay: int = (this._currentTime - this._lastFrameTime) / _frameDuration;
-				trace("framesToPlay", framesToPlay);
-				if (skipFrames)
+				if (_skipFrames)
 				{
 					//here we skip the drawing of all frames to be played right now, but the last one
 					for (var i: int = 0; i < framesToPlay; ++i)
