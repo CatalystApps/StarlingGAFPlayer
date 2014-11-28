@@ -69,6 +69,7 @@ package com.catalystapps.gaf.display
 		private var maskedImagesDictionary: Object;
 
 		private var playingSequence: CAnimationSequence;
+		private var started: Boolean;
 
 		private var _currentFrame: uint;
 		private var _totalFrames: uint;
@@ -292,47 +293,28 @@ package com.catalystapps.gaf.display
 		 */
 		public function play(applyToAllChildren: Boolean = false): void
 		{
-			if (this._totalFrames > 1)
-			{
-				this._inPlay = true;
-			}
-
-			if (applyToAllChildren
-			&& this.config.animationConfigFrames.frames.length > 0)
-			{
-				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
-				if (frameConfig.actions)
+            this.started = true;
+            
+            if (applyToAllChildren)
+            {
+	            var object: DisplayObject;
+				for each (object in this.displayObjectsDictionary)
 				{
-					var action: CFrameAction;
-					for (var a: int = 0; a < frameConfig.actions.length; a++)
+				    if (object is GAFMovieClip)
 					{
-						action = frameConfig.actions[a];
-						if (action.type == CFrameAction.STOP
-						|| (action.type == CFrameAction.GOTO_AND_STOP
-						&& int(action.params[0]) == this.currentFrame))
-						{
-							this._inPlay = false;
-							return;
-						}
+						(object as GAFMovieClip).started = true;
 					}
 				}
-				var child: DisplayObjectContainer;
-				for (var i: int = 0; i < this.numChildren; i++)
+	            for each (object in this.masksDictionary)
 				{
-					child = this.getChildAt(i) as DisplayObjectContainer;
-					if (child is GAFMovieClip)
+				    if (object is GAFMovieClip)
 					{
-						(child as GAFMovieClip).play(true);
-					}
-					else if (child is GAFPixelMaskDisplayObject
-						 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
-					{
-						((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).play(true);
+						(object as GAFMovieClip).started = true;
 					}
 				}
-			}
-
-			this._reset = false;
+            }
+			
+            this._play(applyToAllChildren, true);
 		}
 
 		/**
@@ -345,26 +327,28 @@ package com.catalystapps.gaf.display
 		 */
 		public function stop(applyToAllChildren: Boolean = false): void
 		{
-			this._inPlay = false;
-
-			if (applyToAllChildren
-			&& this.config.animationConfigFrames.frames.length > 0)
-			{
-				var child: DisplayObjectContainer;
-				for (var i: int = 0; i < this.numChildren; i++)
+            this.started = false;
+            
+            if (applyToAllChildren)
+            {
+	            var object: DisplayObject;
+				for each (object in this.displayObjectsDictionary)
 				{
-					child = this.getChildAt(i) as DisplayObjectContainer;
-					if (child is GAFMovieClip)
+				    if (object is GAFMovieClip)
 					{
-						(child as GAFMovieClip).stop(true);
-					}
-					else if (child is GAFPixelMaskDisplayObject
-						 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
-					{
-						((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).stop(true);
+						(object as GAFMovieClip).started = false;
 					}
 				}
-			}
+	            for each (object in this.masksDictionary)
+				{
+				    if (object is GAFMovieClip)
+					{
+						(object as GAFMovieClip).started = false;
+					}
+				}
+            }
+            
+            this._stop(applyToAllChildren, true);
 		}
 
 		/**
@@ -417,7 +401,182 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function checkSequence(): void
+		/** Shows bounds of a whole animation with a pivot point.
+		 * Used for debug purposes.
+		 */
+		public function showBounds(value: Boolean): void
+		{
+			if (value)
+			{
+				this.addChild(this.boundsAndPivot);
+			}
+			else
+			{
+				this.removeChild(this.boundsAndPivot);
+			}
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE METHODS
+		//
+		// --------------------------------------------------------------------------
+
+        private function _gotoAndStop(frame: *): void
+		{
+			this.checkAndSetCurrentFrame(frame);
+
+			this._stop();
+		}
+
+		private function _gotoAndPlay(frame: *): void
+		{
+			this.checkAndSetCurrentFrame(frame);
+
+			this._play();
+		}
+
+		private function _play(applyToAllChildren: Boolean = false, calledByUser: Boolean = false): void
+		{
+            if (this._totalFrames > 1)
+			{
+				this._inPlay = true;
+			}
+
+			if (applyToAllChildren
+			&& this.config.animationConfigFrames.frames.length > 0)
+			{
+				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
+				if (frameConfig.actions)
+				{
+					var action: CFrameAction;
+					for (var a: int = 0; a < frameConfig.actions.length; a++)
+					{
+						action = frameConfig.actions[a];
+						if (action.type == CFrameAction.STOP
+						|| (action.type == CFrameAction.GOTO_AND_STOP
+						&& int(action.params[0]) == this.currentFrame))
+						{
+							this._inPlay = false;
+							return;
+						}
+					}
+				}
+
+				var child: DisplayObjectContainer;
+				var childMC: GAFMovieClip;
+				var childMask: GAFPixelMaskDisplayObject;
+				for (var i: int = 0; i < this.numChildren; i++)
+				{
+					child = this.getChildAt(i) as DisplayObjectContainer;
+					if (child is GAFMovieClip)
+					{
+						childMC = child as GAFMovieClip;
+						if (calledByUser)
+						{
+							childMC.play(true);
+						}
+						else
+						{
+							childMC._play(true);
+						}
+					}
+					else if (child is GAFPixelMaskDisplayObject)
+                    {
+                        childMask = (child as GAFPixelMaskDisplayObject);
+                        for (var m: int = 0; m < childMask.numChildren; m++)
+						{
+						    childMC = childMask.getChildAt(m) as GAFMovieClip;
+                            if (childMC)
+                            {
+                                if (calledByUser)
+		                        {
+									childMC.play(true);
+		                        }
+		                        else
+		                        {
+									childMC._play(true);
+		                        }
+                            }
+						}
+                        if (childMask.mask is GAFMovieClip)
+                        {
+	                        if (calledByUser)
+	                        {
+								(childMask.mask as GAFMovieClip).play(true);
+	                        }
+	                        else
+	                        {
+	                            (childMask.mask as GAFMovieClip)._play(true);
+	                        }
+                        }
+                    }
+				}
+			}
+
+			this._reset = false;
+		}
+
+        private function _stop(applyToAllChildren: Boolean = false, calledByUser: Boolean = false): void
+		{
+            this._inPlay = false;
+
+			if (applyToAllChildren
+			&& this.config.animationConfigFrames.frames.length > 0)
+			{
+				var child: DisplayObjectContainer;
+				var childMC: GAFMovieClip;
+				var childMask: GAFPixelMaskDisplayObject;
+				for (var i: int = 0; i < this.numChildren; i++)
+				{
+					child = this.getChildAt(i) as DisplayObjectContainer;
+					if (child is GAFMovieClip)
+					{
+						childMC = child as GAFMovieClip;
+						if (calledByUser)
+						{
+							childMC.stop(true);
+						}
+						else
+						{
+							childMC._stop(true);
+						}
+					}
+					else if (child is GAFPixelMaskDisplayObject)
+                    {
+                        childMask = (child as GAFPixelMaskDisplayObject);
+                        for (var m: int = 0; m < childMask.numChildren; m++)
+						{
+						    childMC = childMask.getChildAt(m) as GAFMovieClip;
+                            if (childMC)
+                            {
+                                if (calledByUser)
+		                        {
+									childMC.stop(true);
+		                        }
+		                        else
+		                        {
+									childMC._stop(true);
+		                        }
+                            }
+						}
+                        if (childMask.mask is GAFMovieClip)
+                        {
+	                        if (calledByUser)
+	                        {
+								(childMask.mask as GAFMovieClip).stop(true);
+	                        }
+	                        else
+	                        {
+	                            (childMask.mask as GAFMovieClip)._stop(true);
+	                        }
+                        }
+                    }
+				}
+			}
+		}
+        
+        private function checkSequence(): void
 		{
 			var sequence: CAnimationSequence;
 			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
@@ -487,27 +646,6 @@ package com.catalystapps.gaf.display
 				}
 			}
 		}
-
-		/** Shows bounds of a whole animation with a pivot point.
-		 * Used for debug purposes.
-		 */
-		public function showBounds(value: Boolean): void
-		{
-			if (value)
-			{
-				this.addChild(this.boundsAndPivot);
-			}
-			else
-			{
-				this.removeChild(this.boundsAndPivot);
-			}
-		}
-
-		//--------------------------------------------------------------------------
-		//
-		//  PRIVATE METHODS
-		//
-		// --------------------------------------------------------------------------
 
 		private function checkAndSetCurrentFrame(frame: *): void
 		{
@@ -581,6 +719,7 @@ package com.catalystapps.gaf.display
 		{
 			var i: int;
 			var displayObject: IGAFDisplayObject;
+			var mc: GAFMovieClip;
 			var maskedDisplayObject: GAFPixelMaskDisplayObject;
 
 			if (config.debugRegions)
@@ -594,7 +733,6 @@ package com.catalystapps.gaf.display
 				for each (displayObject in this.displayObjectsDictionary)
 				{
 					displayObject.visible = false;
-					displayObject.alpha = 0;
 				}
 
 				for each (maskedDisplayObject in this.maskedImagesDictionary)
@@ -603,7 +741,6 @@ package com.catalystapps.gaf.display
 					{
 						displayObject = maskedDisplayObject.getChildAt(i) as IGAFDisplayObject;
 						displayObject.visible = false;
-						displayObject.alpha = 0;
 					}
 				}
 			}
@@ -627,15 +764,16 @@ package com.catalystapps.gaf.display
 
 					if (displayObject)
 					{
-						if (displayObject is GAFMovieClip)
+                        mc = displayObject as GAFMovieClip;
+						if (mc)
 						{
 							if (instance.alpha < 0)
 							{
-								(displayObject as GAFMovieClip).reset();
+								mc.reset();
 							}
-							else if ((displayObject as GAFMovieClip)._reset)
+							else if (mc._reset && mc.started)
 							{
-								(displayObject as GAFMovieClip).play(true);
+								mc._play(true);
 							}
 						}
 						displayObject.alpha = instance.alpha;
@@ -643,9 +781,9 @@ package com.catalystapps.gaf.display
 
 						if (instance.maskID)
 						{
-							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
+							if (DebugUtility.RENDERING_DEBUG && mc)
 							{
-								this.updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
+								this.updateAlphaMaskedAndHasFilter(mc,
 																   instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
 																   true,
 																   (instance.filter != null) || this._hasFilter);
@@ -656,7 +794,6 @@ package com.catalystapps.gaf.display
 							{
 								maskedDisplayObject = this.maskedImagesDictionary[instance.maskID];
 								maskedDisplayObject.visible = true;
-								maskedDisplayObject.alpha = 1;
 
 								mustReorder ||= (maskedDisplayObject.zIndex != zIndex);
 								maskedDisplayObject.zIndex = zIndex;
@@ -666,6 +803,11 @@ package com.catalystapps.gaf.display
 								{
 									maskedDisplayObject.addChild(displayObject as DisplayObject);
 									mustReorder = true;
+                                    
+                                    if (mc && mc.started)
+									{
+										mc._play(true);
+									}
 								}
 
 								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
@@ -695,6 +837,11 @@ package com.catalystapps.gaf.display
 								{
 									this.addChild(maskedDisplayObject);
 									mustReorder = true;
+                                    
+                                    if (maskedDisplayObject.mask is GAFMovieClip && (maskedDisplayObject.mask as GAFMovieClip).started)
+									{
+										(maskedDisplayObject.mask as GAFMovieClip)._play(true);
+									}
 								}
 							}
 							else
@@ -704,9 +851,9 @@ package com.catalystapps.gaf.display
 						}
 						else
 						{
-							if (DebugUtility.RENDERING_DEBUG && displayObject is GAFMovieClip)
+							if (DebugUtility.RENDERING_DEBUG && mc)
 							{
-								this.updateAlphaMaskedAndHasFilter(displayObject as GAFMovieClip,
+								this.updateAlphaMaskedAndHasFilter(mc,
 																   instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
 																   this._masked,
 																   (instance.filter != null) || this._hasFilter);
@@ -721,6 +868,11 @@ package com.catalystapps.gaf.display
 							{
 								this.addChild(displayObject as DisplayObject);
 								mustReorder = true;
+                                
+                                if (mc && mc.started)
+								{
+									mc._play(true);
+								}
 							}
 						}
 
@@ -778,7 +930,7 @@ package com.catalystapps.gaf.display
 
 		private function reset(): void
 		{
-			this.gotoAndStop(1);
+			this._gotoAndStop(1);
 			this._reset = true;
 
 			var child: DisplayObjectContainer;
