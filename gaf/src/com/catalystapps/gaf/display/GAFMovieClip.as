@@ -649,24 +649,27 @@ package com.catalystapps.gaf.display
 
 		private function checkAndSetCurrentFrame(frame: *): void
 		{
-			if (frame is uint)
+			if (frame is String)
 			{
+				var label: String = frame;
+				frame = this.config.animationSequences.getStartFrameNo(label);
+				
 				if (frame == 0)
 				{
-					throw new Error("'0' - is wrong start frame number. Like in AS3 MovieClip API frames numeration starts from '1'");
+					throw new ArgumentError("Frame label " + label + " not found");
 				}
-
-				frame -= 1;
 			}
-			else
+			
+			if (frame < 1)
 			{
-				frame = this.config.animationSequences.getStartFrameNo(frame);
+				frame = 1;
+			}
+			else if (frame > this._totalFrames)
+			{
+				frame = this._totalFrames;
 			}
 
-			if (frame <= this._totalFrames)
-			{
-				this._currentFrame = frame;
-			}
+			this._currentFrame = frame - 1;
 
 			if (this.playingSequence && !this.playingSequence.isSequenceFrame(this._currentFrame + 1))
 			{
@@ -930,21 +933,22 @@ package com.catalystapps.gaf.display
 
 		private function reset(): void
 		{
-			this._gotoAndStop(1);
+			this._gotoAndStop((this._reverse ? this._finalFrame : this._startFrame) + 1);
 			this._reset = true;
 
-			var child: DisplayObjectContainer;
-			for (var i: int = 0; i < this.numChildren; i++)
+			var displayObject: DisplayObject;
+			for each (displayObject in this.displayObjectsDictionary)
 			{
-				child = this.getChildAt(i) as DisplayObjectContainer;
-				if (child is GAFMovieClip)
+				if (displayObject is GAFMovieClip)
 				{
-					(child as GAFMovieClip).reset();
+					(displayObject as GAFMovieClip).reset();
 				}
-				else if (child is GAFPixelMaskDisplayObject
-					 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+			}
+			for each (displayObject in this.masksDictionary)
+			{
+				if (displayObject is GAFMovieClip)
 				{
-					((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).reset();
+					(displayObject as GAFMovieClip).reset();
 				}
 			}
 		}
@@ -1237,6 +1241,26 @@ package com.catalystapps.gaf.display
 				{
 					this._currentFrame = this._reverse ? this._finalFrame : this._startFrame;
 					this._lastFrameTime += this._frameDuration;
+					
+					//reset timelines that aren't visible
+					var displayObject: DisplayObjectContainer;
+					for (var i: int = 0; i < this.numChildren; i++)
+					{
+						displayObject = this.getChildAt(i) as DisplayObjectContainer;
+						
+						if (displayObject is GAFMovieClip
+						&& !displayObject.visible)
+						{
+							(displayObject as GAFMovieClip).reset();
+						}
+						else
+						if (displayObject is GAFPixelMaskDisplayObject
+						&& (displayObject as GAFPixelMaskDisplayObject).mask is GAFMovieClip
+						&& !displayObject.visible)
+						{
+							((displayObject as GAFPixelMaskDisplayObject).mask as GAFMovieClip).reset();
+						}
+					}
 				}
 			}
 
@@ -1375,18 +1399,19 @@ package com.catalystapps.gaf.display
 				this._frameDuration = 1 / value;
 			}
 
-			var child: DisplayObjectContainer;
-			for (var i: int = 0; i < this.numChildren; i++)
+			var displayObject: DisplayObject;
+			for each (displayObject in this.displayObjectsDictionary)
 			{
-				child = this.getChildAt(i) as DisplayObjectContainer;
-				if (child is GAFMovieClip)
+				if (displayObject is GAFMovieClip)
 				{
-					(child as GAFMovieClip).fps = value;
+					(displayObject as GAFMovieClip).fps = value;
 				}
-				else if (child is GAFPixelMaskDisplayObject
-					 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+			}
+			for each (displayObject in this.masksDictionary)
+			{
+				if (displayObject is GAFMovieClip)
 				{
-					((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).fps = value;
+					(displayObject as GAFMovieClip).fps = value;
 				}
 			}
 		}
@@ -1403,18 +1428,19 @@ package com.catalystapps.gaf.display
 		{
 			this._reverse = value;
 
-			var child: DisplayObjectContainer;
-			for (var i: int = 0; i < this.numChildren; i++)
+			var displayObject: DisplayObject;
+			for each (displayObject in this.displayObjectsDictionary)
 			{
-				child = this.getChildAt(i) as DisplayObjectContainer;
-				if (child is GAFMovieClip)
+				if (displayObject is GAFMovieClip)
 				{
-					(child as GAFMovieClip).reverse = value;
+					(displayObject as GAFMovieClip)._reverse = value;
 				}
-				else if (child is GAFPixelMaskDisplayObject
-					 && (child as GAFPixelMaskDisplayObject).mask is GAFMovieClip)
+			}
+			for each (displayObject in this.masksDictionary)
+			{
+				if (displayObject is GAFMovieClip)
 				{
-					((child as GAFPixelMaskDisplayObject).mask as GAFMovieClip).reverse = value;
+					(displayObject as GAFMovieClip)._reverse = value;
 				}
 			}
 		}

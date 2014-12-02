@@ -574,13 +574,18 @@ package com.catalystapps.gaf.data.converters
 						{
 							action = new CFrameAction();
 							action.type = tagContent.readUnsignedInt();
-
-							if (action.type > 1) // if not stop(); or play(); and has params
+							
+							var paramsLength: uint = tagContent.readUnsignedInt();
+							if (paramsLength > 0)
 							{
-								var paramsCount: int = tagContent.readUnsignedInt();
-								for (var p: int = 0; p < paramsCount; p++)
+								var paramsBA: ByteArray = new ByteArray();
+								paramsBA.endian = Endian.LITTLE_ENDIAN;
+								tagContent.readBytes(paramsBA, 0, paramsLength);
+								paramsBA.position = 0;
+								
+								while (paramsBA.bytesAvailable > 0)
 								{
-									action.params.push(tagContent.readUTF());
+									action.params.push(paramsBA.readUTF());
 								}
 							}
 
