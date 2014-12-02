@@ -164,22 +164,13 @@ package com.catalystapps.gaf.display
 				{
 					if (_mask)
 					{
-						_a = _mask.transformationMatrix.a;
-						_b = _mask.transformationMatrix.b;
-						_c = _mask.transformationMatrix.c;
-						_d = _mask.transformationMatrix.d;
 						_tx = _mask.transformationMatrix.tx;
 						_ty = _mask.transformationMatrix.ty;
 
-						_mask.transformationMatrix.identity();
-						_mask.transformationMatrix.tx = -_maskBounds.x;
-						_mask.transformationMatrix.ty = -_maskBounds.y;
+						_mask.transformationMatrix.tx -= _maskBounds.x;
+						_mask.transformationMatrix.ty -= _maskBounds.y;
 						_maskRenderTexture.draw(_mask);
 
-						_mask.transformationMatrix.a = _a;
-						_mask.transformationMatrix.b = _b;
-						_mask.transformationMatrix.c = _c;
-						_mask.transformationMatrix.d = _d;
 						_mask.transformationMatrix.tx = _tx;
 						_mask.transformationMatrix.ty = _ty;
 
@@ -224,13 +215,6 @@ package com.catalystapps.gaf.display
 			this.transformationMatrix.d = _d;
 			this.transformationMatrix.tx = _tx;
 			this.transformationMatrix.ty = _ty;
-
-			_a = _maskImage.transformationMatrix.a;
-			_b = _maskImage.transformationMatrix.b;
-			_c = _maskImage.transformationMatrix.c;
-			_d = _maskImage.transformationMatrix.d;
-			_tx = _maskImage.transformationMatrix.tx;
-			_ty = _maskImage.transformationMatrix.ty;
 
 			_maskImage.transformationMatrix.identity();
 			_renderTexture.draw(_maskImage);
