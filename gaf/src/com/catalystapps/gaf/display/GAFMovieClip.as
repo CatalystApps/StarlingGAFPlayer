@@ -513,6 +513,8 @@ package com.catalystapps.gaf.display
                     }
 				}
 			}
+			
+			this.runActions();
 
 			this._reset = false;
 		}
@@ -937,6 +939,8 @@ package com.catalystapps.gaf.display
 		{
 			this._gotoAndStop((this._reverse ? this._finalFrame : this._startFrame) + 1);
 			this._reset = true;
+			this._currentTime = 0;
+			this._lastFrameTime = 0;
 
 			var displayObject: DisplayObject;
 			for each (displayObject in this.displayObjectsDictionary)
@@ -1243,26 +1247,7 @@ package com.catalystapps.gaf.display
 				{
 					this._currentFrame = this._reverse ? this._finalFrame : this._startFrame;
 					this._lastFrameTime += this._frameDuration;
-					
-					//reset timelines that aren't visible
-					var displayObject: DisplayObjectContainer;
-					for (var i: int = 0; i < this.numChildren; i++)
-					{
-						displayObject = this.getChildAt(i) as DisplayObjectContainer;
-						
-						if (displayObject is GAFMovieClip
-						&& !displayObject.visible)
-						{
-							(displayObject as GAFMovieClip).reset();
-						}
-						else
-						if (displayObject is GAFPixelMaskDisplayObject
-						&& (displayObject as GAFPixelMaskDisplayObject).mask is GAFMovieClip
-						&& !displayObject.visible)
-						{
-							((displayObject as GAFPixelMaskDisplayObject).mask as GAFMovieClip).reset();
-						}
-					}
+					var resetInvisibleChildren: Boolean = true;
 				}
 			}
 
@@ -1276,6 +1261,28 @@ package com.catalystapps.gaf.display
 			else
 			{
 				this.checkSequence();
+			}
+			
+			if (resetInvisibleChildren)
+			{
+				//reset timelines that aren't visible
+				var displayObject: DisplayObject;
+				for each (displayObject in this.displayObjectsDictionary)
+				{
+					if (displayObject is GAFMovieClip
+					&& !displayObject.visible)
+					{
+						(displayObject as GAFMovieClip).reset();
+					}
+				}
+				for each (displayObject in this.masksDictionary)
+				{
+					if (displayObject is GAFMovieClip
+					&& !displayObject.visible)
+					{
+						(displayObject as GAFMovieClip).reset();
+					}
+				}
 			}
 		}
 
