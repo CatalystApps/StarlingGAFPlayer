@@ -649,7 +649,14 @@ package com.catalystapps.gaf.display
 
 		private function checkAndSetCurrentFrame(frame: *): void
 		{
-			if (frame is String)
+			if (uint(frame) > 0)
+			{
+				if (frame > this._totalFrames)
+				{
+					frame = this._totalFrames;
+				}
+			}
+			else if (frame is String)
 			{
 				var label: String = frame;
 				frame = this.config.animationSequences.getStartFrameNo(label);
@@ -659,14 +666,9 @@ package com.catalystapps.gaf.display
 					throw new ArgumentError("Frame label " + label + " not found");
 				}
 			}
-			
-			if (frame < 1)
+			else
 			{
 				frame = 1;
-			}
-			else if (frame > this._totalFrames)
-			{
-				frame = this._totalFrames;
 			}
 
 			this._currentFrame = frame - 1;
