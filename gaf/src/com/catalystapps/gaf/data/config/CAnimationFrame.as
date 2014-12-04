@@ -56,35 +56,13 @@ package com.catalystapps.gaf.data.config
 		{
 			if (this._instancesDictionary[instance.id])
 			{
-				if (instance.alpha)
-				{
-					this._instances[this._instances.indexOf(this._instancesDictionary[instance.id])] = instance;
-
-					this._instancesDictionary[instance.id] = instance;
-				}
-				else
-				{
-					// Poping the last element and set it as the removed element
-					var index: int = this._instances.indexOf(this._instancesDictionary[instance.id]);
-					// If index is last element, just pop
-					if (index == (this._instances.length - 1))
-					{
-						this._instances.pop();
-					}
-					else
-					{
-						this._instances[index] = this._instances.pop();
-					}
-
-					delete this._instancesDictionary[instance.id];
-				}
+				this._instances[this._instances.indexOf(this._instancesDictionary[instance.id])] = instance;
 			}
 			else
 			{
 				this._instances.push(instance);
-
-				this._instancesDictionary[instance.id] = instance;
 			}
+			this._instancesDictionary[instance.id] = instance;
 		}
 
 		public function addAction(action: CFrameAction): void

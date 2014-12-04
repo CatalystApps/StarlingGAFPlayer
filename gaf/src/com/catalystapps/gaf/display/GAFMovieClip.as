@@ -784,7 +784,7 @@ package com.catalystapps.gaf.display
 							}
 						}
 						displayObject.alpha = instance.alpha;
-						displayObject.visible = true;
+						displayObject.visible = instance.alpha >= 0;
 
 						if (instance.maskID)
 						{
