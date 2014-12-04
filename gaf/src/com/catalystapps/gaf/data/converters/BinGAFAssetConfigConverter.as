@@ -574,6 +574,7 @@ package com.catalystapps.gaf.data.converters
 						{
 							action = new CFrameAction();
 							action.type = tagContent.readUnsignedInt();
+							action.scope = tagContent.readUTF();
 							
 							var paramsLength: uint = tagContent.readUnsignedInt();
 							if (paramsLength > 0)
