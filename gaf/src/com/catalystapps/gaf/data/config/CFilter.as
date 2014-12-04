@@ -1,6 +1,5 @@
 package com.catalystapps.gaf.data.config
 {
-	import com.catalystapps.gaf.data.converters.WarningConstants;
 	import com.catalystapps.gaf.utils.VectorUtility;
 
 	/**
@@ -48,11 +47,6 @@ package com.catalystapps.gaf.data.config
 		
 		public function addBlurFilter(blurX: Number, blurY: Number): String
 		{
-			if (getBlurFilter())
-			{
-				return WarningConstants.CANT_STACK_BLUR_FILTERS;
-			}
-			
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
@@ -65,16 +59,6 @@ package com.catalystapps.gaf.data.config
 		
 		public function addGlowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number): String
 		{
-			if (getBlurFilter())
-			{
-				return WarningConstants.CANT_BLUR_GLOW;
-			}
-			
-			if (getColorMatrixFilter())
-			{
-				return WarningConstants.CANT_CT_GLOW;
-			}
-
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
@@ -88,16 +72,6 @@ package com.catalystapps.gaf.data.config
 
 		public function addDropShadowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number, angle: Number, distance: Number): String
 		{
-			if (getBlurFilter())
-			{
-				return WarningConstants.CANT_BLUR_DROP;
-			}
-
-			if (getColorMatrixFilter())
-			{
-				return WarningConstants.CANT_CT_DROP;
-			}
-
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
@@ -139,18 +113,18 @@ package com.catalystapps.gaf.data.config
 				}
 			}
 
-			var colorMatrixFilterConfig: CColorMatrixFilterData = getColorMatrixFilter();
-
-			if (colorMatrixFilterConfig)
-			{
-				return WarningConstants.CANT_COLOR_ADJ_CT;
-			}
-			else
-			{
-				colorMatrixFilterConfig = new CColorMatrixFilterData();
+//			var colorMatrixFilterConfig: CColorMatrixFilterData = getColorMatrixFilter();
+//
+//			if (colorMatrixFilterConfig)
+//			{
+//				return WarningConstants.CANT_COLOR_ADJ_CT;
+//			}
+//			else
+//			{
+				var colorMatrixFilterConfig: CColorMatrixFilterData = new CColorMatrixFilterData();
 				VectorUtility.copyMatrix(colorMatrixFilterConfig.matrix, params);
 				_filterConfigs.push(colorMatrixFilterConfig);
-			}
+//			}
 
 			return "";
 		}
