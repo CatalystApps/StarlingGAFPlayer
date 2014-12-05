@@ -784,7 +784,7 @@ package com.catalystapps.gaf.display
 							}
 						}
 						displayObject.alpha = instance.alpha;
-						displayObject.visible = true;
+						displayObject.visible = instance.alpha >= 0;
 
 						if (instance.maskID)
 						{
@@ -833,10 +833,8 @@ package com.catalystapps.gaf.display
 								{
 									throw new Error("Unable to find mask with ID " + instance.maskID);
 								}
-
-								// !!! Currently it's not possible to use filters under mask. This limitation will be removed in a future Stage3D version.
-								// TODO: uncomment this line when this limitation will be removed
-								// this.updateFilter(displayObject, instance, this._scale);
+								
+								this.updateFilter(displayObject, instance, this._scale);
 
 								displayObject.filter = null;
 

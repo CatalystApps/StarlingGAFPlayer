@@ -482,6 +482,7 @@ package com.catalystapps.gaf.data.converters
 						{
 							action = new CFrameAction();
 							action.type = f.actions[i].type;
+							action.scope = f.actions[i].scope;
 
 							if (f.actions[i].type > 1) // if not stop(); or play(); and has params
 							{

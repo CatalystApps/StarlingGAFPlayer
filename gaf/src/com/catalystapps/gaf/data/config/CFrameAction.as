@@ -6,6 +6,7 @@ package com.catalystapps.gaf.data.config
 	public class CFrameAction
 	{
 		public var type: int;
+		public var scope: String;
 		public var params: Vector.<String> = new Vector.<String>();
 		
 		public static const STOP: int = 0;
