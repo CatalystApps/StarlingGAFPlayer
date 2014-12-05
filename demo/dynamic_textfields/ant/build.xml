@@ -1,4 +1,4 @@
-<project name="Slot Machine" basedir="../" default="build">
+<project name="Dynamic textfields" basedir="../" default="build">
 
 	<property name="FLEX_HOME" location="d:/AirSDK"/>
 
@@ -10,7 +10,7 @@
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
 
 	<target name="build">
-		<mxmlc file="${src.dir}/SlotMachineMain.as" output="${deploy.dir}/slot_machine.swf" use-network="false">
+		<mxmlc file="${src.dir}/DynamicTextfieldsMain.as" output="${deploy.dir}/dynamic_textfields.swf" use-network="false">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
 			<source-path path-element="${FLEX_HOME}/frameworks"/>
 

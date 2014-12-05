@@ -10,7 +10,7 @@
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
 
 	<target name="build">
-		<mxmlc file="${src.dir}/FiremanMain.as" output="${deploy.dir}/demo.swf">
+		<mxmlc file="${src.dir}/FiremanMain.as" output="${deploy.dir}/demo.swf" use-network="false">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
 			<source-path path-element="${FLEX_HOME}/frameworks"/>
 
