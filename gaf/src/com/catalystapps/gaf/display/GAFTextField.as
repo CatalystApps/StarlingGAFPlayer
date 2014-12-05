@@ -70,6 +70,7 @@ package com.catalystapps.gaf.display
 			this.isEditable = config.editable;
 			this.displayAsPassword = config.displayAsPassword;
 			this.maxChars = config.maxChars;
+			this.verticalAlign = TextInput.VERTICAL_ALIGN_TOP;
 
 			this.textEditorProperties.textFormat = config.textFormat;
 			this.textEditorProperties.embedFonts = GAF.gaf_internal::useDeviceFonts ? false : config.embedFonts;
