@@ -1,6 +1,6 @@
-<project name="UIDemo" basedir="../" default="build">
+<project name="FiremanDemo" basedir="../" default="build">
 
-	<property name="FLEX_HOME" location="/tools/flex_sdk_4.6"/>
+	<property name="FLEX_HOME" location="d:/AirSDK"/>
 
 	<property name="deploy.dir" location="bin"/>
 	<property name="src.dir" location="src"/>
@@ -10,7 +10,7 @@
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
 
 	<target name="build">
-		<mxmlc file="${src.dir}/UIMain.as" output="${deploy.dir}/demo.swf">
+		<mxmlc file="${src.dir}/SlotMachineMain.as" output="${deploy.dir}/slot_machine.swf">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
 			<source-path path-element="${FLEX_HOME}/frameworks"/>
 
