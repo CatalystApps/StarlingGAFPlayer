@@ -1150,8 +1150,6 @@ package com.catalystapps.gaf.display
 				Starling.juggler.remove(this);
 			}
 
-			this.config = null;
-
 			var displayObject: DisplayObject;
 
 			for each(displayObject in this.displayObjectsDictionary)
@@ -1170,6 +1168,8 @@ package com.catalystapps.gaf.display
 			}
 
 			super.dispose();
+
+			this.config = null;
 		}
 
 		/** @private
