@@ -75,6 +75,7 @@ package com.catalystapps.gaf.display
 		private var _totalFrames: uint;
 
 		private var _inPlay: Boolean;
+		private var disposed: Boolean;
 		private var _loop: Boolean = true;
 		private var _skipFrames: Boolean = true;
 
@@ -391,7 +392,18 @@ package com.catalystapps.gaf.display
 					//here we skip the drawing of all frames to be played right now, but the last one
 					for (var i: int = 0; i < framesToPlay; ++i)
 					{
-						this.changeCurrentFrame((i + 1) != framesToPlay);
+						if (this._inPlay)
+						{
+							this.changeCurrentFrame((i + 1) != framesToPlay);
+						}
+						else //if a playback was interrupted by some action or an event
+						{
+							if (!this.disposed)
+							{
+								this.draw();
+							}
+							break;
+						}
 					}
 				}
 				else
@@ -1170,6 +1182,7 @@ package com.catalystapps.gaf.display
 			super.dispose();
 
 			this.config = null;
+			this.disposed = true;
 		}
 
 		/** @private
