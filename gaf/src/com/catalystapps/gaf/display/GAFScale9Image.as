@@ -7,6 +7,7 @@
  */
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.utils.MathUtility;
 
 	import feathers.core.IValidating;
@@ -27,6 +28,8 @@ package com.catalystapps.gaf.display
 	import starling.textures.Texture;
 	import starling.textures.TextureSmoothing;
 	import starling.utils.MatrixUtil;
+
+	use namespace gaf_internal;
 
 	[Exclude(name="numChildren",kind="property")]
 	[Exclude(name="isFlattened",kind="property")]
@@ -64,6 +67,7 @@ package com.catalystapps.gaf.display
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
+
 		private static const HELPER_MATRIX: Matrix = new Matrix();
 		private static const HELPER_POINT: Point = new Point();
 		private static var helperImage: Image;
@@ -88,6 +92,8 @@ package com.catalystapps.gaf.display
 		private var _debugColors: Vector.<uint>;
 		private var _debugAlphas: Vector.<Number>;
 		private var _zIndex: uint;
+
+		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		//--------------------------------------------------------------------------
 		//
@@ -443,6 +449,36 @@ package com.catalystapps.gaf.display
 				}
 			}
 			return this._debugColors;
+		}
+
+		gaf_internal function __debugHighlight(): void
+		{
+			use namespace gaf_internal;
+			if (isNaN(__debugOriginalAlpha))
+			{
+				__debugOriginalAlpha = this.alpha;
+			}
+			this.alpha = 1;
+		}
+
+		gaf_internal function __debugLowlight(): void
+		{
+			use namespace gaf_internal;
+			if (isNaN(__debugOriginalAlpha))
+			{
+				__debugOriginalAlpha = this.alpha;
+			}
+			this.alpha = .05;
+		}
+
+		gaf_internal function __debugResetLight(): void
+		{
+			use namespace gaf_internal;
+			if (!isNaN(__debugOriginalAlpha))
+			{
+				this.alpha = __debugOriginalAlpha;
+				__debugOriginalAlpha = NaN;
+			}
 		}
 
 		//--------------------------------------------------------------------------

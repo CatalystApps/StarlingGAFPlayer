@@ -22,9 +22,6 @@ package com.catalystapps.gaf.display
 	 */
 	public class GAFTextField extends TextInput implements IGAFDebug, IGAFDisplayObject
 	{
-		private var _zIndex: uint;
-
-		private var _pivotMatrix: Matrix;
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
@@ -36,6 +33,12 @@ package com.catalystapps.gaf.display
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
+
+		private var _zIndex: uint;
+
+		private var _pivotMatrix: Matrix;
+
+		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		//--------------------------------------------------------------------------
 		//
@@ -162,6 +165,36 @@ package com.catalystapps.gaf.display
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		gaf_internal function __debugHighlight(): void
+		{
+			use namespace gaf_internal;
+			if (isNaN(__debugOriginalAlpha))
+			{
+				__debugOriginalAlpha = this.alpha;
+			}
+			this.alpha = 1;
+		}
+
+		gaf_internal function __debugLowlight(): void
+		{
+			use namespace gaf_internal;
+			if (isNaN(__debugOriginalAlpha))
+			{
+				__debugOriginalAlpha = this.alpha;
+			}
+			this.alpha = .05;
+		}
+
+		gaf_internal function __debugResetLight(): void
+		{
+			use namespace gaf_internal;
+			if (!isNaN(__debugOriginalAlpha))
+			{
+				this.alpha = __debugOriginalAlpha;
+				__debugOriginalAlpha = NaN;
+			}
+		}
 
 		//--------------------------------------------------------------------------
 		//

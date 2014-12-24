@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.core.gaf_internal;
+
 	import starling.display.Image;
 
 	/**
@@ -12,31 +14,33 @@ package com.catalystapps.gaf.display
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _assetTexture: IGAFTexture;
 		private var _zIndex: uint;
-		
+
+		gaf_internal var __debugOriginalAlpha: Number = NaN;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
-		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code> 
+		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code>
 		 * @param assetTexture The texture displayed by this image.
 		 * @see com.catalystapps.gaf.display.GAFScale9Image
 		 */
 		public function GAFImage(assetTexture: IGAFTexture)
 		{
-			this._assetTexture = assetTexture.clone();			
-			
+			this._assetTexture = assetTexture.clone();
+
 			super(this._assetTexture.texture);
 		}
 
@@ -49,7 +53,7 @@ package com.catalystapps.gaf.display
 		public function invalidateSize(): void
 		{
 		}
-		
+
 		public function set debugColors(value: Vector.<uint>): void
 		{
 			var alpha0: Number;
@@ -112,13 +116,43 @@ package com.catalystapps.gaf.display
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
+		gaf_internal function __debugHighlight(): void
+		{
+			use namespace gaf_internal;
+			if (isNaN(__debugOriginalAlpha))
+			{
+				__debugOriginalAlpha = this.alpha;
+			}
+			this.alpha = 1;
+		}
+
+		gaf_internal function __debugLowlight(): void
+		{
+			use namespace gaf_internal;
+			if (isNaN(__debugOriginalAlpha))
+			{
+				__debugOriginalAlpha = this.alpha;
+			}
+			this.alpha = .05;
+		}
+
+		gaf_internal function __debugResetLight(): void
+		{
+			use namespace gaf_internal;
+			if (!isNaN(__debugOriginalAlpha))
+			{
+				this.alpha = __debugOriginalAlpha;
+				__debugOriginalAlpha = NaN;
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Disposes all resources of the display object
 		 */
@@ -126,22 +160,22 @@ package com.catalystapps.gaf.display
 		{
 			(this.filter) ? this.filter.dispose() : null;
 			this.filter = null;
-			
+
 			super.dispose();
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get assetTexture(): IGAFTexture
 		{
 			return _assetTexture;
