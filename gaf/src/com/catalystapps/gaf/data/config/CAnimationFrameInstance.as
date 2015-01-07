@@ -25,7 +25,8 @@ package com.catalystapps.gaf.data.config
 		private var _alpha: Number;
 		private var _maskID: String;
 		private var _filter: CFilter;
-		private static var matrixCopy: Matrix = new Matrix();
+
+		private static var tx: Number, ty: Number;
 
 		// --------------------------------------------------------------------------
 		//
@@ -70,10 +71,13 @@ package com.catalystapps.gaf.data.config
 		public function getTransformMatrix(pivotMatrix: Matrix, scale: Number): Matrix
 		{
 			var result: Matrix = pivotMatrix.clone();
-			matrixCopy.copyFrom(this._matrix);
-			matrixCopy.tx = matrixCopy.tx * scale;
-			matrixCopy.ty = matrixCopy.ty * scale;
-			result.concat(matrixCopy);
+			tx = this._matrix.tx;
+			ty = this._matrix.ty;
+			this._matrix.tx *= scale;
+			this._matrix.ty *= scale;
+			result.concat(this._matrix);
+			this._matrix.tx = tx;
+			this._matrix.ty = ty;
 
 			return result;
 		}
@@ -81,12 +85,15 @@ package com.catalystapps.gaf.data.config
 		public function applyTransformMatrix(transformationMatrix: Matrix, pivotMatrix: Matrix, scale: Number): void
 		{
 			transformationMatrix.copyFrom(pivotMatrix);
-			matrixCopy.copyFrom(this._matrix);
-			matrixCopy.tx *= scale;
-			matrixCopy.ty *= scale;
-			transformationMatrix.concat(matrixCopy);
+			tx = this._matrix.tx;
+			ty = this._matrix.ty;
+			this._matrix.tx *= scale;
+			this._matrix.ty *= scale;
+			transformationMatrix.concat(this._matrix);
+			this._matrix.tx = tx;
+			this._matrix.ty = ty;
 		}
-		
+
 		public function calculateTransformMatrix(transformationMatrix: Matrix, pivotMatrix: Matrix, scale: Number): Matrix
 		{
 			applyTransformMatrix(transformationMatrix, pivotMatrix, scale);

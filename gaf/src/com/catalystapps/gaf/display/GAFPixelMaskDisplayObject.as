@@ -94,7 +94,7 @@ package com.catalystapps.gaf.display
 			return _maskBounds;
 		}
 
-		override protected function refreshRenderTextures(e: Event = null): void
+		override protected function refreshRenderTextures(event: Event = null): void
 		{
 			if (_mask)
 			{

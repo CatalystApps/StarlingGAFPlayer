@@ -648,20 +648,20 @@ package com.catalystapps.gaf.display
 			{
 				throw new IllegalOperationError("Scale9Image textures cannot be null.");
 			}
-			if (this._textures == value)
+
+			if (this._textures != value)
 			{
-				return;
+				this._textures = value;
+				var texture: Texture = this._textures.texture;
+				this._frame = texture.frame;
+				if (!this._frame)
+				{
+					this._frame = new Rectangle(0, 0, texture.width, texture.height);
+				}
+				this._layoutChanged = true;
+				this._renderingChanged = true;
+				this.invalidate();
 			}
-			this._textures = value;
-			var texture: Texture = this._textures.texture;
-			this._frame = texture.frame;
-			if (!this._frame)
-			{
-				this._frame = new Rectangle(0, 0, texture.width, texture.height);
-			}
-			this._layoutChanged = true;
-			this._renderingChanged = true;
-			this.invalidate();
 		}
 
 		/**
@@ -684,13 +684,12 @@ package com.catalystapps.gaf.display
 		 */
 		public function set textureScale(value: Number): void
 		{
-			if (MathUtility.equals(this._textureScale, value))
+			if (!MathUtility.equals(this._textureScale, value))
 			{
-				return;
+				this._textureScale = value;
+				this._layoutChanged = true;
+				this.invalidate();
 			}
-			this._textureScale = value;
-			this._layoutChanged = true;
-			this.invalidate();
 		}
 
 		/**
@@ -715,13 +714,12 @@ package com.catalystapps.gaf.display
 		 */
 		public function set smoothing(value: String): void
 		{
-			if (this._smoothing == value)
+			if (this._smoothing != value)
 			{
-				return;
+				this._smoothing = value;
+				this._propertiesChanged = true;
+				this.invalidate();
 			}
-			this._smoothing = value;
-			this._propertiesChanged = true;
-			this.invalidate();
 		}
 
 		/**
@@ -744,13 +742,12 @@ package com.catalystapps.gaf.display
 		 */
 		public function set color(value: uint): void
 		{
-			if (this._color == value)
+			if (this._color != value)
 			{
-				return;
+				this._color = value;
+				this._propertiesChanged = true;
+				this.invalidate();
 			}
-			this._color = value;
-			this._propertiesChanged = true;
-			this.invalidate();
 		}
 
 		/**
@@ -774,13 +771,12 @@ package com.catalystapps.gaf.display
 		 */
 		public function set useSeparateBatch(value: Boolean): void
 		{
-			if (this._useSeparateBatch == value)
+			if (this._useSeparateBatch != value)
 			{
-				return;
+				this._useSeparateBatch = value;
+				this._renderingChanged = true;
+				this.invalidate();
 			}
-			this._useSeparateBatch = value;
-			this._renderingChanged = true;
-			this.invalidate();
 		}
 
 		/**
