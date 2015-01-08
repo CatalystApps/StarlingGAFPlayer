@@ -4,6 +4,7 @@ package com.catalystapps.gaf.display
 	import flash.geom.Rectangle;
 
 	import starling.core.RenderSupport;
+	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.events.Event;
@@ -96,32 +97,35 @@ package com.catalystapps.gaf.display
 
 		override protected function refreshRenderTextures(event: Event = null): void
 		{
-			if (_mask)
+			if (Starling.current.contextValid)
 			{
-				clearRenderTextures();
-
-				_maskRenderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
-				_renderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
-
-				// create image with the new render texture
-				_image = new Image(_renderTexture);
-				_image.x = _maskBounds.x;
-				_image.y = _maskBounds.y;
-				// create image to blit the mask onto
-				_maskImage = new Image(_maskRenderTexture);
-				_maskImage.x = _maskBounds.x;
-				_maskImage.y = _maskBounds.y;
-				// set the blending mode to MASK (ZERO, SRC_ALPHA)
-				if (_inverted)
+				if (_mask)
 				{
-					_maskImage.blendMode = MASK_MODE_INVERTED;
+					clearRenderTextures();
+
+					_maskRenderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
+					_renderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
+
+					// create image with the new render texture
+					_image = new Image(_renderTexture);
+					_image.x = _maskBounds.x;
+					_image.y = _maskBounds.y;
+					// create image to blit the mask onto
+					_maskImage = new Image(_maskRenderTexture);
+					_maskImage.x = _maskBounds.x;
+					_maskImage.y = _maskBounds.y;
+					// set the blending mode to MASK (ZERO, SRC_ALPHA)
+					if (_inverted)
+					{
+						_maskImage.blendMode = MASK_MODE_INVERTED;
+					}
+					else
+					{
+						_maskImage.blendMode = MASK_MODE_NORMAL;
+					}
 				}
-				else
-				{
-					_maskImage.blendMode = MASK_MODE_NORMAL;
-				}
+				_maskRendered = false;
 			}
-			_maskRendered = false;
 		}
 
 		override public function render(support: RenderSupport, parentAlpha: Number): void

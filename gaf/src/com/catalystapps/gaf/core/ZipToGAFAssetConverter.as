@@ -33,6 +33,8 @@ package com.catalystapps.gaf.core
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
 
+	import starling.core.Starling;
+
 	/** Dispatched when convertation completed */
 	[Event(name="complete", type="flash.events.Event")]
 
@@ -88,7 +90,7 @@ package com.catalystapps.gaf.core
 		 * By default loads in GPU memory only atlases for default scale and csf
 		 */
 		public static var actionWithAtlases: String = ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT;
-		
+
 		/**
 		 * Defines the values to use for specifying a texture format.
 		 * If you prefer to use 16 bit-per-pixel textures just set
@@ -394,13 +396,13 @@ package com.catalystapps.gaf.core
 		private function loadPNG(): void
 		{
 			var request: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
-			
+
 			this.atlasSourceLoader = new Loader();
 			this.atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
 			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
 			this.atlasSourceLoader.load(request, new LoaderContext());
 		}
-		
+
 		private function loadATF(): void
 		{
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
@@ -468,7 +470,7 @@ package com.catalystapps.gaf.core
 				else if (fileName.toLowerCase().indexOf(".atf") != -1)
 				{
 					fileName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.toLowerCase().lastIndexOf(".atf")) + ".png";
-					
+
 					this.atfData[fileName] = zipFile.content;
 				}
 				else if (fileName.indexOf(".json") != -1)
@@ -505,7 +507,7 @@ package com.catalystapps.gaf.core
 			{
 				converter = new JsonGAFAssetConfigConverter(gafAssetID, configSource as String, this._defaultScale, this._defaultContentScaleFactor);
 			}
-			
+
 			converter.addEventListener(Event.COMPLETE, onConverted);
 			converter.addEventListener(ErrorEvent.ERROR, onConvertError);
 			converter.convert();
@@ -513,6 +515,18 @@ package com.catalystapps.gaf.core
 
 		private function createGAFTimelines(): void
 		{
+			if (!Starling.current.contextValid)
+			{
+				Starling.current.stage3D.addEventListener(Event.CONTEXT3D_CREATE,
+						function(event: Event): void
+						{
+							event.currentTarget.removeEventListener(event.type, arguments.callee);
+							createGAFTimelines();
+						});
+				return;
+			}
+
+
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 			var gafAssetConfigID: String;
 
@@ -685,7 +699,7 @@ package com.catalystapps.gaf.core
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var converter: IGAFAssetConfigConverter = event.target as IGAFAssetConfigConverter;
 			converter.removeEventListener(Event.COMPLETE, onConverted);
-			
+
 			this.gafAssetConfigs[configID] = converter.config.timelines;
 
 			this.currentConfigIndex++;
@@ -730,7 +744,7 @@ package com.catalystapps.gaf.core
 				this.loadPNG();
 			}
 		}
-		
+
 		private function onATFLoadComplete(event: Event): void
 		{
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
@@ -796,7 +810,7 @@ package com.catalystapps.gaf.core
 		{
 			return _gafBundle;
 		}
-		
+
 		/**
 		 * Returns the first <code>GAFTimeline</code> in a <code>GAFBundle</code>.
 		 */
@@ -806,7 +820,7 @@ package com.catalystapps.gaf.core
 			{
 				return _gafBundle.timelines[0];
 			}
-			
+
 			return null;
 		}
 
