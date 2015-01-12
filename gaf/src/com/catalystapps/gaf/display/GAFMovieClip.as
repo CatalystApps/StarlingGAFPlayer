@@ -64,18 +64,21 @@ package com.catalystapps.gaf.display
 
 		private var _scale: Number;
 
-		private var displayObjectsDictionary: Object;
-		private var masksDictionary: Object;
-		private var maskedImagesDictionary: Object;
+		private var _displayObjectsDictionary: Object;
+		private var _pixelMasksDictionary: Object;
+		private var _displayObjectsVector: Vector.<IGAFDisplayObject>;
+		private var _imagesVector: Vector.<IGAFImage>;
+		private var _mcVector: Vector.<GAFMovieClip>;
+		private var _pixelMasksVector: Vector.<GAFPixelMaskDisplayObject>;
 
-		private var playingSequence: CAnimationSequence;
-		private var started: Boolean;
+		private var _playingSequence: CAnimationSequence;
+		private var _started: Boolean;
+		private var _disposed: Boolean;
 
 		private var _currentFrame: uint;
 		private var _totalFrames: uint;
 
 		private var _inPlay: Boolean;
-		private var disposed: Boolean;
 		private var _loop: Boolean = true;
 		private var _skipFrames: Boolean = true;
 
@@ -97,9 +100,10 @@ package com.catalystapps.gaf.display
 		private var _finalFrame: int;
 		private var _addToJuggler: Boolean;
 		private var _zIndex: uint;
+
 		private var _timelineBounds: Rectangle;
-		private var boundsAndPivot: QuadBatch;
-		private var config: GAFTimelineConfig;
+		private var _boundsAndPivot: QuadBatch;
+		private var _config: GAFTimelineConfig;
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -120,22 +124,16 @@ package com.catalystapps.gaf.display
 		 */
 		public function GAFMovieClip(gafTimeline: GAFTimeline, mappedAssetID: String = "", fps: int = -1, addToJuggler: Boolean = true)
 		{
-			this.config = gafTimeline.config;
+			this._config = gafTimeline.config;
 			this._scale = gafTimeline.scale;
 			this._addToJuggler = addToJuggler;
 			this._mappedAssetID = mappedAssetID;
 
 			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafBundle);
 
-			this.boundsAndPivot = new QuadBatch();
-			/*if (this.config.bounds)
+			if (this._config.bounds)
 			{
-				this._timelineBounds = this.config.bounds.clone();
-				this.updateBounds(this.config.bounds);
-			}*/
-			if (this.config.bounds)
-			{
-				this._timelineBounds = this.config.bounds.clone();
+				this._timelineBounds = this._config.bounds.clone();
 			}
 			if (fps > 0)
 			{
@@ -159,7 +157,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function getChildByID(id: String): DisplayObject
 		{
-			return this.displayObjectsDictionary[id];
+			return this._displayObjectsDictionary[id];
 		}
 
 		/** @private
@@ -170,7 +168,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function getMaskByID(id: String): DisplayObject
 		{
-			return this.masksDictionary[id];
+			return this._displayObjectsDictionary[id];
 		}
 
 		/**
@@ -180,10 +178,10 @@ package com.catalystapps.gaf.display
 		 */
 		public function showMaskByID(id: String): void
 		{
-			var maskObject: DisplayObject = this.masksDictionary[id];
+			var maskObject: DisplayObject = this._displayObjectsDictionary[id];
 			if (maskObject)
 			{
-				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
 
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 				if (maskInstance)
@@ -197,9 +195,7 @@ package com.catalystapps.gaf.display
 					{
 						maskPivotMatrix = new Matrix();
 					}
-					var maskTransformMatrix: Matrix = maskInstance.getTransformMatrix(maskPivotMatrix, this._scale).clone();
-
-					maskObject.transformationMatrix = maskTransformMatrix;
+					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
 
 					////////////////////////////////
 
@@ -228,7 +224,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function hideMaskByID(id: String): void
 		{
-			var maskObject: DisplayObject = this.masksDictionary[id];
+			var maskObject: DisplayObject = this._displayObjectsDictionary[id];
 			if (maskObject)
 			{
 				maskObject.transformationMatrix = new Matrix();
@@ -246,7 +242,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function clearSequence(): void
 		{
-			this.playingSequence = null;
+			this._playingSequence = null;
 		}
 
 		/**
@@ -256,7 +252,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get currentSequence(): String
 		{
-			var sequence: CAnimationSequence = this.config.animationSequences.getSequenceByFrame(this.currentFrame);
+			var sequence: CAnimationSequence = this._config.animationSequences.getSequenceByFrame(this.currentFrame);
 			if (sequence)
 			{
 				return sequence.id;
@@ -273,21 +269,21 @@ package com.catalystapps.gaf.display
 		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
-			this.playingSequence = this.config.animationSequences.getSequenceByID(id);
+			this._playingSequence = this._config.animationSequences.getSequenceByID(id);
 
-			if (this.playingSequence)
+			if (this._playingSequence)
 			{
 				if (play)
 				{
-					this.gotoAndPlay(this.playingSequence.startFrameNo);
+					this.gotoAndPlay(this._playingSequence.startFrameNo);
 				}
 				else
 				{
-					this.gotoAndStop(this.playingSequence.startFrameNo);
+					this.gotoAndStop(this._playingSequence.startFrameNo);
 				}
 			}
 
-			return this.playingSequence;
+			return this._playingSequence;
 		}
 
 		/**
@@ -300,24 +296,14 @@ package com.catalystapps.gaf.display
 		 */
 		public function play(applyToAllChildren: Boolean = false): void
 		{
-			this.started = true;
+			this._started = true;
 
 			if (applyToAllChildren)
 			{
-				var object: DisplayObject;
-				for each (object in this.displayObjectsDictionary)
+				var i: uint = this._mcVector.length;
+				while (i--)
 				{
-					if (object is GAFMovieClip)
-					{
-						(object as GAFMovieClip).started = true;
-					}
-				}
-				for each (object in this.masksDictionary)
-				{
-					if (object is GAFMovieClip)
-					{
-						(object as GAFMovieClip).started = true;
-					}
+					this._mcVector[i]._started = true;
 				}
 			}
 
@@ -334,24 +320,14 @@ package com.catalystapps.gaf.display
 		 */
 		public function stop(applyToAllChildren: Boolean = false): void
 		{
-			this.started = false;
+			this._started = false;
 
 			if (applyToAllChildren)
 			{
-				var object: DisplayObject;
-				for each (object in this.displayObjectsDictionary)
+				var i: uint = this._mcVector.length;
+				while (i--)
 				{
-					if (object is GAFMovieClip)
-					{
-						(object as GAFMovieClip).started = false;
-					}
-				}
-				for each (object in this.masksDictionary)
-				{
-					if (object is GAFMovieClip)
-					{
-						(object as GAFMovieClip).started = false;
-					}
+					this._mcVector[i]._started = false;
 				}
 			}
 
@@ -404,7 +380,7 @@ package com.catalystapps.gaf.display
 						}
 						else //if a playback was interrupted by some action or an event
 						{
-							if (!this.disposed)
+							if (!this._disposed)
 							{
 								this.draw();
 							}
@@ -424,12 +400,12 @@ package com.catalystapps.gaf.display
 		 */
 		public function showBounds(value: Boolean): void
 		{
-			if (this.config.bounds)
+			if (this._config.bounds)
 			{
 				if (!this._boundsAndPivot)
 				{
 					this._boundsAndPivot = new QuadBatch();
-					this.updateBounds(this.config.bounds);
+					this.updateBounds(this._config.bounds);
 				}
 
 				if (value)
@@ -465,21 +441,23 @@ package com.catalystapps.gaf.display
 
 		private function _play(applyToAllChildren: Boolean = false, calledByUser: Boolean = false): void
 		{
+			var i: uint, l: uint;
+
 			if (this._totalFrames > 1)
 			{
 				this._inPlay = true;
 			}
 
 			if (applyToAllChildren
-					&& this.config.animationConfigFrames.frames.length > 0)
+					&& this._config.animationConfigFrames.frames.length > 0)
 			{
-				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
 				if (frameConfig.actions)
 				{
 					var action: CFrameAction;
-					for (var a: int = 0; a < frameConfig.actions.length; a++)
+					for (i = 0, l = frameConfig.actions.length; i < l; i++)
 					{
-						action = frameConfig.actions[a];
+						action = frameConfig.actions[i];
 						if (action.type == CFrameAction.STOP
 								|| (action.type == CFrameAction.GOTO_AND_STOP
 								&& int(action.params[0]) == this.currentFrame))
@@ -492,8 +470,8 @@ package com.catalystapps.gaf.display
 
 				var child: DisplayObjectContainer;
 				var childMC: GAFMovieClip;
-				var childMask: GAFPixelMaskDisplayObject;
-				for (var i: int = 0; i < this.numChildren; i++)
+				var pixelMask: GAFPixelMaskDisplayObject;
+				for (i = 0, l = this.numChildren; i < l; i++)
 				{
 					child = this.getChildAt(i) as DisplayObjectContainer;
 					if (child is GAFMovieClip)
@@ -510,10 +488,10 @@ package com.catalystapps.gaf.display
 					}
 					else if (child is GAFPixelMaskDisplayObject)
 					{
-						childMask = (child as GAFPixelMaskDisplayObject);
-						for (var m: int = 0; m < childMask.numChildren; m++)
+						pixelMask = child as GAFPixelMaskDisplayObject;
+						for (var mi: int = 0, ml: uint = pixelMask.numChildren; mi < ml; mi++)
 						{
-							childMC = childMask.getChildAt(m) as GAFMovieClip;
+							childMC = pixelMask.getChildAt(mi) as GAFMovieClip;
 							if (childMC)
 							{
 								if (calledByUser)
@@ -526,15 +504,15 @@ package com.catalystapps.gaf.display
 								}
 							}
 						}
-						if (childMask.mask is GAFMovieClip)
+						if (pixelMask.mask is GAFMovieClip)
 						{
 							if (calledByUser)
 							{
-								(childMask.mask as GAFMovieClip).play(true);
+								(pixelMask.mask as GAFMovieClip).play(true);
 							}
 							else
 							{
-								(childMask.mask as GAFMovieClip)._play(true);
+								(pixelMask.mask as GAFMovieClip)._play(true);
 							}
 						}
 					}
@@ -551,7 +529,7 @@ package com.catalystapps.gaf.display
 			this._inPlay = false;
 
 			if (applyToAllChildren
-					&& this.config.animationConfigFrames.frames.length > 0)
+					&& this._config.animationConfigFrames.frames.length > 0)
 			{
 				var child: DisplayObjectContainer;
 				var childMC: GAFMovieClip;
@@ -610,7 +588,7 @@ package com.catalystapps.gaf.display
 			var sequence: CAnimationSequence;
 			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
 			{
-				sequence = this.config.animationSequences.getSequenceStart(this._currentFrame + 1);
+				sequence = this._config.animationSequences.getSequenceStart(this._currentFrame + 1);
 				if (sequence)
 				{
 					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_START, false, sequence);
@@ -618,7 +596,7 @@ package com.catalystapps.gaf.display
 			}
 			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_END))
 			{
-				sequence = this.config.animationSequences.getSequenceEnd(this._currentFrame + 1);
+				sequence = this._config.animationSequences.getSequenceEnd(this._currentFrame + 1);
 				if (sequence)
 				{
 					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
@@ -628,18 +606,19 @@ package com.catalystapps.gaf.display
 
 		private function runActions(): void
 		{
-			if (this.config.animationConfigFrames.frames.length == 0)
+			if (!this._config.animationConfigFrames.frames.length)
 			{
 				return;
 			}
 
-			var actions: Vector.<CFrameAction> = this.config.animationConfigFrames.frames[this._currentFrame].actions;
+			var i: uint, l: uint;
+			var actions: Vector.<CFrameAction> = this._config.animationConfigFrames.frames[this._currentFrame].actions;
 			if (actions)
 			{
 				var action: CFrameAction;
-				for (var a: int = 0; a < actions.length; a++)
+				for (i = 0, l = actions.length; i < l; i++)
 				{
-					action = actions[a];
+					action = actions[i];
 					switch (action.type)
 					{
 						case CFrameAction.STOP:
@@ -688,7 +667,7 @@ package com.catalystapps.gaf.display
 			else if (frame is String)
 			{
 				var label: String = frame;
-				frame = this.config.animationSequences.getStartFrameNo(label);
+				frame = this._config.animationSequences.getStartFrameNo(label);
 
 				if (frame == 0)
 				{
@@ -702,9 +681,9 @@ package com.catalystapps.gaf.display
 
 			this._currentFrame = frame - 1;
 
-			if (this.playingSequence && !this.playingSequence.isSequenceFrame(this._currentFrame + 1))
+			if (this._playingSequence && !this._playingSequence.isSequenceFrame(this._currentFrame + 1))
 			{
-				this.playingSequence = null;
+				this._playingSequence = null;
 			}
 
 			this.runActions();
@@ -716,9 +695,9 @@ package com.catalystapps.gaf.display
 		{
 			this.removeChildren();
 
-			for each (var pixelMaskImage: GAFPixelMaskDisplayObject in this.maskedImagesDictionary)
+			for (var i: uint = 0, l: uint = this._pixelMasksVector.length; i < l; i++)
 			{
-				pixelMaskImage.removeChildren();
+				this._pixelMasksVector[i].removeChildren();
 			}
 		}
 
@@ -751,12 +730,14 @@ package com.catalystapps.gaf.display
 
 		private function draw(): void
 		{
-			var i: int;
+			var i: uint;
+			var l: uint;
 			var displayObject: IGAFDisplayObject;
 			var mc: GAFMovieClip;
-			var maskedDisplayObject: GAFPixelMaskDisplayObject;
+			var pixelMaskObject: GAFPixelMaskDisplayObject;
+			var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
 
-			if (config.debugRegions)
+			if (_config.debugRegions)
 			{
 				// Non optimized way when there are debug regions
 				this.clearDisplayList();
@@ -764,55 +745,47 @@ package com.catalystapps.gaf.display
 			else
 			{
 				// Just hide the children to avoid dispatching a lot of events and alloc temporary arrays
-				for each (displayObject in this.displayObjectsDictionary)
+				for (i = 0, l = this._displayObjectsVector.length; i < l; i++)
 				{
-					displayObject.visible = false;
-				}
-
-				for each (maskedDisplayObject in this.maskedImagesDictionary)
-				{
-					for (i = (maskedDisplayObject.numChildren - 1); i >= 0; i--)
-					{
-						displayObject = maskedDisplayObject.getChildAt(i) as IGAFDisplayObject;
-						displayObject.visible = false;
-					}
+					this._displayObjectsVector[i].visible = false;
 				}
 			}
 
 			var objectPivotMatrix: Matrix;
 			var maskPivotMatrix: Matrix;
-
-			if (this.config.animationConfigFrames.frames.length > this._currentFrame)
+			var frames: Vector.<CAnimationFrame> = this._config.animationConfigFrames.frames;
+			if (frames.length > this._currentFrame)
 			{
-				var frameConfig: CAnimationFrame = this.config.animationConfigFrames.frames[this._currentFrame];
+				var frameConfig: CAnimationFrame = frames[this._currentFrame];
 				var mustReorder: Boolean;
 				var zIndex: uint;
 				var instances: Vector.<CAnimationFrameInstance> = frameConfig.instances;
-				var l: uint = instances.length;
-				for (i = 0; i < l; i++)
+				l = instances.length;
+				i = 0;
+				while (i < l)
 				{
-					var instance: CAnimationFrameInstance = instances[i];
-					displayObject = this.displayObjectsDictionary[instance.id];
+					var instance: CAnimationFrameInstance = instances[i++];
+
+					displayObject = this._displayObjectsDictionary[instance.id];
 
 					objectPivotMatrix = getTransformMatrix(displayObject);
-
-					if (displayObject)
+					mc = displayObject as GAFMovieClip;
+					if (mc)
 					{
-						mc = displayObject as GAFMovieClip;
-						if (mc)
+						if (instance.alpha < 0)
 						{
-							if (instance.alpha < 0)
-							{
-								mc.reset();
-							}
-							else if (mc._reset && mc.started)
-							{
-								mc._play(true);
-							}
+							mc.reset();
 						}
-						displayObject.alpha = instance.alpha;
-						displayObject.visible = instance.alpha >= 0;
+						else if (mc._reset && mc._started)
+						{
+							mc._play(true);
+						}
+					}
+					displayObject.alpha = instance.alpha;
+					displayObject.visible = instance.alpha >= 0;
 
+					if (!animationObjectsDictionary[instance.id].mask)
+					{
 						if (instance.maskID)
 						{
 							if (DebugUtility.RENDERING_DEBUG && mc)
@@ -823,22 +796,22 @@ package com.catalystapps.gaf.display
 										(instance.filter != null) || this._hasFilter);
 							}
 
-							var maskObject: IGAFDisplayObject = this.masksDictionary[instance.maskID];
+							var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.maskID];
 							if (maskObject)
 							{
-								maskedDisplayObject = this.maskedImagesDictionary[instance.maskID];
-								maskedDisplayObject.visible = true;
+								pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
+								pixelMaskObject.visible = true;
 
-								mustReorder ||= (maskedDisplayObject.zIndex != zIndex);
-								maskedDisplayObject.zIndex = zIndex;
-								maskedDisplayObject.mustReorder ||= (displayObject.zIndex != zIndex);
+								mustReorder ||= (pixelMaskObject.zIndex != zIndex);
+								pixelMaskObject.zIndex = zIndex;
+								pixelMaskObject.mustReorder ||= (displayObject.zIndex != zIndex);
 
-								if (displayObject.parent != maskedDisplayObject)
+								if (displayObject.parent != pixelMaskObject)
 								{
-									maskedDisplayObject.addChild(displayObject as DisplayObject);
+									pixelMaskObject.addChild(displayObject as DisplayObject);
 									mustReorder = true;
 
-									if (mc && mc.started)
+									if (mc && mc._started)
 									{
 										mc._play(true);
 									}
@@ -848,31 +821,35 @@ package com.catalystapps.gaf.display
 								if (maskInstance)
 								{
 									maskPivotMatrix = getTransformMatrix(maskObject);
-									displayObject.transformationMatrix = instance.calculateTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
+									instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
 
 									maskInstance.applyTransformMatrix(this.tmpMaskTransformationMatrix, maskPivotMatrix, this._scale);
 									this.tmpMaskTransformationMatrix.invert();
 									displayObject.transformationMatrix.concat(this.tmpMaskTransformationMatrix);
 
-									maskedDisplayObject.transformationMatrix = maskInstance.calculateTransformMatrix(maskedDisplayObject.transformationMatrix, maskPivotMatrix, this._scale);
+									maskInstance.applyTransformMatrix(pixelMaskObject.transformationMatrix, maskPivotMatrix, this._scale);
 								}
 								else
 								{
 									throw new Error("Unable to find mask with ID " + instance.maskID);
 								}
 
-								this.updateFilter(displayObject, instance, this._scale);
+								if (displayObject.filter || instance.filter)
+								{
+									this.updateFilter(displayObject, instance, this._scale);
+								}
 
 								displayObject.filter = null;
 
-								if (!maskedDisplayObject.parent)
+								if (!pixelMaskObject.parent)
 								{
-									this.addChild(maskedDisplayObject);
+									this.addChild(pixelMaskObject);
 									mustReorder = true;
 
-									if (maskedDisplayObject.mask is GAFMovieClip && (maskedDisplayObject.mask as GAFMovieClip).started)
+									mc = pixelMaskObject.mask as GAFMovieClip;
+									if (mc && mc._started)
 									{
-										(maskedDisplayObject.mask as GAFMovieClip)._play(true);
+										mc._play(true);
 									}
 								}
 							}
@@ -893,15 +870,18 @@ package com.catalystapps.gaf.display
 
 							mustReorder ||= (displayObject.zIndex != zIndex);
 
-							displayObject.transformationMatrix = instance.calculateTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
-							this.updateFilter(displayObject, instance, this._scale);
+							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
+							if (displayObject.filter || instance.filter)
+							{
+								this.updateFilter(displayObject, instance, this._scale);
+							}
 
 							if (displayObject.parent != this)
 							{
 								this.addChild(displayObject as DisplayObject);
 								mustReorder = true;
 
-								if (mc && mc.started)
+								if (mc && mc._started)
 								{
 									mc._play(true);
 								}
@@ -917,6 +897,7 @@ package com.catalystapps.gaf.display
 							(displayObject as IGAFDebug).debugColors = colors;
 						}
 					}
+
 					++zIndex;
 				}
 			}
@@ -926,17 +907,18 @@ package com.catalystapps.gaf.display
 				this.sortChildren(sortDisplayObjects);
 			}
 
-			for each (maskedDisplayObject in this.maskedImagesDictionary)
+			for (i = 0, l = this._pixelMasksVector.length; i < l; i++)
 			{
-				if (maskedDisplayObject.mustReorder)
+				pixelMaskObject = this._pixelMasksVector[i];
+				if (pixelMaskObject.mustReorder)
 				{
-					maskedDisplayObject.mustReorder = false;
-					maskedDisplayObject.sortChildren(sortDisplayObjects);
+					pixelMaskObject.mustReorder = false;
+					pixelMaskObject.sortChildren(sortDisplayObjects);
 				}
 			}
 
 			var debugView: Quad;
-			for each (var debugRegion: GAFDebugInformation in this.config.debugRegions)
+			for each (var debugRegion: GAFDebugInformation in this._config.debugRegions)
 			{
 				switch (debugRegion.type)
 				{
@@ -967,20 +949,10 @@ package com.catalystapps.gaf.display
 			this._currentTime = 0;
 			this._lastFrameTime = 0;
 
-			var displayObject: DisplayObject;
-			for each (displayObject in this.displayObjectsDictionary)
+			var i: uint = this._mcVector.length;
+			while (i--)
 			{
-				if (displayObject is GAFMovieClip)
-				{
-					(displayObject as GAFMovieClip).reset();
-				}
-			}
-			for each (displayObject in this.masksDictionary)
-			{
-				if (displayObject is GAFMovieClip)
-				{
-					(displayObject as GAFMovieClip).reset();
-				}
+				this._mcVector[i].reset();
 			}
 		}
 
@@ -1023,6 +995,11 @@ package com.catalystapps.gaf.display
 
 		private function updateFilter(image: IGAFDisplayObject, instance: CAnimationFrameInstance, scale: Number): void
 		{
+			if (!Starling.current.contextValid)
+			{
+				return;
+			}
+
 			var gafFilter: GAFFilter;
 
 			if (!image.filter && !instance.filter)
@@ -1050,15 +1027,18 @@ package com.catalystapps.gaf.display
 
 		private function initialize(textureAtlas: CTextureAtlas, gafBundle: GAFBundle): void
 		{
-			this.displayObjectsDictionary = {};
-			this.masksDictionary = {};
-			this.maskedImagesDictionary = {};
+			this._displayObjectsDictionary = {};
+			this._pixelMasksDictionary = {};
+			this._displayObjectsVector = new <IGAFDisplayObject>[];
+			this._imagesVector = new <IGAFImage>[];
+			this._mcVector = new <GAFMovieClip>[];
+			this._pixelMasksVector = new <GAFPixelMaskDisplayObject>[];
 
 			this._currentFrame = 0;
-			this._totalFrames = this.config.framesCount;
-			this.fps = this.config.stageConfig ? this.config.stageConfig.fps : Starling.current.nativeStage.frameRate;
+			this._totalFrames = this._config.framesCount;
+			this.fps = this._config.stageConfig ? this._config.stageConfig.fps : Starling.current.nativeStage.frameRate;
 
-			var animationObjectsDictionary: Object = this.config.animationObjects.animationObjectsDictionary;
+			var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
 
 			for each (var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
 			{
@@ -1078,18 +1058,17 @@ package com.catalystapps.gaf.display
 						}
 						break;
 					case CAnimationObject.TYPE_TEXTFIELD:
-						var tfObj: CTextFieldObject = this.config.textFields.textFieldObjectsDictionary[animationObjectConfig.regionID];
+						var tfObj: CTextFieldObject = this._config.textFields.textFieldObjectsDictionary[animationObjectConfig.regionID];
 						displayObject = new GAFTextField(tfObj);
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
-						displayObject = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this.config.assetID, animationObjectConfig.regionID));
+						displayObject = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this._config.assetID, animationObjectConfig.regionID));
 						break;
 				}
 
+				this.addDisplayObject(animationObjectConfig.instanceID, displayObject);
 				if (animationObjectConfig.mask)
 				{
-					this.masksDictionary[animationObjectConfig.instanceID] = displayObject;
-
 					var pixelMaskDisplayObject: GAFPixelMaskDisplayObject = new GAFPixelMaskDisplayObject();
 					pixelMaskDisplayObject.mask = displayObject;
 					var gafMovieClip: GAFMovieClip = displayObject as GAFMovieClip;
@@ -1102,20 +1081,15 @@ package com.catalystapps.gaf.display
 								gafMovieClip._timelineBounds.height * gafMovieClip._scale);
 						pixelMaskDisplayObject.maskBounds = maskBounds;
 					}
-
-					this.maskedImagesDictionary[animationObjectConfig.instanceID] = pixelMaskDisplayObject;
-				}
-				else
-				{
-					this.displayObjectsDictionary[animationObjectConfig.instanceID] = displayObject;
+					this.addDisplayObject(animationObjectConfig.instanceID, pixelMaskDisplayObject);
 				}
 
-				if (this.config.namedParts != null)
+				if (this._config.namedParts != null)
 				{
-					var instanceName: String = this.config.namedParts[animationObjectConfig.instanceID];
+					var instanceName: String = this._config.namedParts[animationObjectConfig.instanceID];
 					if (instanceName != null && !this.hasOwnProperty(instanceName))
 					{
-						this[this.config.namedParts[animationObjectConfig.instanceID]] = displayObject;
+						this[this._config.namedParts[animationObjectConfig.instanceID]] = displayObject;
 						displayObject.name = instanceName;
 					}
 				}
@@ -1127,9 +1101,31 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		private function addDisplayObject(id: String, displayObject: DisplayObject): void
+		{
+			if (displayObject is GAFPixelMaskDisplayObject)
+			{
+				this._pixelMasksDictionary[id] = displayObject;
+				this._pixelMasksVector.push(displayObject as GAFPixelMaskDisplayObject);
+			}
+			else
+			{
+				this._displayObjectsDictionary[id] = displayObject;
+				this._displayObjectsVector.push(displayObject);
+				if (displayObject is IGAFImage)
+				{
+					this._imagesVector.push(displayObject as IGAFImage);
+				}
+				else if (displayObject is GAFMovieClip)
+				{
+					this._mcVector.push(displayObject as GAFMovieClip);
+				}
+			}
+		}
+
 		private function updateBounds(bounds: Rectangle): void
 		{
-			this.boundsAndPivot.reset();
+			this._boundsAndPivot.reset();
 			//bounds
 			if (bounds.width > 0
 					&& bounds.height > 0)
@@ -1137,23 +1133,23 @@ package com.catalystapps.gaf.display
 				var quad: Quad = new Quad(bounds.width * this._scale, 2, 0xff0000);
 				quad.x = bounds.x * this._scale;
 				quad.y = bounds.y * this._scale;
-				this.boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addQuad(quad);
 				quad = new Quad(bounds.width * this._scale, 2, 0xff0000);
 				quad.x = bounds.x * this._scale;
 				quad.y = bounds.bottom * this._scale - 2;
-				this.boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addQuad(quad);
 				quad = new Quad(2, bounds.height * this._scale, 0xff0000);
 				quad.x = bounds.x * this._scale;
 				quad.y = bounds.y * this._scale;
-				this.boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addQuad(quad);
 				quad = new Quad(2, bounds.height * this._scale, 0xff0000);
 				quad.x = bounds.right * this._scale - 2;
 				quad.y = bounds.y * this._scale;
-				this.boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addQuad(quad);
 			}
 			//pivot point
 			quad = new Quad(5, 5, 0xff0000);
-			this.boundsAndPivot.addQuad(quad);
+			this._boundsAndPivot.addQuad(quad);
 		}
 
 		gaf_internal function __debugHighlight(): void
@@ -1215,28 +1211,21 @@ package com.catalystapps.gaf.display
 			{
 				Starling.juggler.remove(this);
 			}
-
-			var displayObject: DisplayObject;
-
-			for each (displayObject in this.displayObjectsDictionary)
+			var i: uint, l: uint;
+			for (i = 0, l = this._displayObjectsVector.length; i < l; i++)
 			{
-				displayObject.dispose();
+				this._displayObjectsVector[i].dispose();
 			}
 
-			for each (displayObject in this.masksDictionary)
+			for (i = 0, l = this._pixelMasksVector.length; i < l; i++)
 			{
-				displayObject.dispose();
-			}
-
-			for each (var pixelMaskDisplayObject: GAFPixelMaskDisplayObject in this.maskedImagesDictionary)
-			{
-				pixelMaskDisplayObject.dispose();
+				this._pixelMasksVector[i].dispose();
 			}
 
 			super.dispose();
 
-			this.config = null;
-			this.disposed = true;
+			this._config = null;
+			this._disposed = true;
 		}
 
 		/** @private
@@ -1246,8 +1235,8 @@ package com.catalystapps.gaf.display
 		override public function set transformationMatrix(matrix: Matrix): void
 		{
 			super.transformationMatrix = matrix;
-
-			for (var i: uint = 0; i < this.numChildren; i++)
+			var i: uint, l: uint;
+			for (i = 0, l = this.numChildren; i < l; i++)
 			{
 				var child: IGAFImage = this.getChildAt(i) as IGAFImage;
 				if (child)
@@ -1294,8 +1283,8 @@ package com.catalystapps.gaf.display
 		private function changeCurrentFrame(isSkipping: Boolean): void
 		{
 			this._nextFrame = this._currentFrame + (this._reverse ? -1 : 1);
-			this._startFrame = (this.playingSequence ? this.playingSequence.startFrameNo : 1) - 1;
-			this._finalFrame = (this.playingSequence ? this.playingSequence.endFrameNo : this._totalFrames) - 1;
+			this._startFrame = (this._playingSequence ? this._playingSequence.startFrameNo : 1) - 1;
+			this._finalFrame = (this._playingSequence ? this._playingSequence.endFrameNo : this._totalFrames) - 1;
 
 			if (this._nextFrame >= this._startFrame && this._nextFrame <= this._finalFrame)
 			{
@@ -1331,21 +1320,12 @@ package com.catalystapps.gaf.display
 			if (resetInvisibleChildren)
 			{
 				//reset timelines that aren't visible
-				var displayObject: DisplayObject;
-				for each (displayObject in this.displayObjectsDictionary)
+				var i: uint = this._mcVector.length;
+				while (i--)
 				{
-					if (displayObject is GAFMovieClip
-							&& !displayObject.visible)
+					if (!this._mcVector[i].visible)
 					{
-						(displayObject as GAFMovieClip).reset();
-					}
-				}
-				for each (displayObject in this.masksDictionary)
-				{
-					if (displayObject is GAFMovieClip
-							&& !displayObject.visible)
-					{
-						(displayObject as GAFMovieClip).reset();
+						this._mcVector[i].reset();
 					}
 				}
 			}
@@ -1403,22 +1383,10 @@ package com.catalystapps.gaf.display
 			{
 				this._smoothing = value;
 
-				var image: IGAFDisplayObject;
-
-				for each (image in this.displayObjectsDictionary)
+				var i: uint = this._imagesVector.length;
+				while (i--)
 				{
-					if (image is GAFImage)
-					{
-						(image as GAFImage).smoothing = this._smoothing;
-					}
-				}
-
-				for each (image in this.masksDictionary)
-				{
-					if (image is GAFImage)
-					{
-						(image as GAFImage).smoothing = this._smoothing;
-					}
+					this._imagesVector[i].smoothing = this._smoothing;
 				}
 			}
 		}
@@ -1440,9 +1408,9 @@ package com.catalystapps.gaf.display
 		{
 			this._useClipping = value;
 
-			if (this._useClipping && this.config.stageConfig)
+			if (this._useClipping && this._config.stageConfig)
 			{
-				this.clipRect = new Rectangle(0, 0, this.config.stageConfig.width, this.config.stageConfig.height);
+				this.clipRect = new Rectangle(0, 0, this._config.stageConfig.width, this._config.stageConfig.height);
 			}
 			else
 			{
@@ -1473,20 +1441,10 @@ package com.catalystapps.gaf.display
 				this._frameDuration = 1 / value;
 			}
 
-			var displayObject: DisplayObject;
-			for each (displayObject in this.displayObjectsDictionary)
+			var i: uint = this._mcVector.length;
+			while (i--)
 			{
-				if (displayObject is GAFMovieClip)
-				{
-					(displayObject as GAFMovieClip).fps = value;
-				}
-			}
-			for each (displayObject in this.masksDictionary)
-			{
-				if (displayObject is GAFMovieClip)
-				{
-					(displayObject as GAFMovieClip).fps = value;
-				}
+				this._mcVector[i].fps = value;
 			}
 		}
 
@@ -1502,20 +1460,10 @@ package com.catalystapps.gaf.display
 		{
 			this._reverse = value;
 
-			var displayObject: DisplayObject;
-			for each (displayObject in this.displayObjectsDictionary)
+			var i: uint = this._mcVector.length;
+			while (i--)
 			{
-				if (displayObject is GAFMovieClip)
-				{
-					(displayObject as GAFMovieClip)._reverse = value;
-				}
-			}
-			for each (displayObject in this.masksDictionary)
-			{
-				if (displayObject is GAFMovieClip)
-				{
-					(displayObject as GAFMovieClip)._reverse = value;
-				}
+				this._mcVector[i]._reverse = value;
 			}
 		}
 
