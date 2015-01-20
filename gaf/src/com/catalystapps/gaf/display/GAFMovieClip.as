@@ -1410,7 +1410,7 @@ package com.catalystapps.gaf.display
 
 			if (this._useClipping && this._config.stageConfig)
 			{
-				this.clipRect = new Rectangle(0, 0, this._config.stageConfig.width, this._config.stageConfig.height);
+				this.clipRect = new Rectangle(0, 0, this._config.stageConfig.width * this._scale, this._config.stageConfig.height * this._scale);
 			}
 			else
 			{
