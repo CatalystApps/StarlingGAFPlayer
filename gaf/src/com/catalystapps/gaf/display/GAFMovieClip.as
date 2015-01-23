@@ -834,12 +834,16 @@ package com.catalystapps.gaf.display
 									throw new Error("Unable to find mask with ID " + instance.maskID);
 								}
 
-								if (displayObject.filter || instance.filter)
-								{
-									this.updateFilter(displayObject, instance, this._scale);
-								}
+//								if (displayObject.filter || instance.filter)
+//								{
+//									this.updateFilter(displayObject, instance, this._scale);
+//								}
 
-								displayObject.filter = null;
+								if (displayObject.filter)
+								{
+									displayObject.filter.dispose();
+									displayObject.filter = null;
+								}
 
 								if (!pixelMaskObject.parent)
 								{
