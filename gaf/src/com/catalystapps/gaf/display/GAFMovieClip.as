@@ -701,43 +701,14 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function updateAlphaMaskedAndHasFilter(mc: GAFMovieClip, alphaLessMax: Boolean, masked: Boolean, hasFilter: Boolean): void
-		{
-			var changed: Boolean;
-			if (mc._alphaLessMax != alphaLessMax)
-			{
-				mc._alphaLessMax = alphaLessMax;
-				changed = true;
-			}
-			if (mc._masked != masked)
-			{
-				mc._masked = masked;
-				changed = true;
-			}
-			if (mc._hasFilter != hasFilter)
-			{
-				mc._hasFilter = hasFilter;
-				changed = true;
-			}
-
-			if (changed)
-			{
-				mc.draw();
-			}
-		}
-
 		private var tmpMaskTransformationMatrix: Matrix = new Matrix();
 
 		private function draw(): void
 		{
 			var i: uint;
 			var l: uint;
-			var displayObject: IGAFDisplayObject;
-			var mc: GAFMovieClip;
-			var pixelMaskObject: GAFPixelMaskDisplayObject;
-			var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
 
-			if (_config.debugRegions)
+			if (this._config.debugRegions)
 			{
 				// Non optimized way when there are debug regions
 				this.clearDisplayList();
@@ -751,20 +722,26 @@ package com.catalystapps.gaf.display
 				}
 			}
 
-			var objectPivotMatrix: Matrix;
-			var maskPivotMatrix: Matrix;
 			var frames: Vector.<CAnimationFrame> = this._config.animationConfigFrames.frames;
 			if (frames.length > this._currentFrame)
 			{
-				var frameConfig: CAnimationFrame = frames[this._currentFrame];
-				var mustReorder: Boolean;
 				var zIndex: uint;
+				var maskIndex: int;
+				var mc: GAFMovieClip;
+				var maskPivotMatrix: Matrix;
+				var objectPivotMatrix: Matrix;
+				var displayObject: IGAFDisplayObject;
+				var instance: CAnimationFrameInstance;
+				var pixelMaskObject: GAFPixelMaskDisplayObject;
+				
+				var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
+				var frameConfig: CAnimationFrame = frames[this._currentFrame];
 				var instances: Vector.<CAnimationFrameInstance> = frameConfig.instances;
 				l = instances.length;
 				i = 0;
 				while (i < l)
 				{
-					var instance: CAnimationFrameInstance = instances[i++];
+					instance = instances[i++];
 
 					displayObject = this._displayObjectsDictionary[instance.id];
 
@@ -781,20 +758,22 @@ package com.catalystapps.gaf.display
 							mc._play(true);
 						}
 					}
+					
+					if (instance.alpha <= 0)
+					{
+						continue;
+					}
+					
 					displayObject.alpha = instance.alpha;
-					displayObject.visible = instance.alpha >= 0;
+					displayObject.visible = true;
 
+					//if display object is not a mask
 					if (!animationObjectsDictionary[instance.id].mask)
 					{
+						//if display object is under mask
 						if (instance.maskID)
 						{
-							if (DebugUtility.RENDERING_DEBUG && mc)
-							{
-								this.updateAlphaMaskedAndHasFilter(mc,
-										instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
-										true,
-										(instance.filter != null) || this._hasFilter);
-							}
+							this.renderDebug(mc, instance, true);
 
 							var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.maskID];
 							if (maskObject)
@@ -802,20 +781,14 @@ package com.catalystapps.gaf.display
 								pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
 								pixelMaskObject.visible = true;
 
-								mustReorder ||= (pixelMaskObject.zIndex != zIndex);
-								pixelMaskObject.zIndex = zIndex;
-								pixelMaskObject.mustReorder ||= (displayObject.zIndex != zIndex);
+								pixelMaskObject.addChildAt(displayObject as DisplayObject, maskIndex++);
 
-								if (displayObject.parent != pixelMaskObject)
-								{
-									pixelMaskObject.addChild(displayObject as DisplayObject);
-									mustReorder = true;
-
-									if (mc && mc._started)
-									{
-										mc._play(true);
-									}
-								}
+//								if (mc && mc._started)
+//								{
+//									mc._play(true);
+//								}
+//
+//								displayObject.zIndex = maskIndex++;
 
 								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
 								if (maskInstance)
@@ -834,45 +807,43 @@ package com.catalystapps.gaf.display
 									throw new Error("Unable to find mask with ID " + instance.maskID);
 								}
 
-//								if (displayObject.filter || instance.filter)
-//								{
-//									this.updateFilter(displayObject, instance, this._scale);
-//								}
-
 								if (displayObject.filter)
 								{
 									displayObject.filter.dispose();
 									displayObject.filter = null;
 								}
-
-								if (!pixelMaskObject.parent)
-								{
-									this.addChild(pixelMaskObject);
-									mustReorder = true;
-
-									mc = pixelMaskObject.mask as GAFMovieClip;
-									if (mc && mc._started)
-									{
-										mc._play(true);
-									}
-								}
+								
+								this.addChildAt(pixelMaskObject, zIndex++);
+								
+//								mc = pixelMaskObject.mask as GAFMovieClip;
+//								if (mc && mc._started)
+//								{
+//									mc._play(true);
+//								}
 							}
 							else
 							{
 								throw new Error("Unable to find mask with ID " + instance.maskID);
 							}
 						}
-						else
+						else //if display object is not masked
 						{
-							if (DebugUtility.RENDERING_DEBUG && mc)
+							if (pixelMaskObject)
 							{
-								this.updateAlphaMaskedAndHasFilter(mc,
-										instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax,
-										this._masked,
-										(instance.filter != null) || this._hasFilter);
+								maskIndex = 0;
+								pixelMaskObject = null;
 							}
-
-							mustReorder ||= (displayObject.zIndex != zIndex);
+								
+//								this.addChildAt(pixelMaskObject, zIndex++);
+//								
+//								
+//								if (mc && mc._started)
+//								{
+//									mc._play(true);
+//								}
+//							}
+							
+							this.renderDebug(mc, instance, this._masked);
 
 							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
 							if (displayObject.filter || instance.filter)
@@ -880,19 +851,10 @@ package com.catalystapps.gaf.display
 								this.updateFilter(displayObject, instance, this._scale);
 							}
 
-							if (displayObject.parent != this)
-							{
-								this.addChild(displayObject as DisplayObject);
-								mustReorder = true;
-
-								if (mc && mc._started)
-								{
-									mc._play(true);
-								}
-							}
+							this.addChildAt(displayObject as DisplayObject, zIndex);
+							
+							zIndex++;
 						}
-
-						displayObject.zIndex = zIndex;
 
 						if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
 						{
@@ -901,26 +863,53 @@ package com.catalystapps.gaf.display
 							(displayObject as IGAFDebug).debugColors = colors;
 						}
 					}
-
-					++zIndex;
+					else
+					{
+						maskIndex = 0;
+					}
 				}
 			}
 
-			if (mustReorder)
+			if (this._config.debugRegions)
 			{
-				this.sortChildren(sortDisplayObjects);
+				this.addDebugRegions();
 			}
 
-			for (i = 0, l = this._pixelMasksVector.length; i < l; i++)
+			this.checkSequence();
+		}
+
+		private function renderDebug(mc: GAFMovieClip, instance: CAnimationFrameInstance, masked: Boolean): void
+		{
+			if (DebugUtility.RENDERING_DEBUG && mc)
 			{
-				pixelMaskObject = this._pixelMasksVector[i];
-				if (pixelMaskObject.mustReorder)
+				var hasFilter: Boolean = (instance.filter != null) || this._hasFilter;
+				var alphaLessMax: Boolean = instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax;
+					
+				var changed: Boolean;
+				if (mc._alphaLessMax != alphaLessMax)
 				{
-					pixelMaskObject.mustReorder = false;
-					pixelMaskObject.sortChildren(sortDisplayObjects);
+					mc._alphaLessMax = alphaLessMax;
+					changed = true;
+				}
+				if (mc._masked != masked)
+				{
+					mc._masked = masked;
+					changed = true;
+				}
+				if (mc._hasFilter != hasFilter)
+				{
+					mc._hasFilter = hasFilter;
+					changed = true;
+				}
+				if (changed)
+				{
+					mc.draw();
 				}
 			}
+		}
 
+		private function addDebugRegions(): void
+		{
 			var debugView: Quad;
 			for each (var debugRegion: GAFDebugInformation in this._config.debugRegions)
 			{
@@ -942,8 +931,6 @@ package com.catalystapps.gaf.display
 
 				this.addChild(debugView);
 			}
-
-			this.checkSequence();
 		}
 
 		private function reset(): void
@@ -975,25 +962,6 @@ package com.catalystapps.gaf.display
 			else
 			{
 				return defaultMatrix;
-			}
-		}
-
-		private function sortDisplayObjects(a: DisplayObject, b: DisplayObject): int
-		{
-			var aZindex: uint = a.hasOwnProperty('zIndex') ? a['zIndex'] : 0;
-			var bZindex: uint = b.hasOwnProperty('zIndex') ? b['zIndex'] : 0;
-
-			if (aZindex > bZindex)
-			{
-				return 1;
-			}
-			else if (aZindex < bZindex)
-			{
-				return -1;
-			}
-			else
-			{
-				return 0;
 			}
 		}
 
@@ -1131,8 +1099,7 @@ package com.catalystapps.gaf.display
 		{
 			this._boundsAndPivot.reset();
 			//bounds
-			if (bounds.width > 0
-					&& bounds.height > 0)
+			if (bounds.width > 0 &&  bounds.height > 0)
 			{
 				var quad: Quad = new Quad(bounds.width * this._scale, 2, 0xff0000);
 				quad.x = bounds.x * this._scale;
