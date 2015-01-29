@@ -787,8 +787,6 @@ package com.catalystapps.gaf.display
 //								{
 //									mc._play(true);
 //								}
-//
-//								displayObject.zIndex = maskIndex++;
 
 								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
 								if (maskInstance)
@@ -813,7 +811,10 @@ package com.catalystapps.gaf.display
 									displayObject.filter = null;
 								}
 								
-								this.addChildAt(pixelMaskObject, zIndex++);
+								if (maskIndex == 1)
+								{
+									this.addChildAt(pixelMaskObject, zIndex++);
+								}
 								
 //								mc = pixelMaskObject.mask as GAFMovieClip;
 //								if (mc && mc._started)
