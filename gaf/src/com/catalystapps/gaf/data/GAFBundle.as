@@ -100,16 +100,17 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by ID
-		 * @param assetID - the name of swf file with a linkage inside it before conversion
-		 * @param linkage - linkage in a library to get access to the asset in the swf file
+		 * @param linkage - linkage in a library to get access to the asset
 		 */
-		public function getGAFTimelineByLinkage(linkage: String, assetID: String = null): GAFTimeline
+		public function getGAFTimelineByLinkage(linkage: String): GAFTimeline
 		{
-			if (!assetID)
+			var i: uint;
+			var gafTimeline: GAFTimeline;
+			while (!gafTimeline && i < this._timelines.length)
 			{
-				assetID = this._timelines[0].assetID;
+				gafTimeline = this._timelinesByLinkage[this._timelines[i++].assetID + "::" + linkage];
 			}
-			return this._timelinesByLinkage[assetID + "::" + linkage];
+			return gafTimeline;
 		}
 
 		/**

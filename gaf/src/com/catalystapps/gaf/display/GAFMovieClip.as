@@ -104,6 +104,7 @@ package com.catalystapps.gaf.display
 		private var _timelineBounds: Rectangle;
 		private var _boundsAndPivot: QuadBatch;
 		private var _config: GAFTimelineConfig;
+		private var gafTimeline: GAFTimeline;
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -124,6 +125,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function GAFMovieClip(gafTimeline: GAFTimeline, mappedAssetID: String = "", fps: int = -1, addToJuggler: Boolean = true)
 		{
+			this.gafTimeline = gafTimeline;
 			this._config = gafTimeline.config;
 			this._scale = gafTimeline.scale;
 			this._addToJuggler = addToJuggler;
@@ -417,6 +419,14 @@ package com.catalystapps.gaf.display
 					this.removeChild(this._boundsAndPivot);
 				}
 			}
+		}
+
+		public function disposeWithTextures(): void
+		{
+			this.gafTimeline.unloadFromVideoMemory();
+			this.gafTimeline = null;
+			this._config.dispose();
+			this.dispose();
 		}
 
 		//--------------------------------------------------------------------------

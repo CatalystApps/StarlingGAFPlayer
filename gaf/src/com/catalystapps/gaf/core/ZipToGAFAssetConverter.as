@@ -17,7 +17,6 @@ package com.catalystapps.gaf.core
 	import com.catalystapps.gaf.data.converters.IGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
 
-	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Loader;
 	import flash.events.ErrorEvent;
@@ -139,12 +138,9 @@ package com.catalystapps.gaf.core
 
 		private var gafAssetsConfigURLs: Array;
 		private var gafAssetsConfigIndex: uint = 0;
-		private var gafAssetsConfigURLLoader: URLLoader;
 
 		private var atlasSourceURLs: Array;
 		private var atlasSourceIndex: uint = 0;
-		private var atlasSourceLoader: Loader;
-		private var atfSourceLoader: URLLoader;
 
 		//--------------------------------------------------------------------------
 		//
@@ -322,20 +318,20 @@ package com.catalystapps.gaf.core
 		{
 			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
 
-			this.gafAssetsConfigURLLoader = new URLLoader();
+			var gafAssetsConfigURLLoader: URLLoader = new URLLoader();
 
 			if (this.isJSONConfig(url))
 			{
-				this.gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.TEXT;
+				gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.TEXT;
 			}
 			else
 			{
-				this.gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
+				gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
 			}
 
-			this.gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIoError);
-			this.gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigUrlLoaderComplete);
-			this.gafAssetsConfigURLLoader.load(new URLRequest(url));
+			gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIoError);
+			gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigUrlLoaderComplete);
+			gafAssetsConfigURLLoader.load(new URLRequest(url));
 		}
 
 		private function findAllAtlasURLs(): void
@@ -398,10 +394,10 @@ package com.catalystapps.gaf.core
 		{
 			var request: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
 
-			this.atlasSourceLoader = new Loader();
-			this.atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
-			this.atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
-			this.atlasSourceLoader.load(request, new LoaderContext());
+			var atlasSourceLoader: Loader = new Loader();
+			atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
+			atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
+			atlasSourceLoader.load(request, new LoaderContext());
 		}
 
 		private function loadATF(): void
@@ -410,11 +406,11 @@ package com.catalystapps.gaf.core
 			var atfURL: String = url.substring(0, url.lastIndexOf(".png")) + ".atf";
 			var request: URLRequest = new URLRequest(atfURL);
 
-			this.atfSourceLoader = new URLLoader();
-			this.atfSourceLoader.dataFormat = URLLoaderDataFormat.BINARY;
-			this.atfSourceLoader.addEventListener(Event.COMPLETE, this.onATFLoadComplete);
-			this.atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
-			this.atfSourceLoader.load(request);
+			var atfSourceLoader: URLLoader = new URLLoader();
+			atfSourceLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			atfSourceLoader.addEventListener(Event.COMPLETE, this.onATFLoadComplete);
+			atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
+			atfSourceLoader.load(request);
 		}
 
 		private function getFolderURL(url: String): String
@@ -745,15 +741,19 @@ package com.catalystapps.gaf.core
 
 		private function onAtlasLoadIOError(event: IOErrorEvent): void
 		{
+			(event.target as Loader).removeEventListener(event.type, onAtlasLoadIOError);
+			
 			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
 		}
 
 		private function onPNGLoadComplete(event: Event): void
 		{
+			(event.target as Loader).removeEventListener(event.type, onPNGLoadComplete);
+			
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
-			this.pngImgs[fileName] = (this.atlasSourceLoader.content as Bitmap).bitmapData;
+			this.pngImgs[fileName] = event.target.content.bitmapData;
 
 			this.atlasSourceIndex++;
 
@@ -769,10 +769,12 @@ package com.catalystapps.gaf.core
 
 		private function onATFLoadComplete(event: Event): void
 		{
+			(event.target as URLLoader).removeEventListener(event.type, onATFLoadComplete);
+			
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
-			this.atfData[fileName] = this.atfSourceLoader.data;
+			this.atfData[fileName] = (event.target as URLLoader).data;
 
 			this.atlasSourceIndex++;
 
@@ -788,16 +790,20 @@ package com.catalystapps.gaf.core
 
 		private function onConfigIoError(event: IOErrorEvent): void
 		{
+			(event.target as URLLoader).removeEventListener(event.type, onConfigIoError);
+			
 			this.zipProcessError("Error occurred while loading " + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex], 5);
 		}
 
 		private function onConfigUrlLoaderComplete(event: Event): void
 		{
+			(event.target as URLLoader).removeEventListener(event.type, onConfigUrlLoaderComplete);
+			
 			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
 
 			this.gafAssetsIDs.push(url);
 
-			this.gafAssetConfigSources[url] = this.gafAssetsConfigURLLoader.data;
+			this.gafAssetConfigSources[url] = (event.target as URLLoader).data;
 
 			this.gafAssetsConfigIndex++;
 
