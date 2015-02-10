@@ -105,6 +105,7 @@ package com.catalystapps.gaf.core
 		 * By default converter won't keep images for further usage
 		 */
 		public static var keepImagesInRAM: Boolean = false;
+		public static var keepZipInRAM: Boolean = false;
 
 		//--------------------------------------------------------------------------
 		//
@@ -526,11 +527,11 @@ package com.catalystapps.gaf.core
 				return;
 			}
 
-
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 			var gafAssetConfigID: String;
+			var i: uint;
 
-			for (var i: uint = 0; i < this.gafAssetsIDs.length; i++)
+			for (i = 0; i < this.gafAssetsIDs.length; i++)
 			{
 				gafAssetConfigID = this.gafAssetsIDs[i];
 				gafTimelineConfigs = this.gafAssetConfigs[gafAssetConfigID];
@@ -560,11 +561,32 @@ package com.catalystapps.gaf.core
 				if (textureFormat == GAFGFXData.ATF)
 				{
 					this.gfxData.removeATFs();
+					for each (var ba: ByteArray in this.atfData)
+					{
+						ba.clear();
+					}
+					this.atfData = null;
 				}
 				else
 				{
 					this.gfxData.removeImages();
+					for each (var bd: BitmapData in this.pngImgs)
+					{
+						bd.dispose();
+					}
+					this.pngImgs = null;
 				}
+			}
+			
+			if (this._zip && !ZipToGAFAssetConverter.keepZipInRAM)
+			{
+				var count: uint = this._zip.getFileCount();
+				for (i = 0; i < count; i++)
+				{
+					this._zip.getFileAt(i).content.clear();
+				}
+				this._zip.close();
+				this._zip = null;
 			}
 
 			if (!this._gafBundle.timelines.length)

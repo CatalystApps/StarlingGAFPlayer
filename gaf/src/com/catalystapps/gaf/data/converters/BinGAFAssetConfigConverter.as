@@ -133,6 +133,7 @@ package com.catalystapps.gaf.data.converters
 			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
 
 			_bytes.readBytes(uncompressedBA);
+			_bytes.clear();
 
 			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
 
@@ -190,6 +191,9 @@ package com.catalystapps.gaf.data.converters
 
 		private function onParseComplete(timelineConfig: GAFTimelineConfig): void
 		{
+			_bytes.clear();
+			_bytes = null;
+			
 			if (_config.versionMajor < 4)
 			{
 				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
@@ -298,6 +302,8 @@ package com.catalystapps.gaf.data.converters
 					trace(WarningConstants.UNSUPPORTED_TAG);
 					break;
 			}
+			
+			tagContent.clear();
 		}
 
 		private function readTimeline(tagContent: ByteArray): void
