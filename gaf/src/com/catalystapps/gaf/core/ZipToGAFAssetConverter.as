@@ -199,6 +199,11 @@ package com.catalystapps.gaf.core
 				this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
 				this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
 				this._zipLoader.addZip(this._zip);
+				
+				if (!ZipToGAFAssetConverter.keepZipInRAM)
+				{
+					(data as ByteArray).clear();
+				}
 			}
 			else if (data is Array || getQualifiedClassName(data) == "flash.filesystem::File")
 			{
