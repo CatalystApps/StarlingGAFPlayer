@@ -60,9 +60,8 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		private var _smoothing: String = TextureSmoothing.BILINEAR;
 		private var _mappedAssetID: String;
-
-		private var _scale: Number;
 
 		private var _displayObjectsDictionary: Object;
 		private var _pixelMasksDictionary: Object;
@@ -72,39 +71,38 @@ package com.catalystapps.gaf.display
 		private var _pixelMasksVector: Vector.<GAFPixelMaskDisplayObject>;
 
 		private var _playingSequence: CAnimationSequence;
-		private var _started: Boolean;
-		private var _disposed: Boolean;
-
-		private var _currentFrame: uint;
-		private var _totalFrames: uint;
-
-		private var _inPlay: Boolean;
-		private var _loop: Boolean = true;
-		private var _skipFrames: Boolean = true;
-
-		private var _smoothing: String = TextureSmoothing.BILINEAR;
-
-		private var _masked: Boolean;
-		private var _hasFilter: Boolean;
-		private var _useClipping: Boolean;
-		private var _alphaLessMax: Boolean;
-
-		private var _currentTime: Number = 0;
-		// Hold the current time spent animating
-		private var _lastFrameTime: Number = 0;
-		private var _frameDuration: Number;
-		private var _reverse: Boolean;
-		private var _reset: Boolean;
-		private var _nextFrame: int;
-		private var _startFrame: int;
-		private var _finalFrame: int;
-		private var _addToJuggler: Boolean;
-		private var _zIndex: uint;
-
 		private var _timelineBounds: Rectangle;
 		private var _boundsAndPivot: QuadBatch;
 		private var _config: GAFTimelineConfig;
 		private var gafTimeline: GAFTimeline;
+		
+		private var _loop: Boolean = true;
+		private var _skipFrames: Boolean = true;
+		private var _reset: Boolean;
+		private var _masked: Boolean;
+		private var _inPlay: Boolean;
+		private var _hidden: Boolean;
+		private var _reverse: Boolean;
+		private var _started: Boolean;
+		private var _disposed: Boolean;
+		private var _hasFilter: Boolean;
+		private var _useClipping: Boolean;
+		private var _alphaLessMax: Boolean;
+		private var _addToJuggler: Boolean;
+
+		private var _scale: Number;
+		private var _currentTime: Number = 0;
+		// Hold the current time spent animating
+		private var _lastFrameTime: Number = 0;
+		private var _frameDuration: Number;
+
+		private var _nextFrame: int;
+		private var _startFrame: int;
+		private var _finalFrame: int;
+		private var _currentFrame: uint;
+		private var _totalFrames: uint;
+		private var _zIndex: uint;
+
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -728,7 +726,12 @@ package com.catalystapps.gaf.display
 				// Just hide the children to avoid dispatching a lot of events and alloc temporary arrays
 				for (i = 0, l = this._displayObjectsVector.length; i < l; i++)
 				{
-					this._displayObjectsVector[i].visible = false;
+					this._displayObjectsVector[i].alpha = 0;
+				}
+				
+				for (i = 0, l = this._mcVector.length; i < l; i++)
+				{
+					this._mcVector[i]._hidden = true;
 				}
 			}
 
@@ -767,6 +770,7 @@ package com.catalystapps.gaf.display
 						{
 							mc._play(true);
 						}
+						mc._hidden = false;
 					}
 					
 					if (instance.alpha <= 0)
@@ -775,7 +779,6 @@ package com.catalystapps.gaf.display
 					}
 					
 					displayObject.alpha = instance.alpha;
-					displayObject.visible = true;
 
 					//if display object is not a mask
 					if (!animationObjectsDictionary[instance.id].mask)
@@ -789,7 +792,6 @@ package com.catalystapps.gaf.display
 							if (maskObject)
 							{
 								pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
-								pixelMaskObject.visible = true;
 
 								pixelMaskObject.addChildAt(displayObject as DisplayObject, maskIndex++);
 
@@ -1305,7 +1307,7 @@ package com.catalystapps.gaf.display
 				var i: uint = this._mcVector.length;
 				while (i--)
 				{
-					if (!this._mcVector[i].visible)
+					if (this._mcVector[i]._hidden)
 					{
 						this._mcVector[i].reset();
 					}
