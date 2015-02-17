@@ -449,6 +449,11 @@ package com.catalystapps.gaf.display
 
 		private function _play(applyToAllChildren: Boolean = false, calledByUser: Boolean = false): void
 		{
+			if (this._inPlay && !applyToAllChildren)
+			{
+				return;
+			}
+			
 			var i: uint, l: uint;
 
 			if (this._totalFrames > 1)
@@ -687,16 +692,17 @@ package com.catalystapps.gaf.display
 				frame = 1;
 			}
 
-			this._currentFrame = frame - 1;
-
-			if (this._playingSequence && !this._playingSequence.isSequenceFrame(this._currentFrame + 1))
+			if (this._playingSequence && !this._playingSequence.isSequenceFrame(frame))
 			{
 				this._playingSequence = null;
 			}
-
-			this.runActions();
-
-			this.draw();
+			
+			if (this._currentFrame != frame - 1)
+			{
+				this._currentFrame = frame - 1;
+				this.runActions();
+				this.draw();
+			}
 		}
 
 		private function clearDisplayList(): void
