@@ -746,19 +746,19 @@ package com.catalystapps.gaf.core
 
 		private function onAtlasLoadIOError(event: IOErrorEvent): void
 		{
-			(event.target as Loader).removeEventListener(event.type, onAtlasLoadIOError);
+			(event.target as EventDispatcher).removeEventListener(event.type, onAtlasLoadIOError);
 			
 			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
 		}
 
 		private function onPNGLoadComplete(event: Event): void
 		{
-			(event.target as Loader).removeEventListener(event.type, onPNGLoadComplete);
+			(event.target as EventDispatcher).removeEventListener(event.type, onPNGLoadComplete);
 			
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
-			this.pngImgs[fileName] = event.target.content.bitmapData;
+			this.pngImgs[fileName] = event.target.loader.content.bitmapData;
 
 			this.atlasSourceIndex++;
 
