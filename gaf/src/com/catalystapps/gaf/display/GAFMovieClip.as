@@ -801,10 +801,10 @@ package com.catalystapps.gaf.display
 
 								pixelMaskObject.addChildAt(displayObject as DisplayObject, maskIndex++);
 
-//								if (mc && mc._started)
-//								{
-//									mc._play(true);
-//								}
+								if (mc && mc._started)
+								{
+									mc._play(true);
+								}
 
 								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
 								if (maskInstance)
@@ -833,12 +833,12 @@ package com.catalystapps.gaf.display
 								{
 									this.addChildAt(pixelMaskObject, zIndex++);
 								}
-								
-//								mc = pixelMaskObject.mask as GAFMovieClip;
-//								if (mc && mc._started)
-//								{
-//									mc._play(true);
-//								}
+
+								mc = pixelMaskObject.mask as GAFMovieClip;
+								if (mc && mc._started)
+								{
+									mc._play(true);
+								}
 							}
 							else
 							{
@@ -852,15 +852,11 @@ package com.catalystapps.gaf.display
 								maskIndex = 0;
 								pixelMaskObject = null;
 							}
-								
-//								this.addChildAt(pixelMaskObject, zIndex++);
-//								
-//								
-//								if (mc && mc._started)
-//								{
-//									mc._play(true);
-//								}
-//							}
+
+							if (mc && mc._started)
+							{
+								mc._play(true);
+							}
 							
 							this.renderDebug(mc, instance, this._masked);
 
