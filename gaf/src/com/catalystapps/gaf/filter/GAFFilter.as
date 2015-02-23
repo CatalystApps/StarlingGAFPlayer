@@ -150,7 +150,7 @@ package com.catalystapps.gaf.filter
 			mResolution = _currentScale > 1 ? multiplier : 1;
 			mBlurX = cBlurFilterData.blurX * multiplier;
 			mBlurY = cBlurFilterData.blurY * multiplier;
-			
+
 			resolution = cBlurFilterData.resolution * mResolution;
 			offsetX = Math.cos(cBlurFilterData.angle) * _currentScale;
 			offsetY = Math.sin(cBlurFilterData.angle) * _currentScale;
@@ -430,7 +430,6 @@ package com.catalystapps.gaf.filter
 			}
 		}
 
-		[Inline]
 		private function updateShaderMatrix(): void
 		{
 			// the shader needs the matrix components in a different order,
