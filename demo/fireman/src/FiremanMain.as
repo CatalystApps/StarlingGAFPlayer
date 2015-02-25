@@ -7,14 +7,14 @@ package
 	/**
 	 * @author mitvad
 	 */
-	[SWF(backgroundColor="#FFFFFF", frameRate="24", width="800", height="480")]
+	[SWF(backgroundColor="#FFFFFF", frameRate="60", width="1024", height="768")]
 	public class FiremanMain extends Sprite
 	{
 		private var _starling: Starling;
 		
 		public function FiremanMain()
 		{
-			_starling = new Starling(FiremanGame, stage, new Rectangle(0, 0, 800, 480));
+			_starling = new Starling(FiremanGame, stage, new Rectangle(0, 0, 1024, 768));
 			_starling.showStats = true;
        		_starling.start();
 		}

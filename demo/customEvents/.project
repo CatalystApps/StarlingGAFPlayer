@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>CustomEvents</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.powerflasher.fdt.core.FlashBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.powerflasher.fdt.core.FlashNature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>gaf</name>
+			<type>2</type>
+			<locationURI>gaf</locationURI>
+		</link>
+		<link>
+			<name>libs</name>
+			<type>2</type>
+			<locationURI>libs</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>

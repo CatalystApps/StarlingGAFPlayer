@@ -26,9 +26,10 @@ package
 		private function loadZip(): void
 		{
 			var request: URLRequest = new URLRequest("assets/fireman/fireman.zip");
-			var urlLoader: URLLoader = new URLLoader(request);
+			var urlLoader: URLLoader = new URLLoader();
 			urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 			urlLoader.addEventListener(Event.COMPLETE, this.onLoaded);
+			urlLoader.load(request);
 		}
 
 		private function onLoaded(event: Event): void
@@ -44,11 +45,10 @@ package
 		private function onConverted(event: Event): void
 		{
 			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafTimeline;
-			
 			var mc: GAFMovieClip = new GAFMovieClip(timeline);
 			
 			this.addChild(mc);
-			
+			mc.y = -mc.height / 2 - 100;
 			mc.play();
 		}
 		
@@ -56,6 +56,5 @@ package
 		{
 			trace(event);
 		}
-		
 	}
 }

@@ -75,14 +75,16 @@ package com.catalystapps.gaf.data
 		}
 
 		/**
-		 * Returns <code>GAFTimeline</code> from bundle by ID
+		 * Returns <code>GAFTimeline</code> from bundle by timelineID
+		 * @param timelineID is the name of swf file, used to create gaf file
+		 * @return GAFTimeline - timeline on the stage of swf file
 		 */
 		public function getGAFTimelineByID(timelineID: String): GAFTimeline
 		{
 			return this._timelinesDictionary[timelineID + "::" + 0];
 		}
 		
-		/**
+		/** @private
 		 * Returns <code>GAFTimeline</code> from bundle by ID
 		 */
 		gaf_internal function getGAFTimelineByID(assetID: String, id: String): GAFTimeline
@@ -90,7 +92,7 @@ package com.catalystapps.gaf.data
 			return this._timelinesDictionary[assetID + "::" + id];
 		}
 
-		/**
+		/** @private
 		 * Returns <code>GAFTimeline</code> from bundle by ID
 		 */
 		gaf_internal function getGAFTimelineByLinkage(assetID: String, linkage: String): GAFTimeline
@@ -99,8 +101,8 @@ package com.catalystapps.gaf.data
 		}
 
 		/**
-		 * Returns <code>GAFTimeline</code> from bundle by ID
-		 * @param linkage - linkage in a library to get access to the asset
+		 * Returns <code>GAFTimeline</code> from bundle by linkage
+		 * @param linkage - linkage in a *.fla file library
 		 */
 		public function getGAFTimelineByLinkage(linkage: String): GAFTimeline
 		{
@@ -113,7 +115,7 @@ package com.catalystapps.gaf.data
 			return gafTimeline;
 		}
 
-		/**
+		/** @private
 		 * Returns <code>GAFTimeline</code> from bundle by ID
 		 */
 		gaf_internal function getGAFTimelineByUniqueID(uniqueID: String): GAFTimeline
