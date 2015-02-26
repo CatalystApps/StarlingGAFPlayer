@@ -13,8 +13,8 @@ SWF source file was converted into GAF format by Standalone GAF Converter versio
 
 GAF Converter conversion settings:
 
-☑ Compress *.Gaf
-Conversion source: Main Timeline
+☑ Compress *.Gaf<br>
+Conversion source: Main Timeline<br>
 Conversion mode: nesting
 
 Atlas max size: 2048x2048
