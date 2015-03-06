@@ -2,12 +2,16 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.core.gaf_internal;
 
+	import starling.core.RenderSupport;
+	import starling.display.BlendMode;
+	import starling.display.DisplayObject;
+
 	import starling.display.Image;
 
 	/**
 	 * @private
 	 */
-	public class GAFImage extends Image implements IGAFImage, IGAFDebug
+	public class GAFImage extends Image implements IGAFImage, IGAFPixelMask, IGAFDebug
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -23,6 +27,9 @@ package com.catalystapps.gaf.display
 
 		private var _assetTexture: IGAFTexture;
 		private var _zIndex: uint;
+
+		private var _isMask: Boolean;
+		private var _quadBatch: MaskQuadBatch = new MaskQuadBatch();
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -111,7 +118,22 @@ package com.catalystapps.gaf.display
 			this._assetTexture.copyFrom(newTexture);
 		}
 
-		//--------------------------------------------------------------------------
+		public function renderAsMask(support: RenderSupport, quadBatch: MaskQuadBatch, parentAlpha: Number): void
+		{
+			quadBatch.addQuad(this, parentAlpha, texture, smoothing, support.modelViewMatrix, BlendMode.NORMAL);
+		}
+
+		public function get isMask(): Boolean
+		{
+			return this._isMask;
+		}
+
+		public function set isMask(value: Boolean): void
+		{
+			this._isMask = value;
+		}
+
+//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
@@ -162,6 +184,20 @@ package com.catalystapps.gaf.display
 			this.filter = null;
 
 			super.dispose();
+		}
+
+		override public function render(support: RenderSupport, parentAlpha: Number): void
+		{
+			if (this._isMask)
+			{
+				this.renderAsMask(support, this._quadBatch, parentAlpha);
+				this._quadBatch.renderCustom(support.projectionMatrix3D);
+				this._quadBatch.reset();
+			}
+			else
+			{
+				super.render(support, parentAlpha);
+			}
 		}
 
 		//--------------------------------------------------------------------------
