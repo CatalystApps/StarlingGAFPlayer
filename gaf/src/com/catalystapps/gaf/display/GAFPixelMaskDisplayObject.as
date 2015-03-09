@@ -17,10 +17,12 @@ package com.catalystapps.gaf.display
 	 */
 	public class GAFPixelMaskDisplayObject extends PixelMaskDisplayObject implements IGAFDisplayObject
 	{
+		private static const PADDING: uint = 1;
+
 		private var _zIndex: uint;
 		private var _maskBounds: Rectangle;
 
-		public var mustReorder: Boolean;
+		private var _mustReorder: Boolean;
 
 		public function GAFPixelMaskDisplayObject(scaleFactor: Number = -1, isAnimated: Boolean = true)
 		{
@@ -103,7 +105,7 @@ package com.catalystapps.gaf.display
 				{
 					clearRenderTextures();
 
-					_maskRenderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
+					_maskRenderTexture = new RenderTexture(_maskBounds.width + PADDING * 2, _maskBounds.height + PADDING * 2, false, _scaleFactor);
 					_renderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
 
 					// create image with the new render texture
@@ -112,8 +114,8 @@ package com.catalystapps.gaf.display
 					_image.y = _maskBounds.y;
 					// create image to blit the mask onto
 					_maskImage = new Image(_maskRenderTexture);
-					_maskImage.x = _maskBounds.x;
-					_maskImage.y = _maskBounds.y;
+					_maskImage.x = _maskBounds.x - PADDING;
+					_maskImage.y = _maskBounds.y - PADDING;
 					// set the blending mode to MASK (ZERO, SRC_ALPHA)
 					if (_inverted)
 					{
@@ -229,6 +231,16 @@ package com.catalystapps.gaf.display
 			_maskImage.transformationMatrix.d = _d;
 			_maskImage.transformationMatrix.tx = _tx;
 			_maskImage.transformationMatrix.ty = _ty;
+		}
+
+		public function get mustReorder(): Boolean
+		{
+			return _mustReorder;
+		}
+
+		public function set mustReorder(value: Boolean): void
+		{
+			_mustReorder = value;
 		}
 	}
 }
