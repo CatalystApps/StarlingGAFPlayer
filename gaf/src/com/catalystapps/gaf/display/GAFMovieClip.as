@@ -103,7 +103,7 @@ package com.catalystapps.gaf.display
 		private var _totalFrames: uint;
 		private var _zIndex: uint;
 
-
+		/** @private */
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		// --------------------------------------------------------------------------
@@ -419,6 +419,11 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		/**
+		 * Disposes GAFMovieClip with config and all textures that was loaded with gaf file.
+		 * Do not call this method if you have another GAFMovieClips that made from the same config
+		 * or even loaded from the same gaf file.
+		 */
 		public function disposeWithTextures(): void
 		{
 			this.gafTimeline.unloadFromVideoMemory();
@@ -1137,7 +1142,8 @@ package com.catalystapps.gaf.display
 			quad = new Quad(5, 5, 0xff0000);
 			this._boundsAndPivot.addQuad(quad);
 		}
-
+		
+		/** @private */
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
@@ -1149,6 +1155,7 @@ package com.catalystapps.gaf.display
 			this.alpha = 1;
 		}
 
+		/** @private */
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
@@ -1160,6 +1167,7 @@ package com.catalystapps.gaf.display
 			this.alpha = .05;
 		}
 
+		/** @private */
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;

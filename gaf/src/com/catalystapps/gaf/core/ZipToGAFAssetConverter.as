@@ -101,9 +101,14 @@ package com.catalystapps.gaf.core
 		/**
 		 * Indicates keep or not to keep all atlases as BitmapData for further usage.
 		 * All saved atlases available through <code>gafgfxData</code> property in <code>GAFTimeline</code>
-		 * By default converter won't keep images for further usage
+		 * By default converter won't keep images for further usage.
 		 */
 		public static var keepImagesInRAM: Boolean = false;
+		/**
+		 * Indicates keep or not to keep zip file content as ByteArray for further usage.
+		 * It's available through get <code>zip</code> property.
+		 * By default converter won't keep zip content for further usage.
+		 */
 		public static var keepZipInRAM: Boolean = false;
 
 		//--------------------------------------------------------------------------

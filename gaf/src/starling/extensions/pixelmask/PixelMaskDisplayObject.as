@@ -12,6 +12,7 @@ package starling.extensions.pixelmask
 	import starling.events.Event;
 	import starling.textures.RenderTexture;
 
+	/** @private */
 	public class PixelMaskDisplayObject extends DisplayObjectContainer
 	{
 		protected static const MASK_MODE_NORMAL:String = "mask";

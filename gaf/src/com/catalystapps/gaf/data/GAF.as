@@ -15,6 +15,7 @@ package com.catalystapps.gaf.data
 		 */
 		public static var use99alpha: Boolean;
 		
+		/** @private */
 		gaf_internal static var useDeviceFonts: Boolean;
 	}
 }

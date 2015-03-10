@@ -28,8 +28,9 @@ package com.catalystapps.gaf.data
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+		/** @private */
 		gaf_internal var _uniqueID: String;
+		/** @private */
 		gaf_internal var _uniqueLinkage: String;
 		
 		private var _config: GAFTimelineConfig;
@@ -282,11 +283,13 @@ package com.catalystapps.gaf.data
 			return this.config.assetID;
 		}
 		
+		/** @private */
 		gaf_internal function get uniqueID(): String
 		{
 			return this.gaf_internal::_uniqueID;
 		}
 
+		/** @private */
 		gaf_internal function get uniqueLinkage(): String
 		{
 			return this.gaf_internal::_uniqueLinkage;
