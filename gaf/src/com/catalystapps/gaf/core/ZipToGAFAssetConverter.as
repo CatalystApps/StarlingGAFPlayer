@@ -179,7 +179,7 @@ package com.catalystapps.gaf.core
 		 * Because conversion process is asynchronous use <code>Event.COMPLETE</code> listener to trigger successful conversion.
 		 * Use <code>ErrorEvent.ERROR</code> listener to trigger any conversion fail.
 		 *
-		 * @param data *.zip file binary or File object represents a path to a *.gaf/*.json file or directory with *.gaf/*.json config files
+		 * @param data *.zip file binary or File object represents a path to a *.gaf file or directory with *.gaf config files
 		 * @param defaultScale Scale value for <code>GAFTimeline</code> that will be set by default
 		 * @param defaultContentScaleFactor Content scale factor (csf) value for <code>GAFTimeline</code> that will be set by default
 		 */
