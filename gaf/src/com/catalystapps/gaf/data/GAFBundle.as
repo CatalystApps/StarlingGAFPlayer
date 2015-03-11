@@ -77,7 +77,7 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by timelineID
 		 * @param timelineID is the name of swf file, used to create gaf file
-		 * @return GAFTimeline - timeline on the stage of swf file
+		 * @return GAFTimeline timeline on the stage of swf file
 		 */
 		public function getGAFTimelineByID(timelineID: String): GAFTimeline
 		{
@@ -102,7 +102,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by linkage
-		 * @param linkage - linkage in a *.fla file library
+		 * @param linkage linkage in a *.fla file library
 		 */
 		public function getGAFTimelineByLinkage(linkage: String): GAFTimeline
 		{

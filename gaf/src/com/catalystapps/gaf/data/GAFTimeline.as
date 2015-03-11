@@ -66,7 +66,11 @@ package com.catalystapps.gaf.data
 		//
 		// --------------------------------------------------------------------------
 		
-		/** @private */
+		/**
+		 * Returns GAF Texture by name of an instance inside a timeline.
+		 * @param animationObjectName name of an instance inside a timeline
+		 * @return IGAFTexture
+		 */
 		public function getTextureByName(animationObjectName: String): IGAFTexture
 		{
 			var instanceID: String = this._config.getNamedPartID(animationObjectName);
