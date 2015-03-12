@@ -75,7 +75,7 @@ package com.catalystapps.gaf.display
 		private var _boundsAndPivot: QuadBatch;
 		private var _config: GAFTimelineConfig;
 		private var gafTimeline: GAFTimeline;
-		
+
 		private var _loop: Boolean = true;
 		private var _skipFrames: Boolean = true;
 		private var _reset: Boolean;
@@ -102,6 +102,9 @@ package com.catalystapps.gaf.display
 		private var _currentFrame: uint;
 		private var _totalFrames: uint;
 		private var _zIndex: uint;
+
+		private var _filterConfig: CFilter;
+		private var _filterScale: Number;
 
 		/** @private */
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
@@ -432,6 +435,53 @@ package com.catalystapps.gaf.display
 			this.dispose();
 		}
 
+		/** @private */
+		public function setFilterConfig(value: CFilter, scale: Number = 1): void
+		{
+			if (!Starling.current.contextValid)
+			{
+				return;
+			}
+
+			if (this._filterConfig != value || this._filterScale != scale)
+			{
+				if (value)
+				{
+					this._filterConfig = value;
+					this._filterScale = scale;
+					var gafFilter: GAFFilter;
+					if (this.filter)
+					{
+						if (this.filter is GAFFilter)
+						{
+							gafFilter = this.filter as GAFFilter;
+						}
+						else
+						{
+							this.filter.dispose();
+							gafFilter = new GAFFilter();
+						}
+					}
+					else
+					{
+						gafFilter = new GAFFilter();
+					}
+
+					gafFilter.setConfig(this._filterConfig, this._filterScale);
+					this.filter = gafFilter;
+				}
+				else
+				{
+					if (this.filter)
+					{
+						this.filter.dispose();
+					}
+					this._filterConfig = null;
+					this._filterScale = NaN;
+				}
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
@@ -458,7 +508,7 @@ package com.catalystapps.gaf.display
 			{
 				return;
 			}
-			
+
 			var i: uint, l: uint;
 
 			if (this._totalFrames > 1)
@@ -701,7 +751,7 @@ package com.catalystapps.gaf.display
 			{
 				this._playingSequence = null;
 			}
-			
+
 			if (this._currentFrame != frame - 1)
 			{
 				this._currentFrame = frame - 1;
@@ -739,7 +789,7 @@ package com.catalystapps.gaf.display
 				{
 					this._displayObjectsVector[i].alpha = 0;
 				}
-				
+
 				for (i = 0, l = this._mcVector.length; i < l; i++)
 				{
 					this._mcVector[i]._hidden = true;
@@ -757,7 +807,7 @@ package com.catalystapps.gaf.display
 				var displayObject: IGAFDisplayObject;
 				var instance: CAnimationFrameInstance;
 				var pixelMaskObject: GAFPixelMaskDisplayObject;
-				
+
 				var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
 				var frameConfig: CAnimationFrame = frames[this._currentFrame];
 				var instances: Vector.<CAnimationFrameInstance> = frameConfig.instances;
@@ -783,12 +833,12 @@ package com.catalystapps.gaf.display
 						}
 						mc._hidden = false;
 					}
-					
+
 					if (instance.alpha <= 0)
 					{
 						continue;
 					}
-					
+
 					displayObject.alpha = instance.alpha;
 
 					//if display object is not a mask
@@ -828,12 +878,8 @@ package com.catalystapps.gaf.display
 									throw new Error("Unable to find mask with ID " + instance.maskID);
 								}
 
-								if (displayObject.filter)
-								{
-									displayObject.filter.dispose();
-									displayObject.filter = null;
-								}
-								
+								displayObject.setFilterConfig(null);
+
 								if (maskIndex == 1)
 								{
 									this.addChildAt(pixelMaskObject, zIndex++);
@@ -862,17 +908,14 @@ package com.catalystapps.gaf.display
 							{
 								mc._play(true);
 							}
-							
+
 							this.renderDebug(mc, instance, this._masked);
 
 							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
-							if (displayObject.filter || instance.filter)
-							{
-								this.updateFilter(displayObject, instance, this._scale);
-							}
+							displayObject.setFilterConfig(instance.filter, this._scale);
 
 							this.addChildAt(displayObject as DisplayObject, zIndex);
-							
+
 							zIndex++;
 						}
 
@@ -904,7 +947,7 @@ package com.catalystapps.gaf.display
 			{
 				var hasFilter: Boolean = (instance.filter != null) || this._hasFilter;
 				var alphaLessMax: Boolean = instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax;
-					
+
 				var changed: Boolean;
 				if (mc._alphaLessMax != alphaLessMax)
 				{
@@ -982,38 +1025,6 @@ package com.catalystapps.gaf.display
 			else
 			{
 				return defaultMatrix;
-			}
-		}
-
-		private function updateFilter(image: IGAFDisplayObject, instance: CAnimationFrameInstance, scale: Number): void
-		{
-			if (!Starling.current.contextValid)
-			{
-				return;
-			}
-
-			var gafFilter: GAFFilter;
-
-			if (!image.filter && !instance.filter)
-			{
-				// do nothing. Should be in most cases
-				return;
-			}
-			else if (image.filter && instance.filter)
-			{
-				gafFilter = image.filter as GAFFilter;
-				gafFilter.setConfig(instance.filter, scale);
-			}
-			else if (image.filter && !instance.filter)
-			{
-				image.filter.dispose();
-				image.filter = null;
-			}
-			else if (!image.filter && instance.filter)
-			{
-				gafFilter = new GAFFilter();
-				gafFilter.setConfig(instance.filter, scale);
-				image.filter = gafFilter;
 			}
 		}
 

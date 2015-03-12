@@ -18,25 +18,25 @@ package com.catalystapps.gaf.data.config
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _filterConfigs: Vector.<ICFilterData> = new Vector.<ICFilterData>();
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function clone(): CFilter
 		{
 			var result: CFilter = new CFilter();
-			
+
 			for each (var filterData: ICFilterData in _filterConfigs)
 			{
 				result.filterConfigs.push(filterData.clone());
@@ -44,33 +44,38 @@ package com.catalystapps.gaf.data.config
 
 			return result;
 		}
-		
+
 		public function addBlurFilter(blurX: Number, blurY: Number): String
 		{
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
 			filterData.color = -1;
-			
+
 			_filterConfigs.push(filterData);
 
 			return "";
 		}
-		
-		public function addGlowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number): String
+
+		public function addGlowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number,
+									  strength: Number = 1, inner: Boolean = false, knockout: Boolean = false): String
 		{
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
 			filterData.blurY = blurY;
 			filterData.color = color;
 			filterData.alpha = alpha;
+			filterData.strength = strength;
+			filterData.inner = inner;
+			filterData.knockout = knockout;
 
 			_filterConfigs.push(filterData);
 
 			return "";
 		}
 
-		public function addDropShadowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number, angle: Number, distance: Number): String
+		public function addDropShadowFilter(blurX: Number, blurY: Number, color: uint, alpha: Number, angle: Number, distance: Number,
+											strength: Number = 1, inner: Boolean = false, knockout: Boolean = false): String
 		{
 			var filterData: CBlurFilterData = new CBlurFilterData();
 			filterData.blurX = blurX;
@@ -79,6 +84,9 @@ package com.catalystapps.gaf.data.config
 			filterData.alpha = alpha;
 			filterData.angle = angle;
 			filterData.distance = distance;
+			filterData.strength = strength;
+			filterData.inner = inner;
+			filterData.knockout = knockout;
 
 			_filterConfigs.push(filterData);
 
@@ -128,7 +136,7 @@ package com.catalystapps.gaf.data.config
 
 			return "";
 		}
-		
+
 		public function getBlurFilter(): CBlurFilterData
 		{
 			for each (var filterConfig: ICFilterData in _filterConfigs)
@@ -166,23 +174,23 @@ package com.catalystapps.gaf.data.config
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public function get filterConfigs(): Vector.<ICFilterData>
 		{
 			return _filterConfigs;
 		}
-		
+
 	}
 }

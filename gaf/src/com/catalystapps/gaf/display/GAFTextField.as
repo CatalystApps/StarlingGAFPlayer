@@ -5,12 +5,13 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.GAF;
-	import feathers.core.ITextEditor;
+	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import feathers.controls.TextInput;
 	import feathers.controls.text.TextFieldTextEditor;
+	import feathers.core.ITextEditor;
 
 	import flash.geom.Matrix;
 
@@ -37,6 +38,9 @@ package com.catalystapps.gaf.display
 		private var _zIndex: uint;
 
 		private var _pivotMatrix: Matrix;
+
+		private var _filterConfig: CFilter;
+		private var _filterScale: Number;
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -81,7 +85,12 @@ package com.catalystapps.gaf.display
 			this.textEditorProperties.wordWrap = config.wordWrap;
 			this.textEditorFactory = function (): ITextEditor
 			{
-				return new TextFieldTextEditor();
+				var textEditor: GAFTextFieldTextEditor = new GAFTextFieldTextEditor();
+				if (_filterConfig && !isNaN(_filterScale))
+				{
+					textEditor.setFilterConfig(_filterConfig, _filterScale);
+				}
+				return textEditor;
 			};
 
 			this.invalidateSize();
@@ -99,13 +108,14 @@ package com.catalystapps.gaf.display
 		 */
 		public function invalidateSize(): void
 		{
-			if (this.textEditor)
+			if (this.textEditor && this.textEditor is TextFieldTextEditor)
 			{
 				(this.textEditor as TextFieldTextEditor).invalidate(INVALIDATION_FLAG_SIZE);
 			}
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
 
+		/** @private */
 		public function set debugColors(value: Vector.<uint>): void
 		{
 			var t: Texture = Texture.fromColor(1, 1, DebugUtility.RENDERING_NEUTRAL_COLOR, true);
@@ -158,6 +168,29 @@ package com.catalystapps.gaf.display
 			}
 
 			this.backgroundSkin = bgImage;
+		}
+
+		/** @private */
+		public function setFilterConfig(value: CFilter, scale: Number = 1): void
+		{
+			if (_filterConfig != value || _filterScale != scale)
+			{
+				if (value)
+				{
+					this._filterConfig = value;
+					this._filterScale = scale;
+				}
+				else
+				{
+					this._filterConfig = null;
+					this._filterScale = NaN;
+				}
+
+				if (this.textEditor && this.textEditor is GAFTextFieldTextEditor)
+				{
+					(this.textEditor as GAFTextFieldTextEditor).setFilterConfig(value, scale);
+				}
+			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -220,6 +253,7 @@ package com.catalystapps.gaf.display
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
+
 		public function get zIndex(): uint
 		{
 			return _zIndex;

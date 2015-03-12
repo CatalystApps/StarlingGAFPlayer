@@ -82,7 +82,6 @@ package starling.extensions.pixelmask
 
 		public function set mask(mask:DisplayObject) : void
 		{
-
 			// clean up existing mask if there is one
 			if (_mask) {
 				_mask = null;

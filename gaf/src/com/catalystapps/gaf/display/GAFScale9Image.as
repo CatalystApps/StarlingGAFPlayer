@@ -8,6 +8,8 @@
 package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.core.gaf_internal;
+	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.MathUtility;
 
 	import feathers.core.IValidating;
@@ -92,6 +94,9 @@ package com.catalystapps.gaf.display
 		private var _debugColors: Vector.<uint>;
 		private var _debugAlphas: Vector.<Number>;
 		private var _zIndex: uint;
+
+		private var _filterConfig: CFilter;
+		private var _filterScale: Number;
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -403,6 +408,53 @@ package com.catalystapps.gaf.display
 //				this.x = this.transformationMatrix.tx;
 //				this.y = this.transformationMatrix.ty;
 //			}
+		}
+
+		/** @private */
+		public function setFilterConfig(value: CFilter, scale: Number = 1): void
+		{
+			if (!Starling.current.contextValid)
+			{
+				return;
+			}
+
+			if (_filterConfig != value || _filterScale != scale)
+			{
+				if (value)
+				{
+					this._filterConfig = value;
+					this._filterScale = scale;
+					var gafFilter: GAFFilter;
+					if (this.filter)
+					{
+						if (this.filter is GAFFilter)
+						{
+							gafFilter = this.filter as GAFFilter;
+						}
+						else
+						{
+							this.filter.dispose();
+							gafFilter = new GAFFilter();
+						}
+					}
+					else
+					{
+						gafFilter = new GAFFilter();
+					}
+
+					gafFilter.setConfig(this._filterConfig, this._filterScale);
+					this.filter = gafFilter;
+				}
+				else
+				{
+					if (this.filter)
+					{
+						this.filter.dispose();
+					}
+					this._filterConfig = null;
+					this._filterScale = NaN;
+				}
+			}
 		}
 
 		//--------------------------------------------------------------------------

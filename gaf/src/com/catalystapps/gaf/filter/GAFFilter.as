@@ -146,16 +146,25 @@ package com.catalystapps.gaf.filter
 
 		private function updateBlurFilter(cBlurFilterData: CBlurFilterData): void
 		{
-			var multiplier: Number = _currentScale > 1 ? 1 / _currentScale : _currentScale;
-			mResolution = _currentScale > 1 ? multiplier : 1;
-			mBlurX = cBlurFilterData.blurX * multiplier;
-			mBlurY = cBlurFilterData.blurY * multiplier;
+			mBlurX = cBlurFilterData.blurX * _currentScale;
+			mBlurY = cBlurFilterData.blurY * _currentScale;
 
-			resolution = cBlurFilterData.resolution * mResolution;
-			offsetX = Math.cos(cBlurFilterData.angle) * _currentScale;
-			offsetY = Math.sin(cBlurFilterData.angle) * _currentScale;
+			var maxBlur: Number = Math.max(mBlurX, mBlurY);
+			//resolution = 1 / Math.sqrt(maxBlur * 0.1);
+			if (maxBlur <= 10)
+			{
+				resolution = 1 + (10 - maxBlur) * 0.1;
+			}
+			else
+			{
+				resolution = 1 - maxBlur * 0.01;
+			}
 
-			setUniformColor((cBlurFilterData.color > -1), cBlurFilterData.color, cBlurFilterData.alpha);
+			var angleInRadians: Number =  cBlurFilterData.angle * Math.PI / 180;
+			offsetX = Math.cos(angleInRadians) * cBlurFilterData.distance * _currentScale;
+			offsetY = Math.sin(angleInRadians) * cBlurFilterData.distance * _currentScale;
+
+			setUniformColor((cBlurFilterData.color > -1), cBlurFilterData.color, cBlurFilterData.alpha * cBlurFilterData.strength);
 		}
 
 		/** A uniform color will replace the RGB values of the input color, while the alpha
@@ -421,8 +430,8 @@ package com.catalystapps.gaf.filter
 			}
 
 			numPasses = Math.ceil(mBlurX) + Math.ceil(mBlurY);
-			marginX = (3 + Math.ceil(mBlurX)) / resolution;
-			marginY = (3 + Math.ceil(mBlurY)) / resolution;
+			marginX = (3 + Math.ceil(mBlurX)) / resolution + Math.abs(offsetX);
+			marginY = (3 + Math.ceil(mBlurY)) / resolution + Math.abs(offsetY);
 
 			if ((mBlurX > 0 || mBlurY > 0) && changeColor)
 			{

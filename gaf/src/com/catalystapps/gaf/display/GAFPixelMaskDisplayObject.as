@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.data.config.CFilter;
+
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 
@@ -95,6 +97,10 @@ package com.catalystapps.gaf.display
 		public function get maskBounds(): Rectangle
 		{
 			return _maskBounds;
+		}
+
+		public function setFilterConfig(value: CFilter, scale: Number = 1): void
+		{
 		}
 
 		override protected function refreshRenderTextures(event: Event = null): void

@@ -193,7 +193,7 @@ package com.catalystapps.gaf.data.converters
 		{
 			_bytes.clear();
 			_bytes = null;
-			
+
 			if (_config.versionMajor < 4)
 			{
 				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
@@ -302,7 +302,7 @@ package com.catalystapps.gaf.data.converters
 					trace(WarningConstants.UNSUPPORTED_TAG);
 					break;
 			}
-			
+
 			tagContent.clear();
 		}
 
@@ -581,7 +581,7 @@ package com.catalystapps.gaf.data.converters
 							action = new CFrameAction();
 							action.type = tagContent.readUnsignedInt();
 							action.scope = tagContent.readUTF();
-							
+
 							var paramsLength: uint = tagContent.readUnsignedInt();
 							if (paramsLength > 0)
 							{
@@ -589,7 +589,7 @@ package com.catalystapps.gaf.data.converters
 								paramsBA.endian = Endian.LITTLE_ENDIAN;
 								tagContent.readBytes(paramsBA, 0, paramsLength);
 								paramsBA.position = 0;
-								
+
 								while (paramsBA.bytesAvailable > 0)
 								{
 									action.params.push(paramsBA.readUTF());
@@ -642,7 +642,7 @@ package com.catalystapps.gaf.data.converters
 			var inner: Boolean = source.readBoolean();
 			var knockout: Boolean = source.readBoolean();
 
-			return filter.addDropShadowFilter(blurX, blurY, color[1], color[0], angle, distance);
+			return filter.addDropShadowFilter(blurX, blurY, color[1], color[0], angle, distance, strength, inner, knockout);
 		}
 
 		private static function readBlurFilter(source: ByteArray, filter: CFilter): String
@@ -659,7 +659,7 @@ package com.catalystapps.gaf.data.converters
 			var inner: Boolean = source.readBoolean();
 			var knockout: Boolean = source.readBoolean();
 
-			return filter.addGlowFilter(blurX, blurY, color[1], color[0]);
+			return filter.addGlowFilter(blurX, blurY, color[1], color[0], strength, inner, knockout);
 		}
 
 		private static function readColorMatrixFilter(source: ByteArray, filter: CFilter): String
