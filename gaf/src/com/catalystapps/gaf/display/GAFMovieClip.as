@@ -476,6 +476,7 @@ package com.catalystapps.gaf.display
 					if (this.filter)
 					{
 						this.filter.dispose();
+						this.filter = null;
 					}
 					this._filterConfig = null;
 					this._filterScale = NaN;
@@ -1154,7 +1155,7 @@ package com.catalystapps.gaf.display
 			quad = new Quad(5, 5, 0xff0000);
 			this._boundsAndPivot.addQuad(quad);
 		}
-		
+
 		/** @private */
 		gaf_internal function __debugHighlight(): void
 		{

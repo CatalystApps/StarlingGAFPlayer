@@ -450,6 +450,7 @@ package com.catalystapps.gaf.display
 					if (this.filter)
 					{
 						this.filter.dispose();
+						this.filter = null;
 					}
 					this._filterConfig = null;
 					this._filterScale = NaN;
