@@ -1,13 +1,13 @@
 package 
 com.catalystapps
 {
+	import starling.utils.SystemUtil;
 	import starling.core.Starling;
 	import starling.events.Event;
 
 	import flash.display.Sprite;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.system.Capabilities;
 
 	[SWF(backgroundColor="#000000", frameRate="60", width="1024", height="768")]
 	public class GafMultiResolution extends Sprite
@@ -27,9 +27,7 @@ com.catalystapps
 			//if you want to use it: add -define+=CONFIG::RELEASE,!{debug} to your compiler arguments
 			CONFIG::RELEASE
 			{
-				if (Capabilities.version.indexOf("WIN") != -1
-				||  Capabilities.version.indexOf("MAC") != -1
-				||  Capabilities.version.indexOf("LNX") != -1)
+				if (SystemUtil.isDesktop)
 				{
 					viewport.setTo(0, 0, stage.stageWidth, stage.stageHeight);
 					scale.setTo(1, 1);

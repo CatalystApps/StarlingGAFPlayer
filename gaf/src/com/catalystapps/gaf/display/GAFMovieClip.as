@@ -276,13 +276,14 @@ package com.catalystapps.gaf.display
 
 			if (this._playingSequence)
 			{
+				var startFrame: uint = this._reverse ? this._playingSequence.endFrameNo - 1 : this._playingSequence.startFrameNo;
 				if (play)
 				{
-					this.gotoAndPlay(this._playingSequence.startFrameNo);
+					this.gotoAndPlay(startFrame);
 				}
 				else
 				{
-					this.gotoAndStop(this._playingSequence.startFrameNo);
+					this.gotoAndStop(startFrame);
 				}
 			}
 

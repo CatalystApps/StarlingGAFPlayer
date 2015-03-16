@@ -45,14 +45,14 @@ package
 
 			gafMovieClip = new GAFMovieClip(converter.gafTimeline);
 			gafMovieClip.addEventListener("playSoundSteps", onPlaySound);
-			gafMovieClip.play(true);
+			gafMovieClip.play();
 
 			this.addChild(gafMovieClip);
 		}
 
 		private function onPlaySound(): void
 		{
-			assetManager.playSound("step", 0, 2);
+			assetManager.playSound("step");
 		}
 	}
 }
