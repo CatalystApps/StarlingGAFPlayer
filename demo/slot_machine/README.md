@@ -4,7 +4,7 @@ In order to compile this example and make it work correctly you have to use AIR 
 
 This example is using following libraries:
 - GAF 4.0
-- Starling 1.6 (RC)
+- Starling 1.6
 - Feathers 2.0.1
 
 SWF source file was converted into GAF format by Standalone GAF Converter version 4.0
