@@ -48,7 +48,6 @@ package
 			var mc: GAFMovieClip = new GAFMovieClip(timeline);
 			
 			this.addChild(mc);
-			mc.y = -mc.height / 2 - 100;
 			mc.play();
 		}
 		
