@@ -1,7 +1,6 @@
 package
 com.catalystapps{
 	import com.catalystapps.gaf.data.GAFBundle;
-	import flash.system.Capabilities;
 	import starling.core.Starling;
 	import starling.events.Touch;
 	import starling.events.TouchPhase;
@@ -64,10 +63,6 @@ com.catalystapps{
 					break;
 				}
 			}
-			trace(Capabilities.screenDPI);
-			trace(Capabilities.cpuArchitecture);
-			trace(Capabilities.os);
-			trace(Capabilities.version);
 			var zip: ByteArray = urlLoader.data;
 			var converter: ZipToGAFAssetConverter = new ZipToGAFAssetConverter();
 			converter.addEventListener(Event.COMPLETE, this.onConverted);
