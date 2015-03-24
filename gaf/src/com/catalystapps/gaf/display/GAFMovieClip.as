@@ -574,15 +574,15 @@ package com.catalystapps.gaf.display
 								}
 							}
 						}
-						if (pixelMask.mask is GAFMovieClip)
+						if (pixelMask.pixelMask is GAFMovieClip)
 						{
 							if (calledByUser)
 							{
-								(pixelMask.mask as GAFMovieClip).play(true);
+								(pixelMask.pixelMask as GAFMovieClip).play(true);
 							}
 							else
 							{
-								(pixelMask.mask as GAFMovieClip)._play(true);
+								(pixelMask.pixelMask as GAFMovieClip)._play(true);
 							}
 						}
 					}
@@ -637,15 +637,15 @@ package com.catalystapps.gaf.display
 								}
 							}
 						}
-						if (childMask.mask is GAFMovieClip)
+						if (childMask.pixelMask is GAFMovieClip)
 						{
 							if (calledByUser)
 							{
-								(childMask.mask as GAFMovieClip).stop(true);
+								(childMask.pixelMask as GAFMovieClip).stop(true);
 							}
 							else
 							{
-								(childMask.mask as GAFMovieClip)._stop(true);
+								(childMask.pixelMask as GAFMovieClip)._stop(true);
 							}
 						}
 					}
@@ -887,7 +887,7 @@ package com.catalystapps.gaf.display
 									this.addChildAt(pixelMaskObject, zIndex++);
 								}
 
-								mc = pixelMaskObject.mask as GAFMovieClip;
+								mc = pixelMaskObject.pixelMask as GAFMovieClip;
 								if (mc && mc._started)
 								{
 									mc._play(true);
@@ -1075,7 +1075,7 @@ package com.catalystapps.gaf.display
 				if (animationObjectConfig.mask)
 				{
 					var pixelMaskDisplayObject: GAFPixelMaskDisplayObject = new GAFPixelMaskDisplayObject();
-					pixelMaskDisplayObject.mask = displayObject;
+					pixelMaskDisplayObject.pixelMask = displayObject;
 					var gafMovieClip: GAFMovieClip = displayObject as GAFMovieClip;
 					if (gafMovieClip)
 					{

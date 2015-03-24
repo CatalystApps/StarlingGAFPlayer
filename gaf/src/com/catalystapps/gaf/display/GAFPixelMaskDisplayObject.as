@@ -42,7 +42,7 @@ package com.catalystapps.gaf.display
 			_zIndex = value;
 		}
 
-		override public function set mask(mask: DisplayObject): void
+		override public function set pixelMask(value: DisplayObject): void
 		{
 			// clean up existing mask if there is one
 			if (_mask)
@@ -51,9 +51,9 @@ package com.catalystapps.gaf.display
 				_maskBounds.setEmpty();
 			}
 
-			if (mask)
+			if (value)
 			{
-				_mask = mask;
+				_mask = value;
 
 				if (_mask.width == 0 || _mask.height == 0)
 				{
@@ -70,7 +70,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		public function get mask(): DisplayObject
+		public function get pixelMask(): DisplayObject
 		{
 			return _mask;
 		}

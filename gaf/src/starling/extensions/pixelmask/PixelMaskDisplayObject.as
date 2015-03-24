@@ -80,7 +80,7 @@ package starling.extensions.pixelmask
 			refreshRenderTextures(null);
 		}
 
-		public function set mask(mask:DisplayObject) : void
+		public function set pixelMask(mask:DisplayObject) : void
 		{
 			// clean up existing mask if there is one
 			if (_mask) {
