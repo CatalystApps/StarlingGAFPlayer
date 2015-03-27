@@ -1,12 +1,12 @@
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
 	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObjects;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -61,12 +61,12 @@ package com.catalystapps.gaf.data
 		{
 			this._version = version;
 
-			_allTextureAtlases = new Vector.<CTextureAtlasScale>();
+			this._allTextureAtlases = new Vector.<CTextureAtlasScale>();
 
-			_animationConfigFrames = new CAnimationFrames();
-			_animationObjects = new CAnimationObjects();
-			_animationSequences = new CAnimationSequences();
-			_textFields = new CTextFieldObjects();
+			this._animationConfigFrames = new CAnimationFrames();
+			this._animationObjects = new CAnimationObjects();
+			this._animationSequences = new CAnimationSequences();
+			this._textFields = new CTextFieldObjects();
 		}
 
 		//--------------------------------------------------------------------------
@@ -77,7 +77,7 @@ package com.catalystapps.gaf.data
 
 		public function dispose(): void
 		{
-			for each(var cTextureAtlasScale: CTextureAtlasScale in this._allTextureAtlases)
+			for each (var cTextureAtlasScale: CTextureAtlasScale in this._allTextureAtlases)
 			{
 				cTextureAtlasScale.dispose();
 			}
@@ -85,7 +85,7 @@ package com.catalystapps.gaf.data
 
 		public function getTextureAtlasForScale(scale: Number): CTextureAtlasScale
 		{
-			for each(var cTextureAtlas: CTextureAtlasScale in this._allTextureAtlases)
+			for each (var cTextureAtlas: CTextureAtlasScale in this._allTextureAtlases)
 			{
 				if (MathUtility.equals(cTextureAtlas.scale, scale))
 				{
@@ -95,7 +95,7 @@ package com.catalystapps.gaf.data
 
 			return null;
 		}
-		
+
 		public function addWarning(text: String): void
 		{
 			if (!text)
@@ -114,7 +114,7 @@ package com.catalystapps.gaf.data
 				this._warnings.push(text);
 			}
 		}
-		
+
 		public function getNamedPartID(name: String): String
 		{
 			for (var id: String in this._namedParts)
@@ -263,52 +263,52 @@ package com.catalystapps.gaf.data
 
 		public function get linkage(): String
 		{
-			return _linkage;
+			return this._linkage;
 		}
 
 		public function set linkage(value: String): void
 		{
-			_linkage = value;
+			this._linkage = value;
 		}
 
 		public function get stageConfig(): CStage
 		{
-			return _stageConfig;
+			return this._stageConfig;
 		}
 
 		public function set stageConfig(stageConfig: CStage): void
 		{
-			_stageConfig = stageConfig;
+			this._stageConfig = stageConfig;
 		}
-		
+
 		public function get framesCount(): uint
 		{
-			return _framesCount;
+			return this._framesCount;
 		}
 
 		public function set framesCount(value: uint): void
 		{
-			_framesCount = value;
+			this._framesCount = value;
 		}
 
 		public function get bounds(): Rectangle
 		{
-			return _bounds;
+			return this._bounds;
 		}
 
 		public function set bounds(value: Rectangle): void
 		{
-			_bounds = value;
+			this._bounds = value;
 		}
 
 		public function get pivot(): Point
 		{
-			return _pivot;
+			return this._pivot;
 		}
 
 		public function set pivot(value: Point): void
 		{
-			_pivot = value;
+			this._pivot = value;
 		}
 	}
 }

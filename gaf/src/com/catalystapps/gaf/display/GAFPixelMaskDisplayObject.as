@@ -2,210 +2,215 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.data.config.CFilter;
 
+	import flash.display3D.Context3DBlendFactor;
+
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
 	import starling.core.RenderSupport;
 	import starling.core.Starling;
+	import starling.display.BlendMode;
 	import starling.display.DisplayObject;
+	import starling.display.DisplayObjectContainer;
 	import starling.display.Image;
 	import starling.events.Event;
-	import starling.extensions.pixelmask.PixelMaskDisplayObject;
-	import starling.filters.FragmentFilter;
 	import starling.textures.RenderTexture;
+	import starling.utils.RectangleUtil;
 
 	/**
 	 * @private
 	 */
-	public class GAFPixelMaskDisplayObject extends PixelMaskDisplayObject implements IGAFDisplayObject
+	public class GAFPixelMaskDisplayObject extends DisplayObjectContainer implements IGAFDisplayObject
 	{
+		private static const MASK_MODE: String = "mask";
+
 		private static const PADDING: uint = 1;
 
+		private static const sHelperRect: Rectangle = new Rectangle();
+
+		protected var _mask: DisplayObject;
+
+		protected var _renderTexture: RenderTexture;
+		protected var _maskRenderTexture: RenderTexture;
+
+		protected var _image: Image;
+		protected var _maskImage: Image;
+
+		protected var _superRenderFlag: Boolean = false;
+
 		private var _zIndex: uint;
-		private var _maskBounds: Rectangle;
+		private var _maskSize: Point;
+		private var _staticMaskSize: Boolean;
+		private var _scaleFactor: Number;
 
 		private var _mustReorder: Boolean;
 
-		public function GAFPixelMaskDisplayObject(scaleFactor: Number = -1, isAnimated: Boolean = true)
+		public function GAFPixelMaskDisplayObject(scaleFactor: Number = -1)
 		{
-			super(scaleFactor, isAnimated);
-			_maskBounds = new Rectangle();
+			this._scaleFactor = scaleFactor;
+			this._maskSize = new Point();
+
+			BlendMode.register(MASK_MODE, Context3DBlendFactor.ZERO, Context3DBlendFactor.SOURCE_ALPHA);
+
+			// Handle lost context. By using the conventional event, we can make a weak listener.
+			// This avoids memory leaks when people forget to call "dispose" on the object.
+			Starling.current.stage3D.addEventListener(Event.CONTEXT3D_CREATE,
+					this.onContextCreated, false, 0, true);
 		}
 
-		public function get zIndex(): uint
+		override public function dispose():void
 		{
-			return _zIndex;
+			this.clearRenderTextures();
+			Starling.current.stage3D.removeEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
+			super.dispose();
 		}
 
-		public function set zIndex(value: uint): void
+		private function onContextCreated(event:Object):void
 		{
-			_zIndex = value;
+			this.refreshRenderTextures();
 		}
 
-		override public function set pixelMask(value: DisplayObject): void
+		public function set pixelMask(value: DisplayObject): void
 		{
 			// clean up existing mask if there is one
-			if (_mask)
+			if (this._mask)
 			{
-				_mask = null;
-				_maskBounds.setEmpty();
+				this._mask = null;
+				this._maskSize.setTo(0, 0);
 			}
 
 			if (value)
 			{
-				_mask = value;
+				this._mask = value;
 
-				if (_mask.width == 0 || _mask.height == 0)
+				if (this._mask.width == 0 || this._mask.height == 0)
 				{
-					throw new Error("Mask must have dimensions. Current dimensions are " + _mask.width + "x" + _mask.height + ".");
+					throw new Error("Mask must have dimensions. Current dimensions are " + this._mask.width + "x" +this. _mask.height + ".");
 				}
 
-				_maskBounds.copyFrom(_mask.bounds);
+				var objectWithMaxSize: IMaxSize = this._mask as IMaxSize;
+				if (objectWithMaxSize && objectWithMaxSize.maxSize)
+				{
+					this._maskSize.copyFrom(objectWithMaxSize.maxSize);
+					this._staticMaskSize = true;
+				}
+				else
+				{
+					this._mask.getBounds(null, sHelperRect);
+					this._maskSize.setTo(sHelperRect.width, sHelperRect.height);
+					this._staticMaskSize = false;
+				}
 
-				refreshRenderTextures(null);
+				this.refreshRenderTextures(null);
 			}
 			else
 			{
-				clearRenderTextures();
+				this.clearRenderTextures();
 			}
 		}
 
 		public function get pixelMask(): DisplayObject
 		{
-			return _mask;
+			return this._mask;
 		}
 
-		public function set maskBounds(bounds: Rectangle): void
+		protected function clearRenderTextures() : void
 		{
-			if (bounds)
-			{
-				_maskBounds.copyFrom(bounds);
-				refreshRenderTextures(null);
+			// clean up old render textures and images
+			if (this._maskRenderTexture) {
+				this._maskRenderTexture.dispose();
 			}
-			else if (_mask)
-			{
-				_maskBounds.copyFrom(_mask.bounds);
-				refreshRenderTextures(null);
-			}
-			else
-			{
-				_maskBounds.setEmpty();
-				clearRenderTextures();
-			}
-		}
 
-		public function get maskBounds(): Rectangle
-		{
-			return _maskBounds;
+			if (this._renderTexture) {
+				this._renderTexture.dispose();
+			}
+
+			if (this._image) {
+				this._image.dispose();
+			}
+
+			if (this._maskImage) {
+				this._maskImage.dispose();
+			}
 		}
 
 		public function setFilterConfig(value: CFilter, scale: Number = 1): void
 		{
 		}
 
-		override protected function refreshRenderTextures(event: Event = null): void
+		protected function refreshRenderTextures(event: Event = null): void
 		{
 			if (Starling.current.contextValid)
 			{
-				if (_mask)
+				if (this._mask)
 				{
-					clearRenderTextures();
+					this.clearRenderTextures();
 
-					_maskRenderTexture = new RenderTexture(_maskBounds.width + PADDING * 2, _maskBounds.height + PADDING * 2, false, _scaleFactor);
-					_renderTexture = new RenderTexture(_maskBounds.width, _maskBounds.height, false, _scaleFactor);
+					this._renderTexture = new RenderTexture(this._maskSize.x,this. _maskSize.y, false, this._scaleFactor);
+					this._maskRenderTexture = new RenderTexture(this._maskSize.x + PADDING * 2, this._maskSize.y + PADDING * 2, false, this._scaleFactor);
 
 					// create image with the new render texture
-					_image = new Image(_renderTexture);
-					_image.x = _maskBounds.x;
-					_image.y = _maskBounds.y;
+					this._image = new Image(this._renderTexture);
 					// create image to blit the mask onto
-					_maskImage = new Image(_maskRenderTexture);
-					_maskImage.x = _maskBounds.x - PADDING;
-					_maskImage.y = _maskBounds.y - PADDING;
+					this._maskImage = new Image(this._maskRenderTexture);
+					this._maskImage.x = this._maskImage.y = -PADDING;
 					// set the blending mode to MASK (ZERO, SRC_ALPHA)
-					if (_inverted)
-					{
-						_maskImage.blendMode = MASK_MODE_INVERTED;
-					}
-					else
-					{
-						_maskImage.blendMode = MASK_MODE_NORMAL;
-					}
+					this._maskImage.blendMode = MASK_MODE;
 				}
-				_maskRendered = false;
 			}
 		}
 
 		override public function render(support: RenderSupport, parentAlpha: Number): void
 		{
-			if (_isAnimated || (!_isAnimated && !_maskRendered))
+			if (this._superRenderFlag || !this._mask)
 			{
-				if (_superRenderFlag || !_mask)
-				{
-					var alpha: Number = parentAlpha * this.alpha;
-					var nChildren: Number = numChildren;
-					var blendMode: String = support.blendMode;
-
-					for (var i: int = 0; i < nChildren; ++i)
-					{
-						var child: DisplayObject = getChildAt(i);
-
-						if (child.hasVisibleArea)
-						{
-							var filter: FragmentFilter = child.filter;
-
-							support.pushMatrix();
-							support.transformMatrix(child);
-							support.blendMode = child.blendMode;
-
-							if (filter)
-							{
-								filter.render(child, support, alpha);
-							}
-							else
-							{
-								child.render(support, alpha);
-							}
-
-							support.blendMode = blendMode;
-							support.popMatrix();
-						}
-					}
-				}
-				else
-				{
-					if (_mask)
-					{
-						_tx = _mask.transformationMatrix.tx;
-						_ty = _mask.transformationMatrix.ty;
-
-						_mask.transformationMatrix.tx -= _maskBounds.x;
-						_mask.transformationMatrix.ty -= _maskBounds.y;
-						_maskRenderTexture.draw(_mask);
-
-						_mask.transformationMatrix.tx = _tx;
-						_mask.transformationMatrix.ty = _ty;
-
-						_renderTexture.drawBundled(drawRenderTextures);
-						support.pushMatrix();
-						support.transformMatrix(_image);
-						_image.render(support, parentAlpha);
-						support.popMatrix();
-
-						_maskRendered = true;
-					}
-				}
+				super.render(support, parentAlpha);
 			}
-			else
+			else if (this._mask)
 			{
+				_tx = this._mask.transformationMatrix.tx;
+				_ty = this._mask.transformationMatrix.ty;
+
+				this._mask.getBounds(null, sHelperRect);
+
+				if (!(this._mask is DisplayObjectContainer))
+				{
+					RectangleUtil.getBounds(sHelperRect, this._mask.transformationMatrix, sHelperRect);
+				}
+
+				if (!this._staticMaskSize
+					//&& (sHelperRect.width > this._maskSize.x || sHelperRect.height > this._maskSize.y)
+					&& (sHelperRect.width != this._maskSize.x || sHelperRect.height != this._maskSize.y))
+				{
+					this._maskSize.setTo(sHelperRect.width, sHelperRect.height);
+					this.refreshRenderTextures();
+				}
+
+				this._mask.transformationMatrix.tx = _tx - sHelperRect.x + PADDING;
+				this._mask.transformationMatrix.ty = _ty - sHelperRect.y + PADDING;
+				this._maskRenderTexture.draw(this._mask);
+				this._image.transformationMatrix.tx = sHelperRect.x;
+				this._image.transformationMatrix.ty = sHelperRect.y;
+				this._mask.transformationMatrix.tx = _tx;
+				this._mask.transformationMatrix.ty = _ty;
+
+				this._renderTexture.drawBundled(this.drawRenderTextures);
 				support.pushMatrix();
-				support.transformMatrix(_image);
-				_image.render(support, parentAlpha);
+				support.transformMatrix(this._image);
+				this._image.render(support, parentAlpha);
 				support.popMatrix();
 			}
 		}
 
-		override protected function drawRenderTextures(object: DisplayObject = null, matrix: Matrix = null, alpha: Number = 1.0): void
+		protected static var _a:Number;
+		protected static var _b:Number;
+		protected static var _c:Number;
+		protected static var _d:Number;
+		protected static var _tx:Number;
+		protected static var _ty:Number;
+
+		protected function drawRenderTextures(object: DisplayObject = null, matrix: Matrix = null, alpha: Number = 1.0): void
 		{
 			_a = this.transformationMatrix.a;
 			_b = this.transformationMatrix.b;
@@ -214,12 +219,12 @@ package com.catalystapps.gaf.display
 			_tx = this.transformationMatrix.tx;
 			_ty = this.transformationMatrix.ty;
 
-			this.transformationMatrix.copyFrom(_image.transformationMatrix);
+			this.transformationMatrix.copyFrom(this._image.transformationMatrix);
 			this.transformationMatrix.invert();
 
-			_superRenderFlag = true;
-			_renderTexture.draw(this);
-			_superRenderFlag = false;
+			this._superRenderFlag = true;
+			this._renderTexture.draw(this);
+			this._superRenderFlag = false;
 
 			this.transformationMatrix.a = _a;
 			this.transformationMatrix.b = _b;
@@ -228,25 +233,29 @@ package com.catalystapps.gaf.display
 			this.transformationMatrix.tx = _tx;
 			this.transformationMatrix.ty = _ty;
 
-			_maskImage.transformationMatrix.identity();
-			_renderTexture.draw(_maskImage);
+			//-----------------------------------------------------------------------------------------------------------------
 
-			_maskImage.transformationMatrix.a = _a;
-			_maskImage.transformationMatrix.b = _b;
-			_maskImage.transformationMatrix.c = _c;
-			_maskImage.transformationMatrix.d = _d;
-			_maskImage.transformationMatrix.tx = _tx;
-			_maskImage.transformationMatrix.ty = _ty;
+			this._renderTexture.draw(this._maskImage);
+		}
+
+		public function get zIndex(): uint
+		{
+			return this._zIndex;
+		}
+
+		public function set zIndex(value: uint): void
+		{
+			this._zIndex = value;
 		}
 
 		public function get mustReorder(): Boolean
 		{
-			return _mustReorder;
+			return this._mustReorder;
 		}
 
 		public function set mustReorder(value: Boolean): void
 		{
-			_mustReorder = value;
+			this._mustReorder = value;
 		}
 	}
 }

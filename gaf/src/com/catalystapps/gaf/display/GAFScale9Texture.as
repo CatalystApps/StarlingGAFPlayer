@@ -34,7 +34,7 @@ package com.catalystapps.gaf.display
 		 * @private
 		 */
 		private static const HELPER_RECTANGLE:Rectangle = new Rectangle();
-		
+
 		private var _id: String;
 		private var _texture: Texture;
 		private var _pivotMatrix: Matrix;
@@ -185,72 +185,72 @@ package com.catalystapps.gaf.display
 
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function get pivotMatrix(): Matrix
 		{
-			return _pivotMatrix;
+			return this._pivotMatrix;
 		}
 
 		public function get texture(): Texture
 		{
-			return _texture;
+			return this._texture;
 		}
 
 		public function get scale9Grid(): Rectangle
 		{
-			return _scale9Grid;
+			return this._scale9Grid;
 		}
 
 		public function get topLeft(): Texture
 		{
-			return _topLeft;
+			return this._topLeft;
 		}
 
 		public function get topCenter(): Texture
 		{
-			return _topCenter;
+			return this._topCenter;
 		}
 
 		public function get topRight(): Texture
 		{
-			return _topRight;
+			return this._topRight;
 		}
 
 		public function get middleLeft(): Texture
 		{
-			return _middleLeft;
+			return this._middleLeft;
 		}
 
 		public function get middleCenter(): Texture
 		{
-			return _middleCenter;
+			return this._middleCenter;
 		}
 
 		public function get middleRight(): Texture
 		{
-			return _middleRight;
+			return this._middleRight;
 		}
 
 		public function get bottomLeft(): Texture
 		{
-			return _bottomLeft;
+			return this._bottomLeft;
 		}
 
 		public function get bottomCenter(): Texture
 		{
-			return _bottomCenter;
+			return this._bottomCenter;
 		}
 
 		public function get bottomRight(): Texture
 		{
-			return _bottomRight;
+			return this._bottomRight;
 		}
 
 		public function clone(): IGAFTexture
 		{
-			return new GAFScale9Texture(_id, _texture, _pivotMatrix.clone(), _scale9Grid);
+			return new GAFScale9Texture(this._id, this._texture, this._pivotMatrix.clone(), this._scale9Grid);
 		}
 
 		//--------------------------------------------------------------------------

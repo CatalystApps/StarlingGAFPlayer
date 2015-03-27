@@ -56,7 +56,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-	public class GAFScale9Image extends Sprite implements IValidating, IGAFImage, IGAFDebug
+	public class GAFScale9Image extends Sprite implements IValidating, IGAFImage, IMaxSize, IGAFDebug
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -72,7 +72,7 @@ package com.catalystapps.gaf.display
 
 		private static const HELPER_MATRIX: Matrix = new Matrix();
 		private static const HELPER_POINT: Point = new Point();
-		private static var helperImage: Image;
+		private static var sHelperImage: Image;
 		private var _propertiesChanged: Boolean = true;
 		private var _layoutChanged: Boolean = true;
 		private var _renderingChanged: Boolean = true;
@@ -97,6 +97,8 @@ package com.catalystapps.gaf.display
 
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
+
+		private var _maxSize: Point;
 
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
@@ -123,14 +125,14 @@ package com.catalystapps.gaf.display
 			this.textures = textures;
 			this._textureScale = textureScale;
 			this._hitArea = new Rectangle();
-			this.readjustSize();
+			this.invalidateSize();
 
 			this._batch = new QuadBatch();
 			this._batch.touchable = false;
 			this.addChild(this._batch);
 
-			this.addEventListener(Event.FLATTEN, flattenHandler);
-			this.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			this.addEventListener(Event.FLATTEN, this.flattenHandler);
+			this.addEventListener(Event.ADDED_TO_STAGE, this.addedToStageHandler);
 		}
 
 		//--------------------------------------------------------------------------
@@ -201,11 +203,11 @@ package com.catalystapps.gaf.display
 		 */
 		public function validate(): void
 		{
-			if(!this._isInvalid)
+			if (!this._isInvalid)
 			{
 				return;
 			}
-			if(this._isValidating)
+			if (this._isValidating)
 			{
 				if(this._validationQueue)
 				{
@@ -221,18 +223,18 @@ package com.catalystapps.gaf.display
 				this._batch.batchable = !this._useSeparateBatch;
 				this._batch.reset();
 
-				if (!helperImage)
+				if (!sHelperImage)
 				{
 					//because Scale9Textures enforces it, we know for sure that
 					//this texture will have a size greater than zero, so there
 					//won't be an error from Quad.
-					helperImage = new Image(this._textures.middleCenter);
+					sHelperImage = new Image(this._textures.middleCenter);
 				}
-				helperImage.smoothing = this._smoothing;
+				sHelperImage.smoothing = this._smoothing;
 
 				if (!setDebugVertexColors([0, 1, 2, 3]))
 				{
-					helperImage.color = this._color;
+					sHelperImage.color = this._color;
 				}
 
 				const grid: Rectangle = this._textures.scale9Grid;
@@ -263,38 +265,38 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						setDebugColor(0);
-						helperImage.texture = this._textures.topLeft;
-						helperImage.readjustSize();
-						helperImage.width = scaledLeftWidth;
-						helperImage.height = scaledTopHeight;
-						helperImage.x = scaledLeftWidth - helperImage.width;
-						helperImage.y = scaledTopHeight - helperImage.height;
-						this._batch.addImage(helperImage);
+						this.setDebugColor(0);
+						sHelperImage.texture = this._textures.topLeft;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledLeftWidth;
+						sHelperImage.height = scaledTopHeight;
+						sHelperImage.x = scaledLeftWidth - sHelperImage.width;
+						sHelperImage.y = scaledTopHeight - sHelperImage.height;
+						this._batch.addImage(sHelperImage);
 					}
 
 					if (scaledCenterWidth > 0)
 					{
-						setDebugVertexColors([0, 1, 0, 1]);
-						helperImage.texture = this._textures.topCenter;
-						helperImage.readjustSize();
-						helperImage.width = scaledCenterWidth;
-						helperImage.height = scaledTopHeight;
-						helperImage.x = scaledLeftWidth;
-						helperImage.y = scaledTopHeight - helperImage.height;
-						this._batch.addImage(helperImage);
+						this.setDebugVertexColors([0, 1, 0, 1]);
+						sHelperImage.texture = this._textures.topCenter;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledCenterWidth;
+						sHelperImage.height = scaledTopHeight;
+						sHelperImage.x = scaledLeftWidth;
+						sHelperImage.y = scaledTopHeight - sHelperImage.height;
+						this._batch.addImage(sHelperImage);
 					}
 
 					if (scaledRightWidth > 0)
 					{
-						setDebugColor(1);
-						helperImage.texture = this._textures.topRight;
-						helperImage.readjustSize();
-						helperImage.width = scaledRightWidth;
-						helperImage.height = scaledTopHeight;
-						helperImage.x = this._width - scaledRightWidth;
-						helperImage.y = scaledTopHeight - helperImage.height;
-						this._batch.addImage(helperImage);
+						this.setDebugColor(1);
+						sHelperImage.texture = this._textures.topRight;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledRightWidth;
+						sHelperImage.height = scaledTopHeight;
+						sHelperImage.x = this._width - scaledRightWidth;
+						sHelperImage.y = scaledTopHeight - sHelperImage.height;
+						this._batch.addImage(sHelperImage);
 					}
 				}
 
@@ -302,38 +304,38 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						setDebugVertexColors([0, 0, 2, 2]);
-						helperImage.texture = this._textures.middleLeft;
-						helperImage.readjustSize();
-						helperImage.width = scaledLeftWidth;
-						helperImage.height = scaledMiddleHeight;
-						helperImage.x = scaledLeftWidth - helperImage.width;
-						helperImage.y = scaledTopHeight;
-						this._batch.addImage(helperImage);
+						this.setDebugVertexColors([0, 0, 2, 2]);
+						sHelperImage.texture = this._textures.middleLeft;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledLeftWidth;
+						sHelperImage.height = scaledMiddleHeight;
+						sHelperImage.x = scaledLeftWidth - sHelperImage.width;
+						sHelperImage.y = scaledTopHeight;
+						this._batch.addImage(sHelperImage);
 					}
 
 					if (scaledCenterWidth > 0)
 					{
-						setDebugVertexColors([0, 1, 2, 3]);
-						helperImage.texture = this._textures.middleCenter;
-						helperImage.readjustSize();
-						helperImage.width = scaledCenterWidth;
-						helperImage.height = scaledMiddleHeight;
-						helperImage.x = scaledLeftWidth;
-						helperImage.y = scaledTopHeight;
-						this._batch.addImage(helperImage);
+						this.setDebugVertexColors([0, 1, 2, 3]);
+						sHelperImage.texture = this._textures.middleCenter;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledCenterWidth;
+						sHelperImage.height = scaledMiddleHeight;
+						sHelperImage.x = scaledLeftWidth;
+						sHelperImage.y = scaledTopHeight;
+						this._batch.addImage(sHelperImage);
 					}
 
 					if (scaledRightWidth > 0)
 					{
-						setDebugVertexColors([1, 1, 3, 3]);
-						helperImage.texture = this._textures.middleRight;
-						helperImage.readjustSize();
-						helperImage.width = scaledRightWidth;
-						helperImage.height = scaledMiddleHeight;
-						helperImage.x = this._width - scaledRightWidth;
-						helperImage.y = scaledTopHeight;
-						this._batch.addImage(helperImage);
+						this.setDebugVertexColors([1, 1, 3, 3]);
+						sHelperImage.texture = this._textures.middleRight;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledRightWidth;
+						sHelperImage.height = scaledMiddleHeight;
+						sHelperImage.x = this._width - scaledRightWidth;
+						sHelperImage.y = scaledTopHeight;
+						this._batch.addImage(sHelperImage);
 					}
 				}
 
@@ -341,38 +343,38 @@ package com.catalystapps.gaf.display
 				{
 					if (scaledLeftWidth > 0)
 					{
-						setDebugColor(2);
-						helperImage.texture = this._textures.bottomLeft;
-						helperImage.readjustSize();
-						helperImage.width = scaledLeftWidth;
-						helperImage.height = scaledBottomHeight;
-						helperImage.x = scaledLeftWidth - helperImage.width;
-						helperImage.y = this._height - scaledBottomHeight;
-						this._batch.addImage(helperImage);
+						this.setDebugColor(2);
+						sHelperImage.texture = this._textures.bottomLeft;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledLeftWidth;
+						sHelperImage.height = scaledBottomHeight;
+						sHelperImage.x = scaledLeftWidth - sHelperImage.width;
+						sHelperImage.y = this._height - scaledBottomHeight;
+						this._batch.addImage(sHelperImage);
 					}
 
 					if (scaledCenterWidth > 0)
 					{
-						setDebugVertexColors([2, 3, 2, 3]);
-						helperImage.texture = this._textures.bottomCenter;
-						helperImage.readjustSize();
-						helperImage.width = scaledCenterWidth;
-						helperImage.height = scaledBottomHeight;
-						helperImage.x = scaledLeftWidth;
-						helperImage.y = this._height - scaledBottomHeight;
-						this._batch.addImage(helperImage);
+						this.setDebugVertexColors([2, 3, 2, 3]);
+						sHelperImage.texture = this._textures.bottomCenter;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledCenterWidth;
+						sHelperImage.height = scaledBottomHeight;
+						sHelperImage.x = scaledLeftWidth;
+						sHelperImage.y = this._height - scaledBottomHeight;
+						this._batch.addImage(sHelperImage);
 					}
 
 					if (scaledRightWidth > 0)
 					{
-						setDebugColor(3);
-						helperImage.texture = this._textures.bottomRight;
-						helperImage.readjustSize();
-						helperImage.width = scaledRightWidth;
-						helperImage.height = scaledBottomHeight;
-						helperImage.x = this._width - scaledRightWidth;
-						helperImage.y = this._height - scaledBottomHeight;
-						this._batch.addImage(helperImage);
+						this.setDebugColor(3);
+						sHelperImage.texture = this._textures.bottomRight;
+						sHelperImage.readjustSize();
+						sHelperImage.width = scaledRightWidth;
+						sHelperImage.height = scaledBottomHeight;
+						sHelperImage.x = this._width - scaledRightWidth;
+						sHelperImage.y = this._height - scaledBottomHeight;
+						this._batch.addImage(sHelperImage);
 					}
 				}
 			}
@@ -391,23 +393,41 @@ package com.catalystapps.gaf.display
 		 */
 		public function readjustSize(): void
 		{
-			this.width = this._frame.width * this._textureScale / this.scaleX;
-			this.height = this._frame.height * this._textureScale / this.scaleY;
+			this.invalidateSize();
 		}
 
 		public function invalidateSize(): void
 		{
-//			if (parent)
-//			{
-//				var matrix: Matrix = parent.transformationMatrix;
-//				var mtx: Matrix = matrix.clone();
-//				mtx.invert();
-//				this.transformationMatrix.concat(mtx);
-//				this.width *= Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
-//				this.height *= Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d);
-//				this.x = this.transformationMatrix.tx;
-//				this.y = this.transformationMatrix.ty;
-//			}
+			var mtx: Matrix = this.transformationMatrix;
+			var scaleX: Number = Math.sqrt(mtx.a * mtx.a + mtx.b * mtx.b);
+			var scaleY: Number = Math.sqrt(mtx.c * mtx.c + mtx.d * mtx.d);
+
+			if (scaleX < 0.99 || scaleX > 1.01
+					|| scaleY < 0.99 || scaleY > 1.01)
+			{
+				this._width = this._frame.width * scaleX;
+				this._height = this._frame.height * scaleY;
+
+				HELPER_POINT.x = mtx.a;
+				HELPER_POINT.y = mtx.b;
+				HELPER_POINT.normalize(1);
+				mtx.a = HELPER_POINT.x;
+				mtx.b = HELPER_POINT.y;
+
+				HELPER_POINT.x = mtx.c;
+				HELPER_POINT.y = mtx.d;
+				HELPER_POINT.normalize(1);
+				mtx.c = HELPER_POINT.x;
+				mtx.d = HELPER_POINT.y;
+			}
+			else
+			{
+				this._width = this._frame.width;
+				this._height = this._frame.height;
+			}
+
+			this._layoutChanged = true;
+			this.invalidate();
 		}
 
 		/** @private */
@@ -418,22 +438,22 @@ package com.catalystapps.gaf.display
 				return;
 			}
 
-			if (_filterConfig != value || _filterScale != scale)
+			if (this._filterConfig != value || this._filterScale != scale)
 			{
 				if (value)
 				{
 					this._filterConfig = value;
 					this._filterScale = scale;
 					var gafFilter: GAFFilter;
-					if (this.filter)
+					if (this._batch.filter)
 					{
-						if (this.filter is GAFFilter)
+						if (this._batch.filter is GAFFilter)
 						{
-							gafFilter = this.filter as GAFFilter;
+							gafFilter = this._batch.filter as GAFFilter;
 						}
 						else
 						{
-							this.filter.dispose();
+							this._batch.filter.dispose();
 							gafFilter = new GAFFilter();
 						}
 					}
@@ -443,14 +463,14 @@ package com.catalystapps.gaf.display
 					}
 
 					gafFilter.setConfig(this._filterConfig, this._filterScale);
-					this.filter = gafFilter;
+					this._batch.filter = gafFilter;
 				}
 				else
 				{
-					if (this.filter)
+					if (this._batch.filter)
 					{
-						this.filter.dispose();
-						this.filter = null;
+						this._batch.filter.dispose();
+						this._batch.filter = null;
 					}
 					this._filterConfig = null;
 					this._filterScale = NaN;
@@ -467,7 +487,7 @@ package com.catalystapps.gaf.display
 		/**
 		 * @private
 		 */
-		protected function invalidate(): void
+		public function invalidate(): void
 		{
 			if (this._isInvalid)
 			{
@@ -485,8 +505,8 @@ package com.catalystapps.gaf.display
 		{
 			if (this._debugColors)
 			{
-				helperImage.color = this._debugColors[idx];
-				helperImage.alpha = this._debugAlphas[idx];
+				sHelperImage.color = this._debugColors[idx];
+				sHelperImage.alpha = this._debugAlphas[idx];
 			}
 		}
 
@@ -497,8 +517,8 @@ package com.catalystapps.gaf.display
 				var i: int;
 				for (i = 0; i < indexes.length; i++)
 				{
-					helperImage.setVertexColor(i, this._debugColors[indexes[i]]);
-					helperImage.setVertexAlpha(i, this._debugAlphas[indexes[i]]);
+					sHelperImage.setVertexColor(i, this._debugColors[indexes[i]]);
+					sHelperImage.setVertexAlpha(i, this._debugAlphas[indexes[i]]);
 				}
 			}
 			return this._debugColors;
@@ -507,9 +527,9 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(__debugOriginalAlpha))
+			if (isNaN(this.__debugOriginalAlpha))
 			{
-				__debugOriginalAlpha = this.alpha;
+				this.__debugOriginalAlpha = this.alpha;
 			}
 			this.alpha = 1;
 		}
@@ -517,9 +537,9 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(__debugOriginalAlpha))
+			if (isNaN(this.__debugOriginalAlpha))
 			{
-				__debugOriginalAlpha = this.alpha;
+				this.__debugOriginalAlpha = this.alpha;
 			}
 			this.alpha = .05;
 		}
@@ -527,10 +547,10 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;
-			if (!isNaN(__debugOriginalAlpha))
+			if (!isNaN(this.__debugOriginalAlpha))
 			{
-				this.alpha = __debugOriginalAlpha;
-				__debugOriginalAlpha = NaN;
+				this.alpha = this.__debugOriginalAlpha;
+				this.__debugOriginalAlpha = NaN;
 			}
 		}
 
@@ -620,6 +640,9 @@ package com.catalystapps.gaf.display
 			{
 				return;
 			}
+
+			super.width = value;
+
 			this._width = this._hitArea.width = value;
 			this._layoutChanged = true;
 			this.invalidate();
@@ -642,9 +665,34 @@ package com.catalystapps.gaf.display
 			{
 				return;
 			}
+
+			super.height = value;
+
 			this._height = this._hitArea.height = value;
 			this._layoutChanged = true;
 			this.invalidate();
+		}
+
+		override public function set scaleX(value: Number): void
+		{
+			if (this.scaleX != value)
+			{
+				super.scaleX = value;
+
+				this._layoutChanged = true;
+				this.invalidate();
+			}
+		}
+
+		override public function set scaleY(value: Number): void
+		{
+			if (this.scaleY != value)
+			{
+				super.scaleY = value;
+
+				this._layoutChanged = true;
+				this.invalidate();
+			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -845,7 +893,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function get zIndex(): uint
 		{
-			return _zIndex;
+			return this._zIndex;
 		}
 
 		/**
@@ -853,7 +901,19 @@ package com.catalystapps.gaf.display
 		 */
 		public function set zIndex(value: uint): void
 		{
-			_zIndex = value;
+			this._zIndex = value;
+		}
+
+		/** @private */
+		public function get maxSize(): Point
+		{
+			return this._maxSize;
+		}
+
+		/** @private */
+		public function set maxSize(value: Point): void
+		{
+			this._maxSize = value;
 		}
 
 		//--------------------------------------------------------------------------

@@ -83,7 +83,7 @@ package com.catalystapps.gaf.data
 		{
 			return this._timelinesDictionary[timelineID + "::" + 0];
 		}
-		
+
 		/** @private
 		 * Returns <code>GAFTimeline</code> from bundle by ID
 		 */
@@ -152,7 +152,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function get timelines(): Vector.<GAFTimeline>
 		{
-			return _timelines;
+			return this._timelines;
 		}
 
 	}

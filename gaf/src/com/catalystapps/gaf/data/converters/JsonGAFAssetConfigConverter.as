@@ -30,6 +30,8 @@ package com.catalystapps.gaf.data.converters
 	import flash.geom.Rectangle;
 	import flash.text.TextFormat;
 
+	import starling.utils.RectangleUtil;
+
 	/**
 	 * @private
 	 */
@@ -39,11 +41,15 @@ package com.catalystapps.gaf.data.converters
 		public static const FILTER_COLOR_TRANSFORM: String = "Fctransform";
 		public static const FILTER_DROP_SHADOW: String = "FdropShadowFilter";
 		public static const FILTER_GLOW: String = "FglowFilter";
+
+		private static const sHelperRectangle: Rectangle = new Rectangle();
+
 		private var assetID: String;
 		private var json: String;
 		private var defaultScale: Number;
 		private var defaultContentScaleFactor: Number;
 		private var _config: GAFAssetConfig;
+		private var _textureElementSizes: Object; // Point by texture element id
 
 		//--------------------------------------------------------------------------
 		//
@@ -56,9 +62,11 @@ package com.catalystapps.gaf.data.converters
 			this.defaultScale = defaultScale;
 			this.json = json;
 			this.assetID = assetID;
+			this._textureElementSizes = {};
 		}
 
-		private static function convertConfig(timelineConfig: GAFTimelineConfig, jsonObject: Object, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN, scales: Array = null, csfs: Array = null): GAFTimelineConfig
+		private static function convertConfig(timelineConfig: GAFTimelineConfig, jsonObject: Object, defaultScale: Number = NaN,
+											  defaultContentScaleFactor: Number = NaN, scales: Array = null, csfs: Array = null, textureElementSizes: Object = null): GAFTimelineConfig
 		{
 			if (jsonObject.stageConfig)
 			{
@@ -96,6 +104,14 @@ package com.catalystapps.gaf.data.converters
 									e.scale9Grid.height);
 						}
 						elements.addElement(element);
+
+						if (!textureElementSizes[e.name])
+						{
+							sHelperRectangle.setTo(0, 0, e.width, e.height);
+							RectangleUtil.getBounds(sHelperRectangle, element.pivotMatrix, sHelperRectangle);
+
+							textureElementSizes[e.name] = sHelperRectangle.clone();
+						}
 					}
 
 					/////////////////////
@@ -589,7 +605,7 @@ package com.catalystapps.gaf.data.converters
 					{
 						timelineConfig.linkage = configObject.linkage;
 					}
-					convertConfig(timelineConfig, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale, jsonObject.csf);
+					convertConfig(timelineConfig, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale, jsonObject.csf, this._textureElementSizes);
 					_config.timelines.push(timelineConfig);
 				}
 			}
@@ -598,7 +614,7 @@ package com.catalystapps.gaf.data.converters
 				timelineConfig = new GAFTimelineConfig(jsonObject.version);
 				timelineConfig.id = "0";
 				timelineConfig.assetID = assetID;
-				convertConfig(timelineConfig, jsonObject, defaultScale, defaultContentScaleFactor);
+				convertConfig(timelineConfig, jsonObject, defaultScale, defaultContentScaleFactor, null, null, this._textureElementSizes);
 				_config.timelines.push(timelineConfig);
 			}
 
@@ -620,6 +636,58 @@ package com.catalystapps.gaf.data.converters
 				timelineConfig.stageConfig = stageConfig;
 				timelineConfig.pivot ||= pivotPoint;
 				timelineConfig.bounds ||= boundingBox;
+			}
+
+			///////////////////////////////////////////////////////////////
+
+			for each (var timeline: GAFTimelineConfig in _config.timelines)
+			{
+				for each (var frame: CAnimationFrame in timeline.animationConfigFrames.frames)
+				{
+					for each (var frameInstance: CAnimationFrameInstance in frame.instances)
+					{
+						var animationObject: CAnimationObject = timeline.animationObjects.getAnimationObject(frameInstance.id);
+						if (animationObject.mask)
+						{
+							if (!animationObject.maxSize)
+							{
+								animationObject.maxSize = new Point();
+							}
+
+							var maxSize: Point = animationObject.maxSize;
+
+							if (animationObject.type == CAnimationObject.TYPE_TEXTURE)
+							{
+								sHelperRectangle.copyFrom(_textureElementSizes[animationObject.regionID]);
+							}
+							else if (animationObject.type == CAnimationObject.TYPE_TIMELINE)
+							{
+								var maskTimeline: GAFTimelineConfig;
+								for each (maskTimeline in _config.timelines)
+								{
+									if (maskTimeline.id == frameInstance.id)
+									{
+										break;
+									}
+								}
+								sHelperRectangle.copyFrom(maskTimeline.bounds);
+							}
+							else if (animationObject.type == CAnimationObject.TYPE_TEXTFIELD)
+							{
+								var textField: CTextFieldObject = timeline.textFields.textFieldObjectsDictionary[animationObject.regionID];
+								sHelperRectangle.setTo(
+										-textField.pivotPoint.x,
+										-textField.pivotPoint.y,
+										textField.width,
+										textField.height);
+							}
+							RectangleUtil.getBounds(sHelperRectangle, frameInstance.matrix, sHelperRectangle);
+							maxSize.setTo(
+									Math.max(maxSize.x, Math.abs(sHelperRectangle.width)),
+									Math.max(maxSize.y, Math.abs(sHelperRectangle.height)));
+						}
+					}
+				}
 			}
 
 			///////////////////////////////////////////////////////////////

@@ -6,9 +6,9 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.display.IGAFTexture;
-	
+
 	/**
-	 * <p>GAFTimeline represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation. 
+	 * <p>GAFTimeline represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation.
 	 * It is used to create <code>GAFMovieClip</code> that is ready animation object to be used in starling display list</p>
 	 */
 	public class GAFTimeline
@@ -18,11 +18,11 @@ package com.catalystapps.gaf.data
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		public static const CONTENT_ALL: String = "contentAll";
 		public static const CONTENT_DEFAULT: String = "contentDefault";
 		public static const CONTENT_SPECIFY: String = "contentSpecify";
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
@@ -32,21 +32,21 @@ package com.catalystapps.gaf.data
 		gaf_internal var _uniqueID: String;
 		/** @private */
 		gaf_internal var _uniqueLinkage: String;
-		
+
 		private var _config: GAFTimelineConfig;
 
 		private var _gafgfxData: GAFGFXData;
 		private var _gafBundle: GAFBundle;
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Creates an GAFTimeline object
-		 * 
+		 *
 		 * @param timelineConfig - GAF timeline config
 		 */
 		public function GAFTimeline(timelineConfig: GAFTimelineConfig)
@@ -65,7 +65,7 @@ package com.catalystapps.gaf.data
 		//  PUBLIC METHODS
 		//
 		// --------------------------------------------------------------------------
-		
+
 		/**
 		 * Returns GAF Texture by name of an instance inside a timeline.
 		 * @param animationObjectName name of an instance inside a timeline
@@ -79,12 +79,12 @@ package com.catalystapps.gaf.data
 				var part: CAnimationObject = this._config.animationObjects.getAnimationObject(instanceID);
 				if (part)
 				{
-					return textureAtlas.getTexture(part.regionID);
+					return this.textureAtlas.getTexture(part.regionID);
 				}
 			}
 			return null;
 		}
-		
+
 		/**
 		 * Disposes the underlying GAF timeline config
 		 */
@@ -92,12 +92,12 @@ package com.catalystapps.gaf.data
 		{
 			this._config.dispose();
 		}
-		
+
 		/**
 		 * Load all graphical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
 		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
 		 * before asset conversion)
-		 * 
+		 *
 		 * @param content - content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
 		 * @param scale - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
 		 * @param csf - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
@@ -112,7 +112,7 @@ package com.catalystapps.gaf.data
 
 			var textures: Object;
 			var csfConfig: CTextureAtlasCSF;
-			
+
 			switch(content)
 			{
 				case CONTENT_ALL:
@@ -121,7 +121,7 @@ package com.catalystapps.gaf.data
 						for each(csfConfig in scaleConfig.allContentScaleFactors)
 						{
 							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf, format);
-							
+
 							textures = this._gafgfxData.getTextures(scaleConfig.scale, csfConfig.csf);
 							if (textures)
 							{
@@ -130,10 +130,10 @@ package com.catalystapps.gaf.data
 						}
 					}
 					return;
-					
+
 				case CONTENT_DEFAULT:
 					csfConfig = this._config.textureAtlas.contentScaleFactor;
-					
+
 					if (csfConfig == null)
 					{
 						return;
@@ -143,30 +143,30 @@ package com.catalystapps.gaf.data
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale, this.contentScaleFactor), csfConfig);
 					}
-					
+
 					return;
-				
+
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
-					
+
 					if (csfConfig == null)
 					{
 						return;
 					}
 
-					
+
 					if (this._gafgfxData.createTextures(scale, csf, format))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);
 					}
 					return;
 			}
-			
+
 		}
-		
+
 		/**
 		 * Unload all all graphical data connected with this asset from device GPU memory. Used in case of manual control of video memory usage
-		 * 
+		 *
 		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
 		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
@@ -177,9 +177,9 @@ package com.catalystapps.gaf.data
 			{
 				return;
 			}
-			
+
 			var csfConfig: CTextureAtlasCSF;
-			
+
 			switch(content)
 			{
 				case CONTENT_ALL:
@@ -194,7 +194,7 @@ package com.catalystapps.gaf.data
 						}
 					}
 					return;
-				
+
 				case CONTENT_DEFAULT:
 					this._gafgfxData.disposeTextures(this.scale, this.contentScaleFactor);
 					if (this._config.textureAtlas.contentScaleFactor.atlas)
@@ -203,7 +203,7 @@ package com.catalystapps.gaf.data
 						this._config.textureAtlas.contentScaleFactor.atlas = null;
 					}
 					return;
-				
+
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
 					if(csfConfig)
@@ -218,21 +218,21 @@ package com.catalystapps.gaf.data
 					return;
 			}
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private function getCSFConfig(scale: Number, csf: Number): CTextureAtlasCSF
 		{
 			var scaleConfig: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
-			
+
 			if(scaleConfig)
 			{
 				var csfConfig: CTextureAtlasCSF = scaleConfig.getTextureAtlasForCSF(csf);
-				
+
 				if(csfConfig)
 				{
 					return csfConfig;
@@ -247,25 +247,25 @@ package com.catalystapps.gaf.data
 				return null;
 			}
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/**
 		 * Timeline identifier (name given at animation's upload or assigned by developer)
 		 */
@@ -273,7 +273,7 @@ package com.catalystapps.gaf.data
 		{
 			return this.config.assetID;
 		}
-		
+
 		public function set id(value: String): void
 		{
 			this.config.assetID = value;
@@ -286,7 +286,7 @@ package com.catalystapps.gaf.data
 		{
 			return this.config.assetID;
 		}
-		
+
 		/** @private */
 		gaf_internal function get uniqueID(): String
 		{
@@ -306,23 +306,23 @@ package com.catalystapps.gaf.data
 			{
 				return null;
 			}
-			
+
 			if (!this._config.textureAtlas.contentScaleFactor.atlas)
 			{
 				this.loadInVideoMemory(CONTENT_DEFAULT);
 			}
-			
+
 			return this._config.textureAtlas.contentScaleFactor.atlas;
 		}
-		
+
 		/** @private */
 		public function get config(): GAFTimelineConfig
 		{
-			return _config;
+			return this._config;
 		}
-		
+
 		////////////////////////////////////////////////////////////////////////////
-		
+
 		/**
 		 * Texture atlas scale that will be used for <code>GAFMovieClip</code> creation. To create <code>GAFMovieClip's</code>
 		 * with different scale assign appropriate scale to <code>GAFTimeline</code> and only after that instantiate <code>GAFMovieClip</code>.
@@ -330,7 +330,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function set scale(scale: Number): void
 		{
-			if (!_config.textureAtlas)
+			if (!this._config.textureAtlas)
 			{
 				return;
 			}
@@ -338,13 +338,13 @@ package com.catalystapps.gaf.data
 			var taScale: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
 			if (taScale)
 			{
-				_config.textureAtlas = taScale;
-				
+				this._config.textureAtlas = taScale;
+
 				var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
-				
+
 				if(taCSF)
 				{
-					_config.textureAtlas.contentScaleFactor = taCSF;
+					this._config.textureAtlas.contentScaleFactor = taCSF;
 				}
 				else
 				{
@@ -356,16 +356,16 @@ package com.catalystapps.gaf.data
 				throw new Error("There is no scale " + scale + "in timeline config");
 			}
 		}
-		
+
 		public function get scale(): Number
 		{
-			if (_config.textureAtlas)
+			if (this._config.textureAtlas)
 			{
-				return _config.textureAtlas.scale;
+				return this._config.textureAtlas.scale;
 			}
 			return 1;
 		}
-		
+
 		/**
 		 * Texture atlas content scale factor (csf) that will be used for <code>GAFMovieClip</code> creation. To create <code>GAFMovieClip's</code>
 		 * with different csf assign appropriate csf to <code>GAFTimeline</code> and only after that instantiate <code>GAFMovieClip</code>.
@@ -373,55 +373,55 @@ package com.catalystapps.gaf.data
 		 */
 		public function set contentScaleFactor(csf: Number): void
 		{
-			if (!_config.textureAtlas)
+			if (!this._config.textureAtlas)
 			{
 				return;
 			}
-			
+
 			var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
-			
+
 			if(taCSF)
 			{
-				_config.textureAtlas.contentScaleFactor = taCSF;
+				this._config.textureAtlas.contentScaleFactor = taCSF;
 			}
 			else
 			{
 				throw new Error("There is no csf " + csf + "in timeline config");
 			}
 		}
-		
+
 		public function get contentScaleFactor(): Number
 		{
-			if (_config.textureAtlas)
+			if (this._config.textureAtlas)
 			{
-				return _config.textureAtlas.contentScaleFactor.csf;
+				return this._config.textureAtlas.contentScaleFactor.csf;
 			}
 			return 1;
 		}
-		
+
 		/**
 		 * Graphical data storage that used by <code>GAFTimeline</code>.
 		 */
 		public function set gafgfxData(gafgfxData: GAFGFXData): void
 		{
-			_gafgfxData = gafgfxData;
+			this._gafgfxData = gafgfxData;
 		}
-		
+
 		public function get gafgfxData(): GAFGFXData
 		{
-			return _gafgfxData;
+			return this._gafgfxData;
 		}
 
 		/** @private */
 		public function get gafBundle(): GAFBundle
 		{
-			return _gafBundle;
+			return this._gafBundle;
 		}
 
 		/** @private */
 		public function set gafBundle(gafBundle: GAFBundle): void
 		{
-			_gafBundle = gafBundle;
+			this._gafBundle = gafBundle;
 		}
 
 		//--------------------------------------------------------------------------

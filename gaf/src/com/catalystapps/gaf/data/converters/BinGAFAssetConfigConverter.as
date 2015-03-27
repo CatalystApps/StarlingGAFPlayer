@@ -1,13 +1,5 @@
 package com.catalystapps.gaf.data.converters
 {
-	import com.catalystapps.gaf.utils.MathUtility;
-	import com.catalystapps.gaf.data.config.CBlurFilterData;
-	import flash.events.ErrorEvent;
-	import flash.utils.getTimer;
-	import flash.utils.setTimeout;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
@@ -15,7 +7,9 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
+	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
+	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
@@ -23,7 +17,11 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CTextureAtlasElements;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
+	import com.catalystapps.gaf.utils.MathUtility;
 
+	import flash.events.ErrorEvent;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -32,6 +30,10 @@ package com.catalystapps.gaf.data.converters
 	import flash.utils.ByteArray;
 	import flash.utils.CompressionAlgorithm;
 	import flash.utils.Endian;
+	import flash.utils.getTimer;
+	import flash.utils.setTimeout;
+
+	import starling.utils.RectangleUtil;
 
 	/**
 	 * @private
@@ -66,11 +68,14 @@ package com.catalystapps.gaf.data.converters
 		private static const FILTER_GLOW: uint = 2;
 		private static const FILTER_COLOR_MATRIX: uint = 6;
 
+		private static const sHelperRectangle: Rectangle = new Rectangle();
+
 		private var _assetID: String;
 		private var _bytes: ByteArray;
 		private var _defaultScale: Number;
 		private var _defaultContentScaleFactor: Number;
 		private var _config: GAFAssetConfig;
+		private var _textureElementSizes: Object; // Point by texture element id
 
 		private var time: uint;
 
@@ -82,16 +87,18 @@ package com.catalystapps.gaf.data.converters
 		//--------------------------------------------------------------------------
 		public function BinGAFAssetConfigConverter(assetID: String, bytes: ByteArray, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN)
 		{
-			_defaultContentScaleFactor = defaultContentScaleFactor;
-			_defaultScale = defaultScale;
-			_bytes = bytes;
-			_assetID = assetID;
+			this._defaultContentScaleFactor = defaultContentScaleFactor;
+			this._defaultScale = defaultScale;
+			this._bytes = bytes;
+			this._assetID = assetID;
+
+			this._textureElementSizes = {}
 		}
 
 		public function convert(): void
 		{
-			time = uint.MAX_VALUE;
-			checkTimeout(parseStart);
+			this.time = uint.MAX_VALUE;
+			this.checkTimeout(this.parseStart);
 		}
 
 		//--------------------------------------------------------------------------
@@ -102,29 +109,29 @@ package com.catalystapps.gaf.data.converters
 
 		private function parseStart(): void
 		{
-			_bytes.endian = Endian.LITTLE_ENDIAN;
+			this._bytes.endian = Endian.LITTLE_ENDIAN;
 
-			_config = new GAFAssetConfig(_assetID);
-			_config.compression = _bytes.readInt();
-			_config.versionMajor = _bytes.readByte();
-			_config.versionMinor = _bytes.readByte();
-			_config.fileLength = _bytes.readUnsignedInt();
+			this._config = new GAFAssetConfig(this._assetID);
+			this._config.compression = this._bytes.readInt();
+			this._config.versionMajor = this._bytes.readByte();
+			this._config.versionMinor = this._bytes.readByte();
+			this._config.fileLength = this._bytes.readUnsignedInt();
 
-			if (_config.versionMajor > GAFAssetConfig.MAX_VERSION)
+			if (this._config.versionMajor > GAFAssetConfig.MAX_VERSION)
 			{
-				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, WarningConstants.UNSUPPORTED_FILE +
-							"Library version: " + GAFAssetConfig.MAX_VERSION + ", file version: " + _config.versionMajor));
+				this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, WarningConstants.UNSUPPORTED_FILE +
+				"Library version: " + GAFAssetConfig.MAX_VERSION + ", file version: " + this._config.versionMajor));
 				return;
 			}
 
-			switch (_config.compression)
+			switch (this._config.compression)
 			{
 				case SIGNATURE_GAC:
-					decompressConfig();
+					this.decompressConfig();
 					break;
 			}
 
-			checkTimeout(parseContinue);
+			this.checkTimeout(this.parseContinue);
 		}
 
 		private function decompressConfig(): void
@@ -132,12 +139,12 @@ package com.catalystapps.gaf.data.converters
 			var uncompressedBA: ByteArray = new ByteArray();
 			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
 
-			_bytes.readBytes(uncompressedBA);
-			_bytes.clear();
+			this._bytes.readBytes(uncompressedBA);
+			this._bytes.clear();
 
 			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
 
-			_bytes = uncompressedBA;
+			this._bytes = uncompressedBA;
 		}
 
 		/**
@@ -145,9 +152,9 @@ package com.catalystapps.gaf.data.converters
 		 */
 		private function checkTimeout(nextFunction: Function, ...args): void
 		{
-			if (time - getTimer() >= 20)
+			if (this.time - getTimer() >= 20)
 			{
-				time = getTimer() + 1;
+				this.time = getTimer() + 1;
 				args.unshift(nextFunction, 1);
 				setTimeout.apply(null, args);
 			}
@@ -160,62 +167,62 @@ package com.catalystapps.gaf.data.converters
 		private function parseContinue(): void
 		{
 			var timelineConfig: GAFTimelineConfig;
-			if (_config.versionMajor < 4)
+			if (this._config.versionMajor < 4)
 			{
-				timelineConfig = new GAFTimelineConfig(_config.versionMajor + "." + _config.versionMinor);
+				timelineConfig = new GAFTimelineConfig(this._config.versionMajor + "." + this._config.versionMinor);
 				timelineConfig.id = "0";
-				timelineConfig.assetID = _assetID;
-				timelineConfig.framesCount = _bytes.readShort();
-				timelineConfig.bounds = new Rectangle(_bytes.readFloat(), _bytes.readFloat(), _bytes.readFloat(), _bytes.readFloat());
-				timelineConfig.pivot = new Point(_bytes.readFloat(), _bytes.readFloat());
-				_config.timelines.push(timelineConfig);
+				timelineConfig.assetID = this._assetID;
+				timelineConfig.framesCount = this._bytes.readShort();
+				timelineConfig.bounds = new Rectangle(this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat());
+				timelineConfig.pivot = new Point(this._bytes.readFloat(), this._bytes.readFloat());
+				this._config.timelines.push(timelineConfig);
 			}
 			else
 			{
 				var i: int;
-				var l: uint = _bytes.readUnsignedInt();
+				var l: uint = this._bytes.readUnsignedInt();
 				for (i = 0; i < l; i++)
 				{
-					_config.scaleValues.push(_bytes.readFloat());
+					this._config.scaleValues.push(this._bytes.readFloat());
 				}
 
-				l = _bytes.readUnsignedInt();
+				l = this._bytes.readUnsignedInt();
 				for (i = 0; i < l; i++)
 				{
-					_config.csfValues.push(_bytes.readFloat());
+					this._config.csfValues.push(this._bytes.readFloat());
 				}
 			}
 
-			parseTags(_bytes, onParseComplete, timelineConfig);
+			this.parseTags(this._bytes, this.onParseComplete, timelineConfig);
 		}
 
 		private function onParseComplete(timelineConfig: GAFTimelineConfig): void
 		{
-			_bytes.clear();
-			_bytes = null;
+			this._bytes.clear();
+			this._bytes = null;
 
-			if (_config.versionMajor < 4)
+			if (this._config.versionMajor < 4)
 			{
 				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
 				{
 					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
 				}
 
-				_config.timelines[0].stageConfig = _config.stageConfig;
+				this._config.timelines[0].stageConfig = this._config.stageConfig;
 
-				checkForMissedRegions(timelineConfig);
+				this.checkForMissedRegions(timelineConfig);
 			}
 			else
 			{
-				for each (timelineConfig in _config.timelines)
+				for each (timelineConfig in this._config.timelines)
 				{
-					timelineConfig.stageConfig = _config.stageConfig;
+					timelineConfig.stageConfig = this._config.stageConfig;
 
-					checkForMissedRegions(timelineConfig);
+					this.checkForMissedRegions(timelineConfig);
 				}
 			}
 
-			dispatchEvent(new Event(Event.COMPLETE));
+			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
 		private function checkForMissedRegions(timelineConfig: GAFTimelineConfig): void
@@ -225,7 +232,7 @@ package com.catalystapps.gaf.data.converters
 				for each (var ao: CAnimationObject in timelineConfig.animationObjects.animationObjectsDictionary)
 				{
 					if (ao.type == CAnimationObject.TYPE_TEXTURE
-					&& !timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(ao.regionID))
+							&& !timelineConfig.textureAtlas.contentScaleFactor.elements.getElement(ao.regionID))
 					{
 						timelineConfig.addWarning(WarningConstants.REGION_NOT_FOUND);
 						break;
@@ -238,13 +245,67 @@ package com.catalystapps.gaf.data.converters
 		{
 			if (tagsBytes.bytesAvailable > 0)
 			{
-				readNextTag(tagsBytes);
+				this.readNextTag(tagsBytes);
 				args.unshift(parseTags, tagsBytes, onComplete);
-				checkTimeout.apply(null, args);
+				this.checkTimeout.apply(null, args);
 			}
 			else
 			{
+				this.readMaskMaxSizes();
 				onComplete.apply(null, args);
+			}
+		}
+
+		private function readMaskMaxSizes(): void
+		{
+			for each (var timeline: GAFTimelineConfig in this._config.timelines)
+			{
+				for each (var frame: CAnimationFrame in timeline.animationConfigFrames.frames)
+				{
+					for each (var frameInstance: CAnimationFrameInstance in frame.instances)
+					{
+						var animationObject: CAnimationObject = timeline.animationObjects.getAnimationObject(frameInstance.id);
+						if (animationObject.mask)
+						{
+							if (!animationObject.maxSize)
+							{
+								animationObject.maxSize = new Point();
+							}
+
+							var maxSize: Point = animationObject.maxSize;
+
+							if (animationObject.type == CAnimationObject.TYPE_TEXTURE)
+							{
+								sHelperRectangle.copyFrom(this._textureElementSizes[animationObject.regionID]);
+							}
+							else if (animationObject.type == CAnimationObject.TYPE_TIMELINE)
+							{
+								var maskTimeline: GAFTimelineConfig;
+								for each (maskTimeline in this._config.timelines)
+								{
+									if (maskTimeline.id == frameInstance.id)
+									{
+										break;
+									}
+								}
+								sHelperRectangle.copyFrom(maskTimeline.bounds);
+							}
+							else if (animationObject.type == CAnimationObject.TYPE_TEXTFIELD)
+							{
+								var textField: CTextFieldObject = timeline.textFields.textFieldObjectsDictionary[animationObject.regionID];
+								sHelperRectangle.setTo(
+										-textField.pivotPoint.x,
+										-textField.pivotPoint.y,
+										textField.width,
+										textField.height);
+							}
+							RectangleUtil.getBounds(sHelperRectangle, frameInstance.matrix, sHelperRectangle);
+							maxSize.setTo(
+									Math.max(maxSize.x, Math.abs(sHelperRectangle.width)),
+									Math.max(maxSize.y, Math.abs(sHelperRectangle.height)));
+						}
+					}
+				}
 			}
 		}
 
@@ -258,19 +319,20 @@ package com.catalystapps.gaf.data.converters
 			tagContent.position = 0;
 
 			var timelineConfig: GAFTimelineConfig;
-			if (_config.timelines.length > 0)
+			if (this._config.timelines.length > 0)
 			{
-				timelineConfig = _config.timelines[_config.timelines.length - 1];
+				timelineConfig = this._config.timelines[this._config.timelines.length - 1];
 			}
 
 			switch (tagID)
 			{
 				case BinGAFAssetConfigConverter.TAG_DEFINE_STAGE:
-					readStageConfig(tagContent, _config);
+					readStageConfig(tagContent, this._config);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
-					readTextureAtlasConfig(tagID, tagContent, timelineConfig, _defaultScale, _defaultContentScaleFactor);
+					readTextureAtlasConfig(tagID, tagContent, timelineConfig, this._defaultScale,
+							this._defaultContentScaleFactor, this._textureElementSizes);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS2:
@@ -308,9 +370,9 @@ package com.catalystapps.gaf.data.converters
 
 		private function readTimeline(tagContent: ByteArray): void
 		{
-			var timelineConfig: GAFTimelineConfig = new GAFTimelineConfig(_config.versionMajor + "." + _config.versionMinor);
+			var timelineConfig: GAFTimelineConfig = new GAFTimelineConfig(this._config.versionMajor + "." + _config.versionMinor);
 			timelineConfig.id = tagContent.readUnsignedInt().toString();
-			timelineConfig.assetID = _config.id;
+			timelineConfig.assetID = this._config.id;
 			timelineConfig.framesCount = tagContent.readUnsignedInt();
 			timelineConfig.bounds = new Rectangle(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
 			timelineConfig.pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
@@ -321,35 +383,35 @@ package com.catalystapps.gaf.data.converters
 				timelineConfig.linkage = tagContent.readUTF();
 			}
 
-			_config.timelines.push(timelineConfig);
+			this._config.timelines.push(timelineConfig);
 
 			var nestedTags: ByteArray = new ByteArray();
 			nestedTags.endian = Endian.LITTLE_ENDIAN;
 			nestedTags.writeBytes(tagContent, tagContent.position, tagContent.bytesAvailable);
 			nestedTags.position = 0;
 
-			parseTags(nestedTags, onParseTimelineComplete, timelineConfig);
+			this.parseTags(nestedTags, this.onParseTimelineComplete, timelineConfig);
 		}
 
 		private function onParseTimelineComplete(timelineConfig: GAFTimelineConfig): void
 		{
-			if (!timelineConfig.allTextureAtlases.length && _config.scaleValues != null && _config.csfValues != null) // timeline hasn't atlas, create empty
+			if (!timelineConfig.allTextureAtlases.length && this._config.scaleValues != null && this._config.csfValues != null) // timeline hasn't atlas, create empty
 			{
 				var textureAtlas: CTextureAtlasScale;
-				for each (var scale: Number in _config.scaleValues)
+				for each (var scale: Number in this._config.scaleValues)
 				{
 					textureAtlas = new CTextureAtlasScale();
 					textureAtlas.scale = scale;
 
 					textureAtlas.allContentScaleFactors = new Vector.<CTextureAtlasCSF>();
-					for each (var csf: Number in _config.csfValues)
+					for each (var csf: Number in this._config.csfValues)
 					{
 						var item: CTextureAtlasCSF;
 						item = new CTextureAtlasCSF(csf, scale);
 
-						if ((!isNaN(_defaultContentScaleFactor)
-						&& MathUtility.equals(_defaultContentScaleFactor, csf))
-						|| !textureAtlas.contentScaleFactor)
+						if ((!isNaN(this._defaultContentScaleFactor)
+								&& MathUtility.equals(this._defaultContentScaleFactor, csf))
+								|| !textureAtlas.contentScaleFactor)
 						{
 							textureAtlas.contentScaleFactor = item;
 						}
@@ -357,7 +419,7 @@ package com.catalystapps.gaf.data.converters
 						textureAtlas.allContentScaleFactors.push(item);
 					}
 					timelineConfig.allTextureAtlases.push(textureAtlas);
-					if (!isNaN(_defaultScale) && MathUtility.equals(_defaultScale, scale))
+					if (!isNaN(this._defaultScale) && MathUtility.equals(this._defaultScale, scale))
 					{
 						timelineConfig.textureAtlas = textureAtlas;
 					}
@@ -382,7 +444,7 @@ package com.catalystapps.gaf.data.converters
 
 		public function get config(): GAFAssetConfig
 		{
-			return _config;
+			return this._config;
 		}
 
 		//--------------------------------------------------------------------------
@@ -690,7 +752,8 @@ package com.catalystapps.gaf.data.converters
 		}
 
 		private static function readTextureAtlasConfig(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig,
-		                                               defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
+													   defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN,
+													   textureElementSizes: Object = null): void
 		{
 			var i: uint;
 			var j: uint;
@@ -799,6 +862,14 @@ package com.catalystapps.gaf.data.converters
 						new Matrix(1 / elementScale, 0, 0, 1 / elementScale, -pivot.x / elementScale, -pivot.y / elementScale));
 				element.scale9Grid = scale9Grid;
 				elements.addElement(element);
+
+				if (!textureElementSizes[elementAtlasID])
+				{
+					sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
+					RectangleUtil.getBounds(sHelperRectangle, element.pivotMatrix, sHelperRectangle);
+
+					textureElementSizes[elementAtlasID] = sHelperRectangle.clone();
+				}
 			}
 
 			for each (contentScaleFactor in contentScaleFactors)
@@ -829,7 +900,7 @@ package com.catalystapps.gaf.data.converters
 				{
 					type = CAnimationObject.TYPE_TEXTURE;
 				}
-				else
+				else // BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS2
 				{
 					type = getAnimationObjectTypeString(tagContent.readUnsignedShort());
 				}

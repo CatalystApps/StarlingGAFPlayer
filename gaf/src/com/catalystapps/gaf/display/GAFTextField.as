@@ -14,6 +14,7 @@ package com.catalystapps.gaf.display
 	import feathers.core.ITextEditor;
 
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 
 	import starling.display.Image;
 	import starling.textures.Texture;
@@ -21,7 +22,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-	public class GAFTextField extends TextInput implements IGAFDebug, IGAFDisplayObject
+	public class GAFTextField extends TextInput implements IGAFDebug, IMaxSize, IGAFDisplayObject
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -42,6 +43,8 @@ package com.catalystapps.gaf.display
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
+		private var _maxSize: Point;
+
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		//--------------------------------------------------------------------------
@@ -58,9 +61,9 @@ package com.catalystapps.gaf.display
 		{
 			super();
 
-			_pivotMatrix = new Matrix();
-			_pivotMatrix.tx = config.pivotPoint.x;
-			_pivotMatrix.ty = config.pivotPoint.y;
+			this._pivotMatrix = new Matrix();
+			this._pivotMatrix.tx = config.pivotPoint.x;
+			this._pivotMatrix.ty = config.pivotPoint.y;
 
 			if (!isNaN(config.width))
 			{
@@ -173,7 +176,7 @@ package com.catalystapps.gaf.display
 		/** @private */
 		public function setFilterConfig(value: CFilter, scale: Number = 1): void
 		{
-			if (_filterConfig != value || _filterScale != scale)
+			if (this._filterConfig != value || this._filterScale != scale)
 			{
 				if (value)
 				{
@@ -202,9 +205,9 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(__debugOriginalAlpha))
+			if (isNaN(this.__debugOriginalAlpha))
 			{
-				__debugOriginalAlpha = this.alpha;
+				this.__debugOriginalAlpha = this.alpha;
 			}
 			this.alpha = 1;
 		}
@@ -212,9 +215,9 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(__debugOriginalAlpha))
+			if (isNaN(this.__debugOriginalAlpha))
 			{
-				__debugOriginalAlpha = this.alpha;
+				this.__debugOriginalAlpha = this.alpha;
 			}
 			this.alpha = .05;
 		}
@@ -222,10 +225,10 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;
-			if (!isNaN(__debugOriginalAlpha))
+			if (!isNaN(this.__debugOriginalAlpha))
 			{
-				this.alpha = __debugOriginalAlpha;
-				__debugOriginalAlpha = NaN;
+				this.alpha = this.__debugOriginalAlpha;
+				this.__debugOriginalAlpha = NaN;
 			}
 		}
 
@@ -256,18 +259,31 @@ package com.catalystapps.gaf.display
 
 		public function get zIndex(): uint
 		{
-			return _zIndex;
+			return this._zIndex;
 		}
 
 		public function set zIndex(value: uint): void
 		{
-			_zIndex = value;
+			this._zIndex = value;
 		}
 
 		public function get pivotMatrix(): Matrix
 		{
-			return _pivotMatrix;
+			return this._pivotMatrix;
 		}
+
+		/** @private */
+		public function get maxSize(): Point
+		{
+			return this._maxSize;
+		}
+
+		/** @private */
+		public function set maxSize(value: Point): void
+		{
+			this._maxSize = value;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  STATIC METHODS

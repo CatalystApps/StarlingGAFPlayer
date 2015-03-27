@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.data.config
 {
+	import flash.geom.Point;
+
 	/**
 	 * @private
 	 */
@@ -25,6 +27,7 @@ package com.catalystapps.gaf.data.config
 		private var _regionID: String;
 		private var _type: String;
 		private var _mask: Boolean;
+		private var _maxSize: Point;
 
 		//--------------------------------------------------------------------------
 		//
@@ -72,22 +75,32 @@ package com.catalystapps.gaf.data.config
 
 		public function get instanceID(): String
 		{
-			return _instanceID;
+			return this._instanceID;
 		}
 
 		public function get regionID(): String
 		{
-			return _regionID;
+			return this._regionID;
 		}
 
 		public function get mask(): Boolean
 		{
-			return _mask;
+			return this._mask;
 		}
 
 		public function get type(): String
 		{
-			return _type;
+			return this._type;
+		}
+
+		public function get maxSize(): Point
+		{
+			return this._maxSize;
+		}
+
+		public function set maxSize(value: Point): void
+		{
+			this._maxSize = value;
 		}
 	}
 }

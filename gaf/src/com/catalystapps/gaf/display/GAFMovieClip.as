@@ -19,6 +19,7 @@ package com.catalystapps.gaf.display
 	import flash.errors.IllegalOperationError;
 	import flash.events.ErrorEvent;
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
 	import starling.animation.IAnimatable;
@@ -42,7 +43,7 @@ package com.catalystapps.gaf.display
 	 * all controls for animation familiar from standard MovieClip (<code>play</code>, <code>stop</code>, <code>gotoAndPlay,</code> etc.)
 	 * and some more like <code>loop</code>, <code>nPlay</code>, <code>setSequence</code> that helps manage playback
 	 */
-	dynamic public class GAFMovieClip extends Sprite implements IAnimatable, IGAFDisplayObject
+	dynamic public class GAFMovieClip extends Sprite implements IAnimatable, IGAFDisplayObject, IMaxSize
 	{
 		public static const EVENT_TYPE_SEQUENCE_START: String = "typeSequenceStart";
 		public static const EVENT_TYPE_SEQUENCE_END: String = "typeSequenceEnd";
@@ -72,9 +73,10 @@ package com.catalystapps.gaf.display
 
 		private var _playingSequence: CAnimationSequence;
 		private var _timelineBounds: Rectangle;
+		private var _maxSize: Point;
 		private var _boundsAndPivot: QuadBatch;
 		private var _config: GAFTimelineConfig;
-		private var gafTimeline: GAFTimeline;
+		private var _gafTimeline: GAFTimeline;
 
 		private var _loop: Boolean = true;
 		private var _skipFrames: Boolean = true;
@@ -126,7 +128,7 @@ package com.catalystapps.gaf.display
 		 */
 		public function GAFMovieClip(gafTimeline: GAFTimeline, mappedAssetID: String = "", fps: int = -1, addToJuggler: Boolean = true)
 		{
-			this.gafTimeline = gafTimeline;
+			this._gafTimeline = gafTimeline;
 			this._config = gafTimeline.config;
 			this._scale = gafTimeline.scale;
 			this._addToJuggler = addToJuggler;
@@ -182,23 +184,20 @@ package com.catalystapps.gaf.display
 		public function showMaskByID(id: String): void
 		{
 			var maskObject: DisplayObject = this._displayObjectsDictionary[id];
-			if (maskObject)
+			var pixelMaskObject: GAFPixelMaskDisplayObject = this._pixelMasksDictionary[id];
+			if (maskObject && pixelMaskObject)
 			{
 				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
-
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 				if (maskInstance)
 				{
-					var maskPivotMatrix: Matrix;
-					if (maskObject is IGAFImage)
-					{
-						maskPivotMatrix = (maskObject as IGAFImage).assetTexture.pivotMatrix;
-					}
-					else
-					{
-						maskPivotMatrix = new Matrix();
-					}
+					var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
 					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
+
+					if (maskObject is GAFScale9Image)
+					{
+						(maskObject as GAFScale9Image).invalidateSize();
+					}
 
 					////////////////////////////////
 
@@ -214,6 +213,7 @@ package com.catalystapps.gaf.display
 
 					////////////////////////////////
 
+					pixelMaskObject.pixelMask = null;
 					this.addChild(maskObject);
 				}
 			}
@@ -228,15 +228,19 @@ package com.catalystapps.gaf.display
 		public function hideMaskByID(id: String): void
 		{
 			var maskObject: DisplayObject = this._displayObjectsDictionary[id];
-			if (maskObject)
+			var pixelMaskObject: GAFPixelMaskDisplayObject = this._pixelMasksDictionary[id];
+			if (maskObject && pixelMaskObject)
 			{
-				maskObject.transformationMatrix = new Matrix();
 				maskObject.filter = null;
-
+				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
+				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
+				var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
+				maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
 				if (maskObject.parent == this)
 				{
 					this.removeChild(maskObject);
 				}
+				pixelMaskObject.pixelMask = maskObject;
 			}
 		}
 
@@ -430,8 +434,8 @@ package com.catalystapps.gaf.display
 		 */
 		public function disposeWithTextures(): void
 		{
-			this.gafTimeline.unloadFromVideoMemory();
-			this.gafTimeline = null;
+			this._gafTimeline.unloadFromVideoMemory();
+			this._gafTimeline = null;
 			this._config.dispose();
 			this.dispose();
 		}
@@ -851,51 +855,17 @@ package com.catalystapps.gaf.display
 						{
 							this.renderDebug(mc, instance, true);
 
-							var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.maskID];
-							if (maskObject)
+							pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
+
+							pixelMaskObject.addChildAt(displayObject as DisplayObject, maskIndex++);
+
+							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
+
+							displayObject.setFilterConfig(null);
+
+							if (maskIndex == 1)
 							{
-								pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
-
-								pixelMaskObject.addChildAt(displayObject as DisplayObject, maskIndex++);
-
-								if (mc && mc._started)
-								{
-									mc._play(true);
-								}
-
-								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.maskID);
-								if (maskInstance)
-								{
-									maskPivotMatrix = getTransformMatrix(maskObject);
-									instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
-
-									maskInstance.applyTransformMatrix(this.tmpMaskTransformationMatrix, maskPivotMatrix, this._scale);
-									this.tmpMaskTransformationMatrix.invert();
-									displayObject.transformationMatrix.concat(this.tmpMaskTransformationMatrix);
-
-									maskInstance.applyTransformMatrix(pixelMaskObject.transformationMatrix, maskPivotMatrix, this._scale);
-								}
-								else
-								{
-									throw new Error("Unable to find mask with ID " + instance.maskID);
-								}
-
-								displayObject.setFilterConfig(null);
-
-								if (maskIndex == 1)
-								{
-									this.addChildAt(pixelMaskObject, zIndex++);
-								}
-
-								mc = pixelMaskObject.pixelMask as GAFMovieClip;
-								if (mc && mc._started)
-								{
-									mc._play(true);
-								}
-							}
-							else
-							{
-								throw new Error("Unable to find mask with ID " + instance.maskID);
+								this.addChildAt(pixelMaskObject, zIndex++);
 							}
 						}
 						else //if display object is not masked
@@ -904,11 +874,6 @@ package com.catalystapps.gaf.display
 							{
 								maskIndex = 0;
 								pixelMaskObject = null;
-							}
-
-							if (mc && mc._started)
-							{
-								mc._play(true);
 							}
 
 							this.renderDebug(mc, instance, this._masked);
@@ -921,6 +886,16 @@ package com.catalystapps.gaf.display
 							zIndex++;
 						}
 
+						if (mc && mc._started)
+						{
+							mc._play(true);
+						}
+
+						if (displayObject is GAFScale9Image)
+						{
+							(displayObject as GAFScale9Image).invalidateSize();
+						}
+
 						if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
 						{
 							var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
@@ -931,6 +906,31 @@ package com.catalystapps.gaf.display
 					else
 					{
 						maskIndex = 0;
+
+						var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.id];
+						if (maskObject)
+						{
+							var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.id);
+							if (maskInstance)
+							{
+								maskPivotMatrix = getTransformMatrix(maskObject);
+								maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
+							}
+							else
+							{
+								throw new Error("Unable to find mask with ID " + instance.id);
+							}
+
+							mc = maskObject as GAFMovieClip;
+							if (mc && mc._started)
+							{
+								mc._play(true);
+							}
+						}
+						else
+						{
+							throw new Error("Unable to find mask with ID " + instance.id);
+						}
 					}
 				}
 			}
@@ -1071,21 +1071,20 @@ package com.catalystapps.gaf.display
 						break;
 				}
 
+				if (animationObjectConfig.maxSize && displayObject is IMaxSize)
+				{
+					var maxSize: Point = new Point(
+							animationObjectConfig.maxSize.x * this._scale,
+							animationObjectConfig.maxSize.y * this._scale);
+					(displayObject as IMaxSize).maxSize = maxSize;
+				}
+
 				this.addDisplayObject(animationObjectConfig.instanceID, displayObject);
 				if (animationObjectConfig.mask)
 				{
-					var pixelMaskDisplayObject: GAFPixelMaskDisplayObject = new GAFPixelMaskDisplayObject();
+					var pixelMaskDisplayObject: GAFPixelMaskDisplayObject = new GAFPixelMaskDisplayObject(this._gafTimeline.contentScaleFactor);
 					pixelMaskDisplayObject.pixelMask = displayObject;
-					var gafMovieClip: GAFMovieClip = displayObject as GAFMovieClip;
-					if (gafMovieClip)
-					{
-						var maskBounds: Rectangle = new Rectangle(
-								gafMovieClip._timelineBounds.x * gafMovieClip._scale,
-								gafMovieClip._timelineBounds.y * gafMovieClip._scale,
-								gafMovieClip._timelineBounds.width * gafMovieClip._scale,
-								gafMovieClip._timelineBounds.height * gafMovieClip._scale);
-						pixelMaskDisplayObject.maskBounds = maskBounds;
-					}
+
 					this.addDisplayObject(animationObjectConfig.instanceID, pixelMaskDisplayObject);
 				}
 
@@ -1161,9 +1160,9 @@ package com.catalystapps.gaf.display
 		{
 			use namespace gaf_internal;
 
-			if (isNaN(__debugOriginalAlpha))
+			if (isNaN(this.__debugOriginalAlpha))
 			{
-				__debugOriginalAlpha = this.alpha;
+				this.__debugOriginalAlpha = this.alpha;
 			}
 			this.alpha = 1;
 		}
@@ -1173,9 +1172,9 @@ package com.catalystapps.gaf.display
 		{
 			use namespace gaf_internal;
 
-			if (isNaN(__debugOriginalAlpha))
+			if (isNaN(this.__debugOriginalAlpha))
 			{
-				__debugOriginalAlpha = this.alpha;
+				this.__debugOriginalAlpha = this.alpha;
 			}
 			this.alpha = .05;
 		}
@@ -1185,10 +1184,10 @@ package com.catalystapps.gaf.display
 		{
 			use namespace gaf_internal;
 
-			if (!isNaN(__debugOriginalAlpha))
+			if (!isNaN(this.__debugOriginalAlpha))
 			{
-				this.alpha = __debugOriginalAlpha;
-				__debugOriginalAlpha = NaN;
+				this.alpha = this.__debugOriginalAlpha;
+				this.__debugOriginalAlpha = NaN;
 			}
 		}
 
@@ -1406,6 +1405,18 @@ package com.catalystapps.gaf.display
 		public function get useClipping(): Boolean
 		{
 			return this._useClipping;
+		}
+
+		/** @private */
+		public function get maxSize(): Point
+		{
+			return this._maxSize;
+		}
+
+		/** @private */
+		public function set maxSize(value: Point): void
+		{
+			this._maxSize = value;
 		}
 
 		/**

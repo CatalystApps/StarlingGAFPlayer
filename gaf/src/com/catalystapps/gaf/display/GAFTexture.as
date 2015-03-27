@@ -83,22 +83,22 @@ package com.catalystapps.gaf.display
 
 		public function get texture(): Texture
 		{
-			return _texture;
+			return this._texture;
 		}
 
 		public function get pivotMatrix(): Matrix
 		{
-			return _pivotMatrix;
+			return this._pivotMatrix;
 		}
 
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function clone(): IGAFTexture
 		{
-			return new GAFTexture(_id, _texture, _pivotMatrix.clone());
+			return new GAFTexture(this._id, this._texture, this._pivotMatrix.clone());
 		}
 	}
 }
