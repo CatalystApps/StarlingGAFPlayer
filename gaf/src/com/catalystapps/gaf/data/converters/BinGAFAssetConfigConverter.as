@@ -220,8 +220,8 @@ package com.catalystapps.gaf.data.converters
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES2:
-					readAnimationFrames(tagID, this._bytes, timelineConfig);
-					break;
+					readAnimationFrames(tagID);
+					return;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_NAMED_PARTS:
 					readNamedParts(this._bytes, timelineConfig);
 					break;
@@ -253,6 +253,11 @@ package com.catalystapps.gaf.data.converters
 					break;
 			}
 
+			delayedReadNextTag();
+		}
+
+		private function delayedReadNextTag(): void
+		{
 			if (getTimer() - this.time >= 20)
 			{
 				this.time = getTimer();
@@ -436,40 +441,48 @@ package com.catalystapps.gaf.data.converters
 			config.stageConfig = stageConfig;
 		}
 
-		private static function readAnimationFrames(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
+		private function readAnimationFrames(tagID: int, startIndex: uint = 0, framesCount: Number = NaN, prevFrame: CAnimationFrame = null): void
 		{
-			var framesCount: uint = tagContent.readUnsignedInt();
+			if (isNaN(framesCount))
+			{
+				framesCount = this._bytes.readUnsignedInt();
+			}
+			var missedFrameNumber: uint;
+			var filterLength: int;
 			var frameNumber: uint;
-			var hasChangesInDisplayList: Boolean;
-			var hasActions: Boolean;
 			var statesCount: uint;
-			var hasColorTransform: Boolean;
-			var hasMask: Boolean;
-			var hasEffect: Boolean;
+			var filterType: uint;
 			var stateID: uint;
 			var zIndex: int;
 			var alpha: Number;
 			var matrix: Matrix;
 			var maskID: String;
+			var hasMask: Boolean;
+			var hasEffect: Boolean;
+			var hasActions: Boolean;
+			var hasColorTransform: Boolean;
+			var hasChangesInDisplayList: Boolean;
 
-			var animationConfigFrames: CAnimationFrames = new CAnimationFrames();
-			var currentFrame: CAnimationFrame;
-			var prevFrame: CAnimationFrame;
-			var missedFrameNumber: uint;
+			var timelineConfig: GAFTimelineConfig = this._config.timelines[this._config.timelines.length - 1];
 			var instance: CAnimationFrameInstance;
-			var filter: CFilter;
-
-			var filterLength: int;
-			var filterType: uint;
-
+			var currentFrame: CAnimationFrame;
 			var blurFilter: CBlurFilterData;
 			var blurFilters: Object = {};
+			var filter: CFilter;
+
+			var cycleTime: uint = getTimer();
 
 			if (framesCount)
 			{
-				for (var i: uint = 0; i < framesCount; i++)
+				for (var i: uint = startIndex; i < framesCount; i++)
 				{
-					frameNumber = tagContent.readUnsignedInt();
+					if (getTimer() - cycleTime >= 20)
+					{
+						setTimeout(readAnimationFrames, 1, tagID, i, framesCount, prevFrame);
+						return;
+					}
+
+					frameNumber = this._bytes.readUnsignedInt();
 
 					if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES)
 					{
@@ -478,8 +491,8 @@ package com.catalystapps.gaf.data.converters
 					}
 					else
 					{
-						hasChangesInDisplayList = tagContent.readBoolean();
-						hasActions = tagContent.readBoolean();
+						hasChangesInDisplayList = this._bytes.readBoolean();
+						hasActions = this._bytes.readBoolean();
 					}
 
 					if (prevFrame)
@@ -488,7 +501,7 @@ package com.catalystapps.gaf.data.converters
 
 						for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
 						{
-							animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+							timelineConfig.animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 						}
 					}
 					else
@@ -499,39 +512,39 @@ package com.catalystapps.gaf.data.converters
 						{
 							for (missedFrameNumber = 1; missedFrameNumber < currentFrame.frameNumber; missedFrameNumber++)
 							{
-								animationConfigFrames.addFrame(new CAnimationFrame(missedFrameNumber));
+								timelineConfig.animationConfigFrames.addFrame(new CAnimationFrame(missedFrameNumber));
 							}
 						}
 					}
 
 					if (hasChangesInDisplayList)
 					{
-						statesCount = tagContent.readUnsignedInt();
+						statesCount = this._bytes.readUnsignedInt();
 
 						for (var j: uint = 0; j < statesCount; j++)
 						{
-							hasColorTransform = tagContent.readBoolean();
-							hasMask = tagContent.readBoolean();
-							hasEffect = tagContent.readBoolean();
+							hasColorTransform = this._bytes.readBoolean();
+							hasMask = this._bytes.readBoolean();
+							hasEffect = this._bytes.readBoolean();
 
-							stateID = tagContent.readUnsignedInt();
-							zIndex = tagContent.readInt();
-							alpha = tagContent.readFloat();
+							stateID = this._bytes.readUnsignedInt();
+							zIndex = this._bytes.readInt();
+							alpha = this._bytes.readFloat();
 							if (alpha == 1)
 							{
 								alpha = CAnimationFrameInstance.MAX_ALPHA;
 							}
-							matrix = new Matrix(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
-									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
+							matrix = new Matrix(this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(),
+									this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat());
 
 							filter = null;
 
 							if (hasColorTransform)
 							{
 								var params: Vector.<Number> = new <Number>[
-									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
-									tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(),
-									tagContent.readFloat()];
+									this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(),
+									this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(),
+									this._bytes.readFloat()];
 								params.fixed = true;
 								filter ||= new CFilter();
 								filter.addColorTransform(params);
@@ -541,19 +554,19 @@ package com.catalystapps.gaf.data.converters
 							{
 								filter ||= new CFilter();
 
-								filterLength = tagContent.readByte();
+								filterLength = this._bytes.readByte();
 								for (var k: uint = 0; k < filterLength; k++)
 								{
-									filterType = tagContent.readUnsignedInt();
+									filterType = this._bytes.readUnsignedInt();
 									var warning: String;
 
 									switch (filterType)
 									{
 										case BinGAFAssetConfigConverter.FILTER_DROP_SHADOW:
-											warning = readDropShadowFilter(tagContent, filter);
+											warning = readDropShadowFilter(this._bytes, filter);
 											break;
 										case BinGAFAssetConfigConverter.FILTER_BLUR:
-											warning = readBlurFilter(tagContent, filter);
+											warning = readBlurFilter(this._bytes, filter);
 											blurFilter = filter.filterConfigs[filter.filterConfigs.length - 1] as CBlurFilterData;
 											if (blurFilter.blurX >= 2 && blurFilter.blurY >= 2)
 											{
@@ -568,10 +581,10 @@ package com.catalystapps.gaf.data.converters
 											}
 											break;
 										case BinGAFAssetConfigConverter.FILTER_GLOW:
-											warning = readGlowFilter(tagContent, filter);
+											warning = readGlowFilter(this._bytes, filter);
 											break;
 										case BinGAFAssetConfigConverter.FILTER_COLOR_MATRIX:
-											warning = readColorMatrixFilter(tagContent, filter);
+											warning = readColorMatrixFilter(this._bytes, filter);
 											break;
 										default:
 											trace(WarningConstants.UNSUPPORTED_FILTERS);
@@ -584,7 +597,7 @@ package com.catalystapps.gaf.data.converters
 
 							if (hasMask)
 							{
-								maskID = tagContent.readUnsignedInt() + "";
+								maskID = this._bytes.readUnsignedInt() + "";
 							}
 							else
 							{
@@ -608,19 +621,19 @@ package com.catalystapps.gaf.data.converters
 					if (hasActions)
 					{
 						var action: CFrameAction;
-						var count: int = tagContent.readUnsignedInt();
+						var count: int = this._bytes.readUnsignedInt();
 						for (var a: int = 0; a < count; a++)
 						{
 							action = new CFrameAction();
-							action.type = tagContent.readUnsignedInt();
-							action.scope = tagContent.readUTF();
+							action.type = this._bytes.readUnsignedInt();
+							action.scope = this._bytes.readUTF();
 
-							var paramsLength: uint = tagContent.readUnsignedInt();
+							var paramsLength: uint = this._bytes.readUnsignedInt();
 							if (paramsLength > 0)
 							{
 								var paramsBA: ByteArray = new ByteArray();
 								paramsBA.endian = Endian.LITTLE_ENDIAN;
-								tagContent.readBytes(paramsBA, 0, paramsLength);
+								this._bytes.readBytes(paramsBA, 0, paramsLength);
 								paramsBA.position = 0;
 
 								while (paramsBA.bytesAvailable > 0)
@@ -633,17 +646,17 @@ package com.catalystapps.gaf.data.converters
 						}
 					}
 
-					animationConfigFrames.addFrame(currentFrame);
+					timelineConfig.animationConfigFrames.addFrame(currentFrame);
 
 					prevFrame = currentFrame;
-				}
+				} //end loop
 
 				for (missedFrameNumber = prevFrame.frameNumber + 1; missedFrameNumber <= timelineConfig.framesCount; missedFrameNumber++)
 				{
-					animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
+					timelineConfig.animationConfigFrames.addFrame(prevFrame.clone(missedFrameNumber));
 				}
 
-				for each (currentFrame in animationConfigFrames.frames)
+				for each (currentFrame in timelineConfig.animationConfigFrames.frames)
 				{
 					for each (instance in currentFrame.instances)
 					{
@@ -659,9 +672,9 @@ package com.catalystapps.gaf.data.converters
 						}
 					}
 				}
-			}
+			} //end condition
 
-			timelineConfig.animationConfigFrames = animationConfigFrames;
+			this.delayedReadNextTag();
 		}
 
 		private static function readDropShadowFilter(source: ByteArray, filter: CFilter): String
