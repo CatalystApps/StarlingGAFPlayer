@@ -193,29 +193,29 @@ package com.catalystapps.gaf.display
 				{
 					var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
 					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
-
-					if (maskObject is GAFScale9Image)
-					{
-						(maskObject as GAFScale9Image).invalidateSize();
-					}
-
-					////////////////////////////////
-
-					var cFilter: CFilter = new CFilter();
-					var cmf: Vector.<Number> = new <Number>[1, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0];
-					cmf.fixed = true;
-					cFilter.addColorMatrixFilter(cmf);
-
-					var gafFilter: GAFFilter = new GAFFilter();
-					gafFilter.setConfig(cFilter, this._scale);
-
-					maskObject.filter = gafFilter;
-
-					////////////////////////////////
-
-					pixelMaskObject.pixelMask = null;
-					this.addChild(maskObject);
 				}
+
+				if (maskObject is GAFScale9Image)
+				{
+					(maskObject as GAFScale9Image).invalidateSize();
+				}
+
+				////////////////////////////////
+
+				var cFilter: CFilter = new CFilter();
+				var cmf: Vector.<Number> = new <Number>[1, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0];
+				cmf.fixed = true;
+				cFilter.addColorMatrixFilter(cmf);
+
+				var gafFilter: GAFFilter = new GAFFilter();
+				gafFilter.setConfig(cFilter, this._scale);
+
+				maskObject.filter = gafFilter;
+
+				////////////////////////////////
+
+				pixelMaskObject.pixelMask = null;
+				this.addChild(maskObject);
 			}
 		}
 
@@ -234,8 +234,12 @@ package com.catalystapps.gaf.display
 				maskObject.filter = null;
 				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
-				var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
-				maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
+				if (maskInstance)
+				{
+					var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
+					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
+				}
+
 				if (maskObject.parent == this)
 				{
 					this.removeChild(maskObject);
