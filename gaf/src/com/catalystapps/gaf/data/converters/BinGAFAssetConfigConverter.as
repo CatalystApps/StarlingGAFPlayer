@@ -44,8 +44,6 @@ package com.catalystapps.gaf.data.converters
 		private static const SIGNATURE_GAC: uint = 0x00474143;
 		private static const HEADER_LENGTH: uint = 36;
 
-		private static const FIXED8_DIVISION: uint = 256;
-
 		//tags
 		private static const TAG_END: uint = 0;
 		private static const TAG_DEFINE_ATLAS: uint = 1;
@@ -78,6 +76,7 @@ package com.catalystapps.gaf.data.converters
 		private var _textureElementSizes: Object; // Point by texture element id
 
 		private var time: uint;
+		private var isTimeline: Boolean;
 
 
 		// --------------------------------------------------------------------------
@@ -92,13 +91,13 @@ package com.catalystapps.gaf.data.converters
 			this._bytes = bytes;
 			this._assetID = assetID;
 
-			this._textureElementSizes = {}
+			this._textureElementSizes = {};
 		}
 
 		public function convert(): void
 		{
-			this.time = uint.MAX_VALUE;
-			this.checkTimeout(this.parseStart);
+			this.time = getTimer();
+			setTimeout(this.parseStart, 1);
 		}
 
 		//--------------------------------------------------------------------------
@@ -131,41 +130,6 @@ package com.catalystapps.gaf.data.converters
 					break;
 			}
 
-			this.checkTimeout(this.parseContinue);
-		}
-
-		private function decompressConfig(): void
-		{
-			var uncompressedBA: ByteArray = new ByteArray();
-			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
-
-			this._bytes.readBytes(uncompressedBA);
-			this._bytes.clear();
-
-			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
-
-			this._bytes = uncompressedBA;
-		}
-
-		/**
-		 * runs <b>nextFunction</b> with <b>args</b> after a small delay (in the next stack)
-		 */
-		private function checkTimeout(nextFunction: Function, ...args): void
-		{
-			if (this.time - getTimer() >= 20)
-			{
-				this.time = getTimer() + 1;
-				args.unshift(nextFunction, 1);
-				setTimeout.apply(null, args);
-			}
-			else
-			{
-				nextFunction.apply(null, args);
-			}
-		}
-
-		private function parseContinue(): void
-		{
 			var timelineConfig: GAFTimelineConfig;
 			if (this._config.versionMajor < 4)
 			{
@@ -193,36 +157,20 @@ package com.catalystapps.gaf.data.converters
 				}
 			}
 
-			this.parseTags(this._bytes, this.onParseComplete, timelineConfig);
+			this.readNextTag();
 		}
 
-		private function onParseComplete(timelineConfig: GAFTimelineConfig): void
+		private function decompressConfig(): void
 		{
+			var uncompressedBA: ByteArray = new ByteArray();
+			uncompressedBA.endian = Endian.LITTLE_ENDIAN;
+
+			this._bytes.readBytes(uncompressedBA);
 			this._bytes.clear();
-			this._bytes = null;
 
-			if (this._config.versionMajor < 4)
-			{
-				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
-				{
-					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
-				}
+			uncompressedBA.uncompress(CompressionAlgorithm.ZLIB);
 
-				this._config.timelines[0].stageConfig = this._config.stageConfig;
-
-				this.checkForMissedRegions(timelineConfig);
-			}
-			else
-			{
-				for each (timelineConfig in this._config.timelines)
-				{
-					timelineConfig.stageConfig = this._config.stageConfig;
-
-					this.checkForMissedRegions(timelineConfig);
-				}
-			}
-
-			this.dispatchEvent(new Event(Event.COMPLETE));
+			this._bytes = uncompressedBA;
 		}
 
 		private function checkForMissedRegions(timelineConfig: GAFTimelineConfig): void
@@ -241,19 +189,99 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private function parseTags(tagsBytes: ByteArray, onComplete: Function, ...args): void
+		private function readNextTag(): void
 		{
-			if (tagsBytes.bytesAvailable > 0)
+			var tagID: int = this._bytes.readShort();
+			var tagLength: uint = this._bytes.readUnsignedInt();
+
+			var timelineConfig: GAFTimelineConfig;
+			if (this._config.timelines.length > 0)
 			{
-				this.readNextTag(tagsBytes);
-				args.unshift(parseTags, tagsBytes, onComplete);
-				this.checkTimeout.apply(null, args);
+				timelineConfig = this._config.timelines[this._config.timelines.length - 1];
+			}
+
+			switch (tagID)
+			{
+				case BinGAFAssetConfigConverter.TAG_DEFINE_STAGE:
+					readStageConfig(this._bytes, this._config);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
+					readTextureAtlasConfig(tagID, this._bytes, timelineConfig, this._defaultScale,
+							this._defaultContentScaleFactor, this._textureElementSizes);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS2:
+					readAnimationMasks(tagID, this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS:
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS2:
+					readAnimationObjects(tagID, this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES:
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES2:
+					readAnimationFrames(tagID, this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_NAMED_PARTS:
+					readNamedParts(this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_SEQUENCES:
+					readAnimationSequences(this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_TEXT_FIELDS:
+					readTextFields(this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_TIMELINE:
+					readTimeline();
+					break;
+				case BinGAFAssetConfigConverter.TAG_END:
+					if (this.isTimeline)
+					{
+						this.isTimeline = false;
+						this.endParsingTimeline(timelineConfig);
+					}
+					else
+					{
+						this._bytes.position = this._bytes.length;
+						this.endParsing(timelineConfig);
+						return;
+					}
+					break;
+				default:
+					trace(WarningConstants.UNSUPPORTED_TAG);
+					this._bytes.position += tagLength;
+					break;
+			}
+
+			if (getTimer() - this.time >= 20)
+			{
+				this.time = getTimer();
+				setTimeout(this.readNextTag, 1);
 			}
 			else
 			{
-				this.readMaskMaxSizes();
-				onComplete.apply(null, args);
+				this.readNextTag();
 			}
+		}
+
+		private function readTimeline(): void
+		{
+			var timelineConfig: GAFTimelineConfig = new GAFTimelineConfig(this._config.versionMajor + "." + _config.versionMinor);
+			timelineConfig.id = this._bytes.readUnsignedInt().toString();
+			timelineConfig.assetID = this._config.id;
+			timelineConfig.framesCount = this._bytes.readUnsignedInt();
+			timelineConfig.bounds = new Rectangle(this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat());
+			timelineConfig.pivot = new Point(this._bytes.readFloat(), this._bytes.readFloat());
+
+			var hasLinkage: Boolean = this._bytes.readBoolean();
+			if (hasLinkage)
+			{
+				timelineConfig.linkage = this._bytes.readUTF();
+			}
+
+			this._config.timelines.push(timelineConfig);
+
+			this.isTimeline = true;
 		}
 
 		private function readMaskMaxSizes(): void
@@ -309,91 +337,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private function readNextTag(bytes: ByteArray): void
-		{
-			var tagID: int = bytes.readShort();
-			var tagLength: uint = bytes.readUnsignedInt();
-			var tagContent: ByteArray = new ByteArray();
-			tagContent.endian = Endian.LITTLE_ENDIAN;
-			bytes.readBytes(tagContent, 0, tagLength);
-			tagContent.position = 0;
-
-			var timelineConfig: GAFTimelineConfig;
-			if (this._config.timelines.length > 0)
-			{
-				timelineConfig = this._config.timelines[this._config.timelines.length - 1];
-			}
-
-			switch (tagID)
-			{
-				case BinGAFAssetConfigConverter.TAG_DEFINE_STAGE:
-					readStageConfig(tagContent, this._config);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
-					readTextureAtlasConfig(tagID, tagContent, timelineConfig, this._defaultScale,
-							this._defaultContentScaleFactor, this._textureElementSizes);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS2:
-					readAnimationMasks(tagID, tagContent, timelineConfig);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS:
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_OBJECTS2:
-					readAnimationObjects(tagID, tagContent, timelineConfig);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES:
-				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_FRAMES2:
-					readAnimationFrames(tagID, tagContent, timelineConfig);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_NAMED_PARTS:
-					readNamedParts(tagID, tagContent, timelineConfig);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_SEQUENCES:
-					readAnimationSequences(tagID, tagContent, timelineConfig);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_TEXT_FIELDS:
-					readTextFields(tagID, tagContent, timelineConfig);
-					break;
-				case BinGAFAssetConfigConverter.TAG_DEFINE_TIMELINE:
-					readTimeline(tagContent);
-					break;
-				case BinGAFAssetConfigConverter.TAG_END:
-					break;
-				default:
-					trace(WarningConstants.UNSUPPORTED_TAG);
-					break;
-			}
-
-			tagContent.clear();
-		}
-
-		private function readTimeline(tagContent: ByteArray): void
-		{
-			var timelineConfig: GAFTimelineConfig = new GAFTimelineConfig(this._config.versionMajor + "." + _config.versionMinor);
-			timelineConfig.id = tagContent.readUnsignedInt().toString();
-			timelineConfig.assetID = this._config.id;
-			timelineConfig.framesCount = tagContent.readUnsignedInt();
-			timelineConfig.bounds = new Rectangle(tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat(), tagContent.readFloat());
-			timelineConfig.pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
-
-			var hasLinkage: Boolean = tagContent.readBoolean();
-			if (hasLinkage)
-			{
-				timelineConfig.linkage = tagContent.readUTF();
-			}
-
-			this._config.timelines.push(timelineConfig);
-
-			var nestedTags: ByteArray = new ByteArray();
-			nestedTags.endian = Endian.LITTLE_ENDIAN;
-			nestedTags.writeBytes(tagContent, tagContent.position, tagContent.bytesAvailable);
-			nestedTags.position = 0;
-
-			this.parseTags(nestedTags, this.onParseTimelineComplete, timelineConfig);
-		}
-
-		private function onParseTimelineComplete(timelineConfig: GAFTimelineConfig): void
+		private function endParsingTimeline(timelineConfig: GAFTimelineConfig): void
 		{
 			if (!timelineConfig.allTextureAtlases.length && this._config.scaleValues != null && this._config.csfValues != null) // timeline hasn't atlas, create empty
 			{
@@ -424,16 +368,43 @@ package com.catalystapps.gaf.data.converters
 						timelineConfig.textureAtlas = textureAtlas;
 					}
 				}
-				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
-				{
-					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
-				}
 			}
 
 			if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
 			{
 				timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
 			}
+		}
+
+		private function endParsing(timelineConfig: GAFTimelineConfig): void
+		{
+			this._bytes.clear();
+			this._bytes = null;
+
+			this.readMaskMaxSizes();
+
+			if (this._config.versionMajor < 4)
+			{
+				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
+				{
+					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
+				}
+
+				this._config.timelines[0].stageConfig = this._config.stageConfig;
+
+				this.checkForMissedRegions(timelineConfig);
+			}
+			else
+			{
+				for each (timelineConfig in this._config.timelines)
+				{
+					timelineConfig.stageConfig = this._config.stageConfig;
+
+					this.checkForMissedRegions(timelineConfig);
+				}
+			}
+
+			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
 		//--------------------------------------------------------------------------
@@ -735,13 +706,6 @@ package com.catalystapps.gaf.data.converters
 			return filter.addColorMatrixFilter(matrix);
 		}
 
-		private static function readFixed(source: ByteArray): Number
-		{
-			var value: int = source.readShort();
-
-			return value / FIXED8_DIVISION;
-		}
-
 		private static function readColorValue(source: ByteArray): Array
 		{
 			var argbValue: uint = source.readUnsignedInt();
@@ -950,7 +914,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readAnimationSequences(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
+		private static function readAnimationSequences(tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var sequenceID: String;
@@ -966,7 +930,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readNamedParts(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
+		private static function readNamedParts(tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			timelineConfig.namedParts = {};
 
@@ -979,7 +943,7 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private static function readTextFields(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
+		private static function readTextFields(tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
 		{
 			var length: int = tagContent.readUnsignedInt();
 			var pivotX: Number;
