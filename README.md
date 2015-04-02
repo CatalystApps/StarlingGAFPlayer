@@ -72,8 +72,6 @@ Links and resources:
 * [FAQ page][11]
 * [Starling GAF library API Reference][12]
 
-Distribution includes [Starling library][4] binary that is licensed under [Simplified BSD License][5]
-
 [1]: http://www.starling-framework.org
 [2]: http://gafmedia.com/documentation/what-is-gaf
 [3]: http://gafmedia.com/documentation/what-is-gaf-converter
