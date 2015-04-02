@@ -56,6 +56,14 @@ Where I can find examples of using GAF?
 
 You can find several demo projects in demo directory [here][9].
 
+Requirements of Starling GAF Library:
+-----------------
+
+* In order to compile Flash/AIR application you have to use AIR SDK 15 and higher;
+* In order to run an application you need Flash Player/AIR Runtime 15.0.0 and higher;
+* [Starling][14] 1.6 and higher;
+* [Feathers][15] 2.0.1 and higher (used to display Text Fields)
+
 Links and resources:
 -----------------
 
@@ -79,4 +87,6 @@ Distribution includes [Starling library][4] binary that is licensed under [Simpl
 [11]: http://gafmedia.com/faq
 [12]: http://gafmedia.com/docs/starling/trunk/index.html
 [13]: http://gafmedia.com/documentation
+[14]: https://github.com/Gamua/Starling-Framework
+[15]: https://github.com/joshtynjala/feathers
 
