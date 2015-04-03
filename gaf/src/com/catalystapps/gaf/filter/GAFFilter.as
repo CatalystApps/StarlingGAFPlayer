@@ -129,9 +129,9 @@ package com.catalystapps.gaf.filter
 
 		private function resetBlurFilter(): void
 		{
-			mOffsets = new <Number>[0, 0, 0, 0];
-			mWeights = new <Number>[0, 0, 0, 0];
-			mColor = new <Number>[1, 1, 1, 1];
+			mOffsets[0] = mOffsets[1] = mOffsets[2] = mOffsets[3] = 0;
+			mWeights[0] = mWeights[1] = mWeights[2] = mWeights[3] = 0;
+			mColor[0] = mColor[1] = mColor[2] = mColor[3] = 1;
 			mBlurX = 0;
 			mBlurY = 0;
 			mResolution = 1;
@@ -139,8 +139,8 @@ package com.catalystapps.gaf.filter
 
 		private function resetColorMatrixFilter(): void
 		{
-			cUserMatrix = new Vector.<Number>(20, true);
-			cShaderMatrix = new Vector.<Number>(20, true);
+			VectorUtility.copyMatrix(cUserMatrix, IDENTITY);
+			VectorUtility.copyMatrix(cShaderMatrix, IDENTITY);
 			changeColor = false;
 		}
 
