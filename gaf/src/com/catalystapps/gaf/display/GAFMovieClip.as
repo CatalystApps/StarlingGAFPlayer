@@ -1204,6 +1204,11 @@ package com.catalystapps.gaf.display
 		/** Returns a child object with a certain name (non-recursively). */
 		override public function getChildByName(name: String): DisplayObject
 		{
+			var numChildren: int = this._displayObjectsVector.length;
+			for (var i: int = 0; i < numChildren; ++i)
+				if (this._displayObjectsVector[i].name == name)
+					return this._displayObjectsVector[i] as DisplayObject;
+
 			return super.getChildByName(name);
 		}
 
