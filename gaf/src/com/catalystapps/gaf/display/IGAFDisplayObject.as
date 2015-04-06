@@ -28,6 +28,9 @@ package com.catalystapps.gaf.display
 		function get transformationMatrix(): Matrix;
 		function set transformationMatrix(matrix: Matrix): void;
 
+		function get name(): String;
+		function set name(value: String): void;
+
 		function dispose(): void;
 	}
 }
