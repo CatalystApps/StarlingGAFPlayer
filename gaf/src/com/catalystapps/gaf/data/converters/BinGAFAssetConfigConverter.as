@@ -67,6 +67,7 @@ package com.catalystapps.gaf.data.converters
 		private static const FILTER_COLOR_MATRIX: uint = 6;
 
 		private static const sHelperRectangle: Rectangle = new Rectangle();
+		private static const sHelperMatrix: Matrix = new Matrix();
 
 		private var _assetID: String;
 		private var _bytes: ByteArray;
@@ -840,12 +841,19 @@ package com.catalystapps.gaf.data.converters
 				element.scale9Grid = scale9Grid;
 				elements.addElement(element);
 
+				sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
+				sHelperMatrix.copyFrom(element.pivotMatrix);
+				var invertScale: Number = 1 / scale;
+				sHelperMatrix.scale(invertScale, invertScale);
+				RectangleUtil.getBounds(sHelperRectangle, sHelperMatrix, sHelperRectangle);
+
 				if (!textureElementSizes[elementAtlasID])
 				{
-					sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
-					RectangleUtil.getBounds(sHelperRectangle, element.pivotMatrix, sHelperRectangle);
-
 					textureElementSizes[elementAtlasID] = sHelperRectangle.clone();
+				}
+				else
+				{
+					textureElementSizes[elementAtlasID] = textureElementSizes[elementAtlasID].union(sHelperRectangle);
 				}
 			}
 

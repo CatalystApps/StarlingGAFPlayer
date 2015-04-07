@@ -147,7 +147,7 @@ package com.catalystapps.gaf.display
 				{
 					this.clearRenderTextures();
 
-					this._renderTexture = new RenderTexture(this._maskSize.x,this. _maskSize.y, false, this._scaleFactor);
+					this._renderTexture = new RenderTexture(this._maskSize.x, this. _maskSize.y, false, this._scaleFactor);
 					this._maskRenderTexture = new RenderTexture(this._maskSize.x + PADDING * 2, this._maskSize.y + PADDING * 2, false, this._scaleFactor);
 
 					// create image with the new render texture
