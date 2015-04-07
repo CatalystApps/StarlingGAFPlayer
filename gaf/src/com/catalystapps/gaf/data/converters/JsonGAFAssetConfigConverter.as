@@ -43,6 +43,7 @@ package com.catalystapps.gaf.data.converters
 		public static const FILTER_GLOW: String = "FglowFilter";
 
 		private static const sHelperRectangle: Rectangle = new Rectangle();
+		private static const sHelperMatrix: Matrix = new Matrix();
 
 		private var assetID: String;
 		private var json: String;
@@ -105,12 +106,19 @@ package com.catalystapps.gaf.data.converters
 						}
 						elements.addElement(element);
 
+						sHelperRectangle.setTo(0, 0, e.width, e.height);
+						sHelperMatrix.copyFrom(element.pivotMatrix);
+						var invertScale: Number = 1 / scale;
+						sHelperMatrix.scale(invertScale, invertScale);
+						RectangleUtil.getBounds(sHelperRectangle, sHelperMatrix, sHelperRectangle);
+
 						if (!textureElementSizes[e.name])
 						{
-							sHelperRectangle.setTo(0, 0, e.width, e.height);
-							RectangleUtil.getBounds(sHelperRectangle, element.pivotMatrix, sHelperRectangle);
-
 							textureElementSizes[e.name] = sHelperRectangle.clone();
+						}
+						else
+						{
+							textureElementSizes[e.name] = textureElementSizes[e.name].union(sHelperRectangle);
 						}
 					}
 
