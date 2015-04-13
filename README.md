@@ -10,7 +10,7 @@ Starling GAF Player is an ActionScript 3 library that allows developer easily to
 What is GAF?
 -----------------
 
-GAF is a technology that allows porting animations created in Flash Pro into an open format GAF and play back them in different popular frameworks, such as Starling, Unity3d, Cocos2d-x and other. [More info...][2]
+GAF is a solution that allows porting animations created in Flash Pro into an open format GAF and play back them in different popular frameworks, such as Starling, Unity3d, Cocos2d-x and other. [More info...][2]
 
 What are the main features of GAF?
 -----------------
