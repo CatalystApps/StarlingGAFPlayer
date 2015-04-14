@@ -86,7 +86,7 @@ package com.catalystapps.gaf.display
 
 				if (this._mask.width == 0 || this._mask.height == 0)
 				{
-					throw new Error("Mask must have dimensions. Current dimensions are " + this._mask.width + "x" +this. _mask.height + ".");
+					throw new Error("Mask must have dimensions. Current dimensions are " + this._mask.width + "x" + this. _mask.height + ".");
 				}
 
 				var objectWithMaxSize: IMaxSize = this._mask as IMaxSize;
