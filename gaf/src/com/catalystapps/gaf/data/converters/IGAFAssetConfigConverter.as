@@ -8,7 +8,7 @@ package com.catalystapps.gaf.data.converters
 	 */
 	public interface IGAFAssetConfigConverter extends IEventDispatcher
 	{
-		function convert(): void;
+		function convert(async: Boolean = false): void;
 		function get config(): GAFAssetConfig;
 	}
 }

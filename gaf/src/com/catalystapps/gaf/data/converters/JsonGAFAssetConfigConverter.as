@@ -578,7 +578,7 @@ package com.catalystapps.gaf.data.converters
 			return timelineConfig;
 		}
 
-		public function convert(): void
+		public function convert(async: Boolean = false): void
 		{
 			setTimeout(parse, 1);
 		}

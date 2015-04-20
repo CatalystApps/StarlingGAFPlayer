@@ -1,10 +1,10 @@
 package com.catalystapps.gaf.data.converters
 {
+	import starling.core.Starling;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
-	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
@@ -31,7 +31,6 @@ package com.catalystapps.gaf.data.converters
 	import flash.utils.CompressionAlgorithm;
 	import flash.utils.Endian;
 	import flash.utils.getTimer;
-	import flash.utils.setTimeout;
 
 	import starling.utils.RectangleUtil;
 
@@ -78,6 +77,7 @@ package com.catalystapps.gaf.data.converters
 
 		private var time: uint;
 		private var isTimeline: Boolean;
+		private var async: Boolean;
 
 
 		// --------------------------------------------------------------------------
@@ -95,10 +95,18 @@ package com.catalystapps.gaf.data.converters
 			this._textureElementSizes = {};
 		}
 
-		public function convert(): void
+		public function convert(async: Boolean = false): void
 		{
+			this.async = async;
 			this.time = getTimer();
-			setTimeout(this.parseStart, 1);
+			if (async)
+			{
+				Starling.juggler.delayCall(this.parseStart, 0.001);
+			}
+			else
+			{
+				this.parseStart();
+			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -259,10 +267,18 @@ package com.catalystapps.gaf.data.converters
 
 		private function delayedReadNextTag(): void
 		{
-			if (getTimer() - this.time >= 20)
+			if (this.async)
 			{
-				this.time = getTimer();
-				setTimeout(this.readNextTag, 1);
+				var timer: int = getTimer();
+				if (timer - this.time >= 20)
+				{
+					this.time = timer;
+					Starling.juggler.delayCall(this.readNextTag, 0.001);
+				}
+				else
+				{
+					this.readNextTag();
+				}
 			}
 			else
 			{
@@ -477,9 +493,10 @@ package com.catalystapps.gaf.data.converters
 			{
 				for (var i: uint = startIndex; i < framesCount; i++)
 				{
-					if (getTimer() - cycleTime >= 20)
+					if (this.async
+					&& (getTimer() - cycleTime >= 20))
 					{
-						setTimeout(readAnimationFrames, 1, tagID, i, framesCount, prevFrame);
+						Starling.juggler.delayCall(readAnimationFrames, 0.001, tagID, i, framesCount, prevFrame);
 						return;
 					}
 

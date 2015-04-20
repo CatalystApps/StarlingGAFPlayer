@@ -139,6 +139,8 @@ package com.catalystapps.gaf.core
 		private var _defaultScale: Number;
 		private var _defaultContentScaleFactor: Number;
 
+		private var _parseConfigAsync: Boolean;
+
 		///////////////////////////////////
 
 		private var gafAssetsConfigURLs: Array;
@@ -517,7 +519,7 @@ package com.catalystapps.gaf.core
 
 			converter.addEventListener(Event.COMPLETE, onConverted);
 			converter.addEventListener(ErrorEvent.ERROR, onConvertError);
-			converter.convert();
+			converter.convert(this._parseConfigAsync);
 		}
 
 		private function createGAFTimelines(): void
@@ -889,6 +891,16 @@ package com.catalystapps.gaf.core
 		public function set id(value: String): void
 		{
 			_id = value;
+		}
+
+		public function get parseConfigAsync(): Boolean
+		{
+			return _parseConfigAsync;
+		}
+
+		public function set parseConfigAsync(parseConfigAsync: Boolean): void
+		{
+			this._parseConfigAsync = parseConfigAsync;
 		}
 	}
 }
