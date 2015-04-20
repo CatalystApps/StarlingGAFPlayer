@@ -898,6 +898,13 @@ package com.catalystapps.gaf.core
 			return _parseConfigAsync;
 		}
 
+		/**
+		 * Indicates whether to convert *.gaf config file asynchronously.
+		 * If <code>true</code> - conversion is divided by chunk of 20 ms (may be up to
+		 * 2 times slower than synchronous conversion, but conversion won't freeze the interface).
+		 * If <code>false</code> - conversion goes within one stack (up to
+		 * 2 times faster than async conversion, but conversion freezes the interface).
+		 */
 		public function set parseConfigAsync(parseConfigAsync: Boolean): void
 		{
 			this._parseConfigAsync = parseConfigAsync;
