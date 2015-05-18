@@ -387,7 +387,7 @@ package com.catalystapps.gaf.core
 
 			if (this.atlasSourceURLs.length)
 			{
-				if (textureFormat == GAFGFXData.ATF)
+				if (this.textureFormat == GAFGFXData.ATF)
 				{
 					this.loadATF();
 				}
@@ -566,13 +566,8 @@ package com.catalystapps.gaf.core
 
 			if (!ZipToGAFAssetConverter.keepImagesInRAM)
 			{
-				if (textureFormat == GAFGFXData.ATF)
+				if (this.textureFormat == GAFGFXData.ATF)
 				{
-					this.gfxData.removeATFs();
-					for each (var ba: ByteArray in this.atfData)
-					{
-						ba.clear();
-					}
 					this.atfData = null;
 				}
 				else
@@ -588,10 +583,15 @@ package com.catalystapps.gaf.core
 			
 			if (this._zip && !ZipToGAFAssetConverter.keepZipInRAM)
 			{
+				var file: FZipFile;
 				var count: uint = this._zip.getFileCount();
 				for (i = 0; i < count; i++)
 				{
-					this._zip.getFileAt(i).content.clear();
+					file = this._zip.getFileAt(i);
+					if (file.filename.toLowerCase().indexOf(".atf") == -1)
+					{
+						file.content.clear();
+					}
 				}
 				this._zip.close();
 				this._zip = null;
@@ -647,11 +647,11 @@ package com.catalystapps.gaf.core
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
 				case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
-					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL, NaN, NaN, textureFormat);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL, NaN, NaN, this.textureFormat);
 					break;
 
 				case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
-					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT, NaN, NaN, textureFormat);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT, NaN, NaN, this.textureFormat);
 					break;
 			}
 
