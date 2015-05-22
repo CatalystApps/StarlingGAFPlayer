@@ -369,6 +369,20 @@ package com.catalystapps.gaf.display
 
 			this.play();
 		}
+		
+		/**
+		 * Set the <code>loop</code> value to the GAFMovieClip instance and for the all children.
+		 */
+		public function loopAll(loop: Boolean): void
+		{
+			this.loop = loop;
+
+			var i: uint = this._mcVector.length;
+			while (i--)
+			{
+				this._mcVector[i].loop = loop;
+			}
+		}
 
 		/** @private
 		 * Advances all objects by a certain time (in seconds).
@@ -503,13 +517,6 @@ package com.catalystapps.gaf.display
 			this.checkAndSetCurrentFrame(frame);
 
 			this._stop();
-		}
-
-		private function _gotoAndPlay(frame: *): void
-		{
-			this.checkAndSetCurrentFrame(frame);
-
-			this._play();
 		}
 
 		private function _play(applyToAllChildren: Boolean = false, calledByUser: Boolean = false): void
@@ -779,8 +786,6 @@ package com.catalystapps.gaf.display
 				this._pixelMasksVector[i].removeChildren();
 			}
 		}
-
-		private var tmpMaskTransformationMatrix: Matrix = new Matrix();
 
 		private function draw(): void
 		{
@@ -1525,6 +1530,12 @@ package com.catalystapps.gaf.display
 		public function set skipFrames(value: Boolean): void
 		{
 			this._skipFrames = value;
+
+			var i: uint = this._mcVector.length;
+			while (i--)
+			{
+				this._mcVector[i]._skipFrames = value;
+			}
 		}
 	}
 }
