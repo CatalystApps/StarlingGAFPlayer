@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
+<!-- $TexturePacker:SmartUpdate:ad0dc943d60bbe3fb99810fcd38677c6:a60f506dfe5a9f5791963d74d543b420:cde709370900f12288f3449eded86f07$ -->
+<TextureAtlas imagePath="atlas.png">
+    <SubTexture name="arial20_0" x="2" y="2" width="253" height="49" frameX="0" frameY="0" frameWidth="256" frameHeight="96"/>
+</TextureAtlas>

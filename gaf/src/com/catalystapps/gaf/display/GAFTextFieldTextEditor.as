@@ -10,6 +10,8 @@ package com.catalystapps.gaf.display
 
 	import feathers.controls.text.TextFieldTextEditor;
 
+	import flash.geom.Rectangle;
+
 	/** @private */
 	public class GAFTextFieldTextEditor extends TextFieldTextEditor
 	{
@@ -61,11 +63,22 @@ package com.catalystapps.gaf.display
 		{
 			super.refreshSnapshotParameters();
 
-			this._textFieldClipRect = DisplayUtility.getBoundsWithFilters(this._textFieldClipRect, this.textField.filters);
-			this._textFieldOffsetX -= this._textFieldClipRect.x;
-			this._textFieldOffsetY -= this._textFieldClipRect.y;
-			this._textFieldClipRect.x = 0;
-			this._textFieldClipRect.y = 0;
+			var snapshotClipRect: Rectangle;
+
+			try // Feathers revision before bca9b93
+			{
+				snapshotClipRect = this["_textFieldClipRect"];
+			}
+			catch (error: Error)
+			{
+				snapshotClipRect = this["_textFieldSnapshotClipRect"];
+			}
+
+			snapshotClipRect.copyFrom(DisplayUtility.getBoundsWithFilters(snapshotClipRect, this.textField.filters));
+			this._textFieldOffsetX -= snapshotClipRect.x;
+			this._textFieldOffsetY -= snapshotClipRect.y;
+			snapshotClipRect.x = 0;
+			snapshotClipRect.y = 0;
 		}
 
 		/**
