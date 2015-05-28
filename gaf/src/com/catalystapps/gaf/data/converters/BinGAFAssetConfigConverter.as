@@ -47,6 +47,7 @@ package com.catalystapps.gaf.data.converters
 		private static const TAG_END: uint = 0;
 		private static const TAG_DEFINE_ATLAS: uint = 1;
 		private static const TAG_DEFINE_ATLAS2: uint = 8; // v4.0
+		private static const TAG_DEFINE_ATLAS3: uint = 14; // v5.0
 		private static const TAG_DEFINE_ANIMATION_MASKS: uint = 2;
 		private static const TAG_DEFINE_ANIMATION_MASKS2: uint = 11; // v4.0
 		private static const TAG_DEFINE_ANIMATION_OBJECTS: uint = 3;
@@ -125,12 +126,12 @@ package com.catalystapps.gaf.data.converters
 			this._config.versionMinor = this._bytes.readByte();
 			this._config.fileLength = this._bytes.readUnsignedInt();
 
-			if (this._config.versionMajor > GAFAssetConfig.MAX_VERSION)
+			/*if (this._config.versionMajor > GAFAssetConfig.MAX_VERSION)
 			{
 				this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, WarningConstants.UNSUPPORTED_FILE +
 				"Library version: " + GAFAssetConfig.MAX_VERSION + ", file version: " + this._config.versionMajor));
 				return;
-			}
+			}*/
 
 			switch (this._config.compression)
 			{
@@ -216,8 +217,22 @@ package com.catalystapps.gaf.data.converters
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
-					readTextureAtlasConfig(tagID, this._bytes, timelineConfig, this._defaultScale,
+				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3:
+					var textureAtlas: CTextureAtlasScale = readTextureAtlasConfig(tagID, this._bytes, timelineConfig, this._defaultScale,
 							this._defaultContentScaleFactor, this._textureElementSizes);
+					if (this.isTimeline)
+					{
+						timelineConfig.allTextureAtlases.push(textureAtlas);
+
+						if (!isNaN(this._defaultScale) && MathUtility.equals(this._defaultScale, textureAtlas.scale))
+						{
+							timelineConfig.textureAtlas = textureAtlas;
+						}
+					}
+					else
+					{
+
+					}
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS2:
@@ -748,7 +763,7 @@ package com.catalystapps.gaf.data.converters
 
 		private static function readTextureAtlasConfig(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig,
 													   defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN,
-													   textureElementSizes: Object = null): void
+													   textureElementSizes: Object = null): CTextureAtlasScale
 		{
 			var i: uint;
 			var j: uint;
@@ -824,10 +839,13 @@ package com.catalystapps.gaf.data.converters
 			var scale9Grid: Rectangle;
 			var pivot: Point;
 			var topLeft: Point;
-			var elementScale: Number;
+			var elementScaleX: Number;
+			var elementScaleY: Number;
 			var elementWidth: Number;
 			var elementHeight: Number;
 			var elementAtlasID: uint;
+			var rotation: Boolean;
+			var linkageName: String;
 
 			var elements: CTextureAtlasElements = new CTextureAtlasElements();
 
@@ -835,12 +853,18 @@ package com.catalystapps.gaf.data.converters
 			{
 				pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
 				topLeft = new Point(tagContent.readFloat(), tagContent.readFloat());
-				elementScale = tagContent.readFloat();
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS
+				|| tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2)
+				{
+					elementScaleX = elementScaleY = tagContent.readFloat();
+				}
+
 				elementWidth = tagContent.readFloat();
 				elementHeight = tagContent.readFloat();
 				atlasID = tagContent.readUnsignedInt();
 				elementAtlasID = tagContent.readUnsignedInt();
-				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2)
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2
+				|| tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)
 				{
 					hasScale9Grid = tagContent.readBoolean();
 					if (hasScale9Grid)
@@ -852,9 +876,17 @@ package com.catalystapps.gaf.data.converters
 					}
 				}
 
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)
+				{
+					elementScaleX = tagContent.readFloat();
+					elementScaleY = tagContent.readFloat();
+					rotation = tagContent.readBoolean();
+					linkageName = tagContent.readUTF();
+				}
+
 				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "",
 						new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight),
-						new Matrix(1 / elementScale, 0, 0, 1 / elementScale, -pivot.x / elementScale, -pivot.y / elementScale));
+						new Matrix(1 / elementScaleX, 0, 0, 1 / elementScaleY, -pivot.x / elementScaleX, -pivot.y / elementScaleY));
 				element.scale9Grid = scale9Grid;
 				elements.addElement(element);
 
@@ -879,12 +911,17 @@ package com.catalystapps.gaf.data.converters
 				contentScaleFactor.elements = elements;
 			}
 
-			timelineConfig.allTextureAtlases.push(textureAtlas);
-
-			if (!isNaN(defaultScale) && MathUtility.equals(defaultScale, scale))
+			/*if (timelineConfig)
 			{
-				timelineConfig.textureAtlas = textureAtlas;
-			}
+				timelineConfig.allTextureAtlases.push(textureAtlas);
+
+				if (!isNaN(defaultScale) && MathUtility.equals(defaultScale, scale))
+				{
+					timelineConfig.textureAtlas = textureAtlas;
+				}
+			}*/
+
+			return textureAtlas;
 		}
 
 		private static function readAnimationMasks(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
