@@ -3,6 +3,7 @@
  */
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.data.config.CSoundData;
 	import com.catalystapps.gaf.data.config.CStage;
 
 	/**
@@ -10,7 +11,7 @@ package com.catalystapps.gaf.data
 	 */
 	public class GAFAssetConfig
 	{
-		public static const MAX_VERSION: uint = 4;
+		public static const MAX_VERSION: uint = 5;
 
 		private var _id: String;
 		private var _compression: int;
@@ -22,6 +23,7 @@ package com.catalystapps.gaf.data
 		private var _stageConfig: CStage;
 
 		private var _timelines: Vector.<GAFTimelineConfig>;
+		private var _sounds: Vector.<CSoundData>;
 
 		public function GAFAssetConfig(id: String)
 		{
@@ -30,6 +32,12 @@ package com.catalystapps.gaf.data
 			this._csfValues = new Vector.<Number>();
 
 			this._timelines = new Vector.<GAFTimelineConfig>();
+		}
+
+		public function addSound(soundData: CSoundData): void
+		{
+			this._sounds ||= new Vector.<CSoundData>();
+			this._sounds.push(soundData);
 		}
 
 		public function dispose(): void
@@ -108,6 +116,11 @@ package com.catalystapps.gaf.data
 		public function get id(): String
 		{
 			return this._id;
+		}
+
+		public function get sounds(): Vector.<CSoundData>
+		{
+			return _sounds;
 		}
 	}
 }

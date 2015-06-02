@@ -14,6 +14,7 @@ package com.catalystapps.gaf.data
 		 * (the number of draw calls depends on objects order in display list)
 		 */
 		public static var use99alpha: Boolean;
+		public static var autoPlaySounds: Boolean;
 		
 		/** @private */
 		gaf_internal static var useDeviceFonts: Boolean;

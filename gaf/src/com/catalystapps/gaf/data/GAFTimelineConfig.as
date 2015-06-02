@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.data
 {
+	import flash.utils.Dictionary;
+	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
@@ -50,6 +52,7 @@ package com.catalystapps.gaf.data
 		private var _framesCount: uint;
 		private var _bounds: Rectangle;
 		private var _pivot: Point;
+		private var _sounds: Dictionary;
 
 		//--------------------------------------------------------------------------
 		//
@@ -67,6 +70,7 @@ package com.catalystapps.gaf.data
 			this._animationObjects = new CAnimationObjects();
 			this._animationSequences = new CAnimationSequences();
 			this._textFields = new CTextFieldObjects();
+			this._sounds = new Dictionary();
 		}
 
 		//--------------------------------------------------------------------------
@@ -94,6 +98,16 @@ package com.catalystapps.gaf.data
 			}
 
 			return null;
+		}
+
+		public function addSound(data: Object, frame: uint): void
+		{
+			this._sounds[frame] = new CSound(data);
+		}
+
+		public function getSound(frame: uint): CSound
+		{
+			return this._sounds[frame];
 		}
 
 		public function addWarning(text: String): void

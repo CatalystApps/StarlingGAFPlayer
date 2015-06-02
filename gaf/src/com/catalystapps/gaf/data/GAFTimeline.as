@@ -2,6 +2,7 @@ package com.catalystapps.gaf.data
 {
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
+	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
@@ -216,6 +217,15 @@ package com.catalystapps.gaf.data
 					}
 					}
 					return;
+			}
+		}
+
+		public function startSound(frame: uint): void
+		{
+			var soundConfig: CSound = this.config.getSound(frame);
+			if (soundConfig)
+			{
+				this.gafBundle.soundManager.startSound(soundConfig, this._config.assetID);
 			}
 		}
 

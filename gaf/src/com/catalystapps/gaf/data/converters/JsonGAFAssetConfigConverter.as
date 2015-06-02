@@ -45,7 +45,7 @@ package com.catalystapps.gaf.data.converters
 		private static const sHelperRectangle: Rectangle = new Rectangle();
 		private static const sHelperMatrix: Matrix = new Matrix();
 
-		private var assetID: String;
+		private var _assetID: String;
 		private var json: String;
 		private var defaultScale: Number;
 		private var defaultContentScaleFactor: Number;
@@ -62,7 +62,7 @@ package com.catalystapps.gaf.data.converters
 			this.defaultContentScaleFactor = defaultContentScaleFactor;
 			this.defaultScale = defaultScale;
 			this.json = json;
-			this.assetID = assetID;
+			this._assetID = assetID;
 			this._textureElementSizes = {};
 		}
 
@@ -585,7 +585,12 @@ package com.catalystapps.gaf.data.converters
 
 		public function get config(): GAFAssetConfig
 		{
-			return _config;
+			return this._config;
+		}
+
+		public function get assetID(): String
+		{
+			return this._assetID;
 		}
 
 		private function parse(): void
@@ -598,7 +603,7 @@ package com.catalystapps.gaf.data.converters
 							"Library version: " + GAFAssetConfig.MAX_VERSION + ", file version: " + jsonObject.version));
 			}
 
-			_config = new GAFAssetConfig(assetID);
+			this._config = new GAFAssetConfig(this._assetID);
 
 			var timelineConfig: GAFTimelineConfig;
 
@@ -608,22 +613,22 @@ package com.catalystapps.gaf.data.converters
 				{
 					timelineConfig = new GAFTimelineConfig(jsonObject.version);
 					timelineConfig.id = configObject.id;
-					timelineConfig.assetID = assetID;
+					timelineConfig.assetID = this._assetID;
 					if (configObject.linkage)
 					{
 						timelineConfig.linkage = configObject.linkage;
 					}
-					convertConfig(timelineConfig, configObject, defaultScale, defaultContentScaleFactor, jsonObject.scale, jsonObject.csf, this._textureElementSizes);
-					_config.timelines.push(timelineConfig);
+					convertConfig(timelineConfig, configObject, this.defaultScale, this.defaultContentScaleFactor, jsonObject.scale, jsonObject.csf, this._textureElementSizes);
+					this._config.timelines.push(timelineConfig);
 				}
 			}
 			else
 			{
 				timelineConfig = new GAFTimelineConfig(jsonObject.version);
 				timelineConfig.id = "0";
-				timelineConfig.assetID = assetID;
-				convertConfig(timelineConfig, jsonObject, defaultScale, defaultContentScaleFactor, null, null, this._textureElementSizes);
-				_config.timelines.push(timelineConfig);
+				timelineConfig.assetID = this._assetID;
+				convertConfig(timelineConfig, jsonObject, this.defaultScale, this.defaultContentScaleFactor, null, null, this._textureElementSizes);
+				this._config.timelines.push(timelineConfig);
 			}
 
 			if (jsonObject.stageConfig)
@@ -639,7 +644,7 @@ package com.catalystapps.gaf.data.converters
 				var boundingBox: Rectangle = new Rectangle(jsonObject.boundingBox.x, jsonObject.boundingBox.y, jsonObject.boundingBox.width, jsonObject.boundingBox.height);
 			}
 
-			for each (timelineConfig in _config.timelines)
+			for each (timelineConfig in this._config.timelines)
 			{
 				timelineConfig.stageConfig = stageConfig;
 				timelineConfig.pivot ||= pivotPoint;
@@ -648,7 +653,7 @@ package com.catalystapps.gaf.data.converters
 
 			///////////////////////////////////////////////////////////////
 
-			for each (var timeline: GAFTimelineConfig in _config.timelines)
+			for each (var timeline: GAFTimelineConfig in this._config.timelines)
 			{
 				for each (var frame: CAnimationFrame in timeline.animationConfigFrames.frames)
 				{
@@ -671,7 +676,7 @@ package com.catalystapps.gaf.data.converters
 							else if (animationObject.type == CAnimationObject.TYPE_TIMELINE)
 							{
 								var maskTimeline: GAFTimelineConfig;
-								for each (maskTimeline in _config.timelines)
+								for each (maskTimeline in this._config.timelines)
 								{
 									if (maskTimeline.id == frameInstance.id)
 									{

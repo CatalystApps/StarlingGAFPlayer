@@ -738,6 +738,7 @@ package com.catalystapps.gaf.display
 					}
 				}
 			}
+			this._gafTimeline.startSound(this.currentFrame);
 		}
 
 		private function checkAndSetCurrentFrame(frame: *): void

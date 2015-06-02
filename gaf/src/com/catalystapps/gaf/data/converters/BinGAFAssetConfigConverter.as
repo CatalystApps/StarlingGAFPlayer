@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.config.CSoundData;
 	import starling.core.Starling;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
@@ -46,19 +47,20 @@ package com.catalystapps.gaf.data.converters
 		//tags
 		private static const TAG_END: uint = 0;
 		private static const TAG_DEFINE_ATLAS: uint = 1;
-		private static const TAG_DEFINE_ATLAS2: uint = 8; // v4.0
-		private static const TAG_DEFINE_ATLAS3: uint = 14; // v5.0
 		private static const TAG_DEFINE_ANIMATION_MASKS: uint = 2;
-		private static const TAG_DEFINE_ANIMATION_MASKS2: uint = 11; // v4.0
 		private static const TAG_DEFINE_ANIMATION_OBJECTS: uint = 3;
-		private static const TAG_DEFINE_ANIMATION_OBJECTS2: uint = 10; // v4.0
 		private static const TAG_DEFINE_ANIMATION_FRAMES: uint = 4;
-		private static const TAG_DEFINE_ANIMATION_FRAMES2: uint = 12; // v4.0
 		private static const TAG_DEFINE_NAMED_PARTS: uint = 5;
 		private static const TAG_DEFINE_SEQUENCES: uint = 6;
 		private static const TAG_DEFINE_TEXT_FIELDS: uint = 7; // v4.0
+		private static const TAG_DEFINE_ATLAS2: uint = 8; // v4.0
 		private static const TAG_DEFINE_STAGE: uint = 9;
+		private static const TAG_DEFINE_ANIMATION_OBJECTS2: uint = 10; // v4.0
+		private static const TAG_DEFINE_ANIMATION_MASKS2: uint = 11; // v4.0
+		private static const TAG_DEFINE_ANIMATION_FRAMES2: uint = 12; // v4.0
 		private static const TAG_DEFINE_TIMELINE: uint = 13; // v4.0
+		private static const TAG_DEFINE_SOUNDS: uint = 14; // v5.0
+		private static const TAG_DEFINE_ATLAS3: uint = 15; // v5.0
 
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
@@ -254,6 +256,9 @@ package com.catalystapps.gaf.data.converters
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_TEXT_FIELDS:
 					readTextFields(this._bytes, timelineConfig);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_SOUNDS:
+					readSounds(this._bytes, this._config);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_TIMELINE:
 					readTimeline();
@@ -455,6 +460,11 @@ package com.catalystapps.gaf.data.converters
 			return this._config;
 		}
 
+		public function get assetID(): String
+		{
+			return this._assetID;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  STATIC METHODS
@@ -653,6 +663,7 @@ package com.catalystapps.gaf.data.converters
 
 					if (hasActions)
 					{
+						var data: Object;
 						var action: CFrameAction;
 						var count: int = this._bytes.readUnsignedInt();
 						for (var a: int = 0; a < count; a++)
@@ -673,6 +684,14 @@ package com.catalystapps.gaf.data.converters
 								{
 									action.params.push(paramsBA.readUTF());
 								}
+							}
+							
+							if (action.type == CFrameAction.DISPATCH_EVENT
+							&&  action.params[0] == CSoundData.GAF_PLAY_SOUND
+							&&  action.params.length > 3)
+							{
+								data = JSON.parse(action.params[3]);
+								timelineConfig.addSound(data, frameNumber);
 							}
 
 							currentFrame.addAction(action);
@@ -1138,6 +1157,25 @@ package com.catalystapps.gaf.data.converters
 				textFieldObject.displayAsPassword = displayAsPassword;
 				textFieldObject.maxChars = maxChars;
 				timelineConfig.textFields.addTextFieldObject(textFieldObject);
+			}
+		}
+
+		private static function readSounds(bytes: ByteArray, config: GAFAssetConfig): void
+		{
+			var soundData: CSoundData;
+			var count: uint = bytes.readShort();
+			for (var i: int = 0; i < count; i++)
+			{
+				soundData = new CSoundData();
+				soundData.soundID = bytes.readShort();
+				soundData.linkageName = bytes.readUTF();
+				soundData.source = bytes.readUTF();
+				soundData.format = bytes.readByte();
+				soundData.rate = bytes.readByte();
+				soundData.sampleSize = bytes.readByte();
+				soundData.stereo = bytes.readBoolean();
+				soundData.sampleCount = bytes.readUnsignedInt();
+				config.addSound(soundData);
 			}
 		}
 	}
