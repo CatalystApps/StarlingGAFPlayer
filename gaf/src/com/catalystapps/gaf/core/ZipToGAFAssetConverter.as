@@ -2,7 +2,7 @@ package com.catalystapps.gaf.core
 {
 	import com.catalystapps.gaf.sound.SoundManager;
 	import flash.media.Sound;
-	import com.catalystapps.gaf.data.config.CSoundData;
+	import com.catalystapps.gaf.data.config.CSound;
 	import deng.fzip.FZip;
 	import deng.fzip.FZipErrorEvent;
 	import deng.fzip.FZipFile;
@@ -146,6 +146,7 @@ package com.catalystapps.gaf.core
 		private var _defaultContentScaleFactor: Number;
 
 		private var _parseConfigAsync: Boolean;
+		private var _ignoreSounds: Boolean;
 
 		///////////////////////////////////
 
@@ -534,7 +535,10 @@ package com.catalystapps.gaf.core
 						break;
 					case ".mp3":
 					case ".wav":
-						this.sounds[fileName] = zipFile.content;
+						if (!this._ignoreSounds)
+						{
+							this.sounds[fileName] = zipFile.content;
+						}
 						break;
 				}
 			}
@@ -554,6 +558,7 @@ package com.catalystapps.gaf.core
 			if (configSource is ByteArray)
 			{
 				converter = new BinGAFAssetConfigConverter(gafAssetID, configSource as ByteArray, this._defaultScale, this._defaultContentScaleFactor);
+				converter.ignoreSounds = this._ignoreSounds;
 			}
 			else
 			{
@@ -612,7 +617,7 @@ package com.catalystapps.gaf.core
 				throw new Error("No animations found.");
 			}
 
-			if (this.soundManager.hasSoundsToLoad)
+			if (this.soundManager.hasSoundsToLoad && !this._ignoreSounds)
 			{
 				this.soundManager.loadSounds(this.finalizeParsing, this.onSoundLoadIOError);
 			}
@@ -748,8 +753,8 @@ package com.catalystapps.gaf.core
 			converter.removeEventListener(Event.COMPLETE, onConverted);
 
 			this.gafAssetConfigs[configID] = converter.config.timelines;
-			var sounds: Vector.<CSoundData> = converter.config.sounds;
-			if (sounds)
+			var sounds: Vector.<CSound> = converter.config.sounds;
+			if (sounds && !this._ignoreSounds)
 			{
 				for (var i: int = 0; i < sounds.length; i++)
 				{
@@ -942,6 +947,14 @@ package com.catalystapps.gaf.core
 		public function set parseConfigAsync(parseConfigAsync: Boolean): void
 		{
 			this._parseConfigAsync = parseConfigAsync;
+		}
+
+		/**
+		 * Prevents loading of sounds
+		 */
+		public function set ignoreSounds(ignoreSounds: Boolean): void
+		{
+			_ignoreSounds = ignoreSounds;
 		}
 	}
 }

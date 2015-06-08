@@ -1,6 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
-	import com.catalystapps.gaf.data.config.CSoundData;
+	import com.catalystapps.gaf.data.config.CSound;
 	import starling.core.Starling;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
@@ -20,7 +20,6 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 	import com.catalystapps.gaf.utils.MathUtility;
 
-	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.geom.Matrix;
@@ -81,6 +80,7 @@ package com.catalystapps.gaf.data.converters
 		private var time: uint;
 		private var isTimeline: Boolean;
 		private var async: Boolean;
+		private var _ignoreSounds: Boolean;
 
 
 		// --------------------------------------------------------------------------
@@ -220,8 +220,7 @@ package com.catalystapps.gaf.data.converters
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2:
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3:
-					var textureAtlas: CTextureAtlasScale = readTextureAtlasConfig(tagID, this._bytes, timelineConfig, this._defaultScale,
-							this._defaultContentScaleFactor, this._textureElementSizes);
+					var textureAtlas: CTextureAtlasScale = readTextureAtlasConfig(tagID);
 					if (this.isTimeline)
 					{
 						timelineConfig.allTextureAtlases.push(textureAtlas);
@@ -230,10 +229,6 @@ package com.catalystapps.gaf.data.converters
 						{
 							timelineConfig.textureAtlas = textureAtlas;
 						}
-					}
-					else
-					{
-
 					}
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_ANIMATION_MASKS:
@@ -258,7 +253,14 @@ package com.catalystapps.gaf.data.converters
 					readTextFields(this._bytes, timelineConfig);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_SOUNDS:
-					readSounds(this._bytes, this._config);
+					if (!this._ignoreSounds)
+					{
+						readSounds(this._bytes, this._config);
+					}
+					else
+					{
+						this._bytes.position += tagLength;
+					}
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_TIMELINE:
 					readTimeline();
@@ -447,40 +449,6 @@ package com.catalystapps.gaf.data.converters
 			}
 
 			this.dispatchEvent(new Event(Event.COMPLETE));
-		}
-
-		//--------------------------------------------------------------------------
-		//
-		//  GETTERS AND SETTERS
-		//
-		//--------------------------------------------------------------------------
-
-		public function get config(): GAFAssetConfig
-		{
-			return this._config;
-		}
-
-		public function get assetID(): String
-		{
-			return this._assetID;
-		}
-
-		//--------------------------------------------------------------------------
-		//
-		//  STATIC METHODS
-		//
-		//--------------------------------------------------------------------------
-
-		private static function readStageConfig(tagContent: ByteArray, config: GAFAssetConfig): void
-		{
-			var stageConfig: CStage = new CStage();
-
-			stageConfig.fps = tagContent.readByte();
-			stageConfig.color = tagContent.readInt();
-			stageConfig.width = tagContent.readUnsignedShort();
-			stageConfig.height = tagContent.readUnsignedShort();
-
-			config.stageConfig = stageConfig;
 		}
 
 		private function readAnimationFrames(tagID: int, startIndex: uint = 0, framesCount: Number = NaN, prevFrame: CAnimationFrame = null): void
@@ -684,14 +652,33 @@ package com.catalystapps.gaf.data.converters
 								{
 									action.params.push(paramsBA.readUTF());
 								}
+								paramsBA.clear();
 							}
 							
 							if (action.type == CFrameAction.DISPATCH_EVENT
-							&&  action.params[0] == CSoundData.GAF_PLAY_SOUND
+							&&  action.params[0] == CSound.GAF_PLAY_SOUND
 							&&  action.params.length > 3)
 							{
+								if (this._ignoreSounds)
+								{
+									continue; //do not add sound events if they're ignored
+								}
 								data = JSON.parse(action.params[3]);
 								timelineConfig.addSound(data, frameNumber);
+								var sound: CSound;
+								var s: uint = config.sounds.length;
+								while (--s > 0)
+								{
+									if (config.sounds[s].soundID == data.id)
+									{
+										sound = config.sounds[s];
+										break;
+									}
+								}
+								if (sound)
+								{
+									timelineConfig.getSound(frameNumber).sound = sound;
+								}
 							}
 
 							currentFrame.addAction(action);
@@ -728,6 +715,208 @@ package com.catalystapps.gaf.data.converters
 
 			this.delayedReadNextTag();
 		}
+
+		private function readTextureAtlasConfig(tagID: int): CTextureAtlasScale
+		{
+			var i: uint;
+			var j: uint;
+
+			var scale: Number = this._bytes.readFloat();
+			var textureAtlas: CTextureAtlasScale = new CTextureAtlasScale();
+			textureAtlas.scale = scale;
+
+			/////////////////////
+
+			var contentScaleFactors: Vector.<CTextureAtlasCSF> = new Vector.<CTextureAtlasCSF>();
+			var contentScaleFactor: CTextureAtlasCSF;
+
+			/////////////////////
+
+			function getContentScaleFactor(csf: Number): CTextureAtlasCSF
+			{
+				var item: CTextureAtlasCSF;
+
+				for each (item in contentScaleFactors)
+				{
+					if (MathUtility.equals(item.csf, csf))
+					{
+						return item;
+					}
+				}
+
+				item = new CTextureAtlasCSF(csf, scale);
+				contentScaleFactors.push(item);
+
+				if (!isNaN(_defaultContentScaleFactor) && MathUtility.equals(_defaultContentScaleFactor, csf))
+				{
+					textureAtlas.contentScaleFactor = item;
+				}
+
+				return item;
+			};
+
+			/////////////////////
+
+			var atlasLength: int = this._bytes.readByte();
+			var atlasID: uint;
+			var sourceLength: int;
+			var csf: Number;
+			var source: String;
+
+			for (i = 0; i < atlasLength; i++)
+			{
+				atlasID = this._bytes.readUnsignedInt();
+				sourceLength = this._bytes.readByte();
+				for (j = 0; j < sourceLength; j++)
+				{
+					source = this._bytes.readUTF();
+					csf = this._bytes.readFloat();
+
+					contentScaleFactor = getContentScaleFactor(csf);
+					contentScaleFactor.sources.push(new CTextureAtlasSource(atlasID + "", source));
+				}
+			}
+
+			textureAtlas.allContentScaleFactors = contentScaleFactors;
+
+			if (!textureAtlas.contentScaleFactor && contentScaleFactors.length)
+			{
+				textureAtlas.contentScaleFactor = contentScaleFactors[0];
+			}
+
+			/////////////////////
+
+			var elementsLength: uint = this._bytes.readUnsignedInt();
+			var element: CTextureAtlasElement;
+			var hasScale9Grid: Boolean;
+			var scale9Grid: Rectangle;
+			var pivot: Point;
+			var topLeft: Point;
+			var elementScaleX: Number;
+			var elementScaleY: Number;
+			var elementWidth: Number;
+			var elementHeight: Number;
+			var elementAtlasID: uint;
+			var rotation: Boolean;
+			var linkageName: String;
+
+			var elements: CTextureAtlasElements = new CTextureAtlasElements();
+
+			for (i = 0; i < elementsLength; i++)
+			{
+				pivot = new Point(this._bytes.readFloat(), this._bytes.readFloat());
+				topLeft = new Point(this._bytes.readFloat(), this._bytes.readFloat());
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS
+				|| tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2)
+				{
+					elementScaleX = elementScaleY = this._bytes.readFloat();
+				}
+
+				elementWidth = this._bytes.readFloat();
+				elementHeight = this._bytes.readFloat();
+				atlasID = this._bytes.readUnsignedInt();
+				elementAtlasID = this._bytes.readUnsignedInt();
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2
+				|| tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)
+				{
+					hasScale9Grid = this._bytes.readBoolean();
+					if (hasScale9Grid)
+					{
+						scale9Grid = new Rectangle(
+								this._bytes.readFloat(), this._bytes.readFloat(),
+								this._bytes.readFloat(), this._bytes.readFloat()
+						);
+					}
+				}
+
+				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)
+				{
+					elementScaleX = this._bytes.readFloat();
+					elementScaleY = this._bytes.readFloat();
+					rotation = this._bytes.readBoolean();
+					linkageName = this._bytes.readUTF();
+				}
+
+				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "",
+						new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight),
+						new Matrix(1 / elementScaleX, 0, 0, 1 / elementScaleY, -pivot.x / elementScaleX, -pivot.y / elementScaleY));
+				element.scale9Grid = scale9Grid;
+				elements.addElement(element);
+
+				sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
+				sHelperMatrix.copyFrom(element.pivotMatrix);
+				var invertScale: Number = 1 / scale;
+				sHelperMatrix.scale(invertScale, invertScale);
+				RectangleUtil.getBounds(sHelperRectangle, sHelperMatrix, sHelperRectangle);
+
+				if (!this._textureElementSizes[elementAtlasID])
+				{
+					this._textureElementSizes[elementAtlasID] = sHelperRectangle.clone();
+				}
+				else
+				{
+					this._textureElementSizes[elementAtlasID] = this._textureElementSizes[elementAtlasID].union(sHelperRectangle);
+				}
+			}
+
+			for each (contentScaleFactor in contentScaleFactors)
+			{
+				contentScaleFactor.elements = elements;
+			}
+
+			/*if (timelineConfig)
+			{
+				timelineConfig.allTextureAtlases.push(textureAtlas);
+
+				if (!isNaN(defaultScale) && MathUtility.equals(defaultScale, scale))
+				{
+					timelineConfig.textureAtlas = textureAtlas;
+				}
+			}*/
+
+			return textureAtlas;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  GETTERS AND SETTERS
+		//
+		//--------------------------------------------------------------------------
+
+		public function get config(): GAFAssetConfig
+		{
+			return this._config;
+		}
+
+		public function get assetID(): String
+		{
+			return this._assetID;
+		}
+
+		public function set ignoreSounds(ignoreSounds: Boolean): void
+		{
+			this._ignoreSounds = ignoreSounds;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  STATIC METHODS
+		//
+		//--------------------------------------------------------------------------
+
+		private static function readStageConfig(tagContent: ByteArray, config: GAFAssetConfig): void
+		{
+			var stageConfig: CStage = new CStage();
+
+			stageConfig.fps = tagContent.readByte();
+			stageConfig.color = tagContent.readInt();
+			stageConfig.width = tagContent.readUnsignedShort();
+			stageConfig.height = tagContent.readUnsignedShort();
+
+			config.stageConfig = stageConfig;
+		}
+
+		
 
 		private static function readDropShadowFilter(source: ByteArray, filter: CFilter): String
 		{
@@ -778,169 +967,6 @@ package com.catalystapps.gaf.data.converters
 			var color: uint = argbValue & 0xFFFFFF;
 
 			return [alpha, color];
-		}
-
-		private static function readTextureAtlasConfig(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig,
-													   defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN,
-													   textureElementSizes: Object = null): CTextureAtlasScale
-		{
-			var i: uint;
-			var j: uint;
-
-			var scale: Number = tagContent.readFloat();
-			var textureAtlas: CTextureAtlasScale = new CTextureAtlasScale();
-			textureAtlas.scale = scale;
-
-			/////////////////////
-
-			var contentScaleFactors: Vector.<CTextureAtlasCSF> = new Vector.<CTextureAtlasCSF>();
-			var contentScaleFactor: CTextureAtlasCSF;
-
-			/////////////////////
-
-			function getContentScaleFactor(csf: Number): CTextureAtlasCSF
-			{
-				var item: CTextureAtlasCSF;
-
-				for each (item in contentScaleFactors)
-				{
-					if (MathUtility.equals(item.csf, csf))
-					{
-						return item;
-					}
-				}
-
-				item = new CTextureAtlasCSF(csf, scale);
-				contentScaleFactors.push(item);
-
-				if (!isNaN(defaultContentScaleFactor) && MathUtility.equals(defaultContentScaleFactor, csf))
-				{
-					textureAtlas.contentScaleFactor = item;
-				}
-
-				return item;
-			};
-
-			/////////////////////
-
-			var atlasLength: int = tagContent.readByte();
-			var atlasID: uint;
-			var sourceLength: int;
-			var csf: Number;
-			var source: String;
-
-			for (i = 0; i < atlasLength; i++)
-			{
-				atlasID = tagContent.readUnsignedInt();
-				sourceLength = tagContent.readByte();
-				for (j = 0; j < sourceLength; j++)
-				{
-					source = tagContent.readUTF();
-					csf = tagContent.readFloat();
-
-					contentScaleFactor = getContentScaleFactor(csf);
-					contentScaleFactor.sources.push(new CTextureAtlasSource(atlasID + "", source));
-				}
-			}
-
-			textureAtlas.allContentScaleFactors = contentScaleFactors;
-
-			if (!textureAtlas.contentScaleFactor && contentScaleFactors.length)
-			{
-				textureAtlas.contentScaleFactor = contentScaleFactors[0];
-			}
-
-			/////////////////////
-
-			var elementsLength: uint = tagContent.readUnsignedInt();
-			var element: CTextureAtlasElement;
-			var hasScale9Grid: Boolean;
-			var scale9Grid: Rectangle;
-			var pivot: Point;
-			var topLeft: Point;
-			var elementScaleX: Number;
-			var elementScaleY: Number;
-			var elementWidth: Number;
-			var elementHeight: Number;
-			var elementAtlasID: uint;
-			var rotation: Boolean;
-			var linkageName: String;
-
-			var elements: CTextureAtlasElements = new CTextureAtlasElements();
-
-			for (i = 0; i < elementsLength; i++)
-			{
-				pivot = new Point(tagContent.readFloat(), tagContent.readFloat());
-				topLeft = new Point(tagContent.readFloat(), tagContent.readFloat());
-				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS
-				|| tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2)
-				{
-					elementScaleX = elementScaleY = tagContent.readFloat();
-				}
-
-				elementWidth = tagContent.readFloat();
-				elementHeight = tagContent.readFloat();
-				atlasID = tagContent.readUnsignedInt();
-				elementAtlasID = tagContent.readUnsignedInt();
-				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS2
-				|| tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)
-				{
-					hasScale9Grid = tagContent.readBoolean();
-					if (hasScale9Grid)
-					{
-						scale9Grid = new Rectangle(
-								tagContent.readFloat(), tagContent.readFloat(),
-								tagContent.readFloat(), tagContent.readFloat()
-						);
-					}
-				}
-
-				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)
-				{
-					elementScaleX = tagContent.readFloat();
-					elementScaleY = tagContent.readFloat();
-					rotation = tagContent.readBoolean();
-					linkageName = tagContent.readUTF();
-				}
-
-				element = new CTextureAtlasElement(elementAtlasID + "", atlasID + "",
-						new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight),
-						new Matrix(1 / elementScaleX, 0, 0, 1 / elementScaleY, -pivot.x / elementScaleX, -pivot.y / elementScaleY));
-				element.scale9Grid = scale9Grid;
-				elements.addElement(element);
-
-				sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
-				sHelperMatrix.copyFrom(element.pivotMatrix);
-				var invertScale: Number = 1 / scale;
-				sHelperMatrix.scale(invertScale, invertScale);
-				RectangleUtil.getBounds(sHelperRectangle, sHelperMatrix, sHelperRectangle);
-
-				if (!textureElementSizes[elementAtlasID])
-				{
-					textureElementSizes[elementAtlasID] = sHelperRectangle.clone();
-				}
-				else
-				{
-					textureElementSizes[elementAtlasID] = textureElementSizes[elementAtlasID].union(sHelperRectangle);
-				}
-			}
-
-			for each (contentScaleFactor in contentScaleFactors)
-			{
-				contentScaleFactor.elements = elements;
-			}
-
-			/*if (timelineConfig)
-			{
-				timelineConfig.allTextureAtlases.push(textureAtlas);
-
-				if (!isNaN(defaultScale) && MathUtility.equals(defaultScale, scale))
-				{
-					timelineConfig.textureAtlas = textureAtlas;
-				}
-			}*/
-
-			return textureAtlas;
 		}
 
 		private static function readAnimationMasks(tagID: int, tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
@@ -1162,11 +1188,11 @@ package com.catalystapps.gaf.data.converters
 
 		private static function readSounds(bytes: ByteArray, config: GAFAssetConfig): void
 		{
-			var soundData: CSoundData;
+			var soundData: CSound;
 			var count: uint = bytes.readShort();
 			for (var i: int = 0; i < count; i++)
 			{
-				soundData = new CSoundData();
+				soundData = new CSound();
 				soundData.soundID = bytes.readShort();
 				soundData.linkageName = bytes.readUTF();
 				soundData.source = bytes.readUTF();

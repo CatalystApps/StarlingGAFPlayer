@@ -1,60 +1,50 @@
 package com.catalystapps.gaf.sound
 {
-	import flash.utils.ByteArray;
 	import flash.net.URLRequest;
-	import flash.events.IOErrorEvent;
-	import flash.events.Event;
-	import com.catalystapps.gaf.data.config.CSound;
 	import flash.media.Sound;
-	import com.catalystapps.gaf.data.config.CSoundData;
-	/**
+	import com.catalystapps.gaf.data.config.CFrameSound;
+	import com.catalystapps.gaf.data.config.CSound;
+
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.utils.ByteArray;
+	/** @private
 	 * @author Ivan Avdeenko
 	 */
 	public class SoundManager
 	{
-		private var _soundQueue: Vector.<CSoundData>;
+		private var _soundQueue: Vector.<CSound>;
 		private var _sounds: Object;
 		private var soundChannels: Object;
 		private var onFail: Function;
 		private var onSuccess: Function;	
 	
-		public function addSound(soundData: CSoundData, assetID: String, soundBytes: ByteArray): void
+		public function addSound(soundData: CSound, assetID: String, soundBytes: ByteArray): Boolean
 		{
-			this._sounds ||= {};
-			this._sounds[assetID] ||= {};
-			this._sounds[assetID][soundData.soundID] = soundData;
+			var sound: Sound = new Sound();
 			if (soundBytes)
 			{
-				soundData.sound = new Sound();
-
-				if (soundData.format == CSoundData.WAV)
+				if (soundData.format == CSound.MP3)
 				{
-					var rate: uint;
-					switch (soundData.rate)
-					{
-						case 0: rate = 5500;  break;
-						case 1: rate = 11025; break;
-						case 2: rate = 22050; break;
-						case 3: rate = 44100; break;
-					}
-
-					var wavBytes: ByteArray = new ByteArray();
-					wavBytes.writeBytes(soundBytes, 44);
-					wavBytes.position = 0;
-					soundData.sound.loadPCMFromByteArray(wavBytes, soundData.sampleCount, "float", soundData.stereo, rate);
-					wavBytes.clear();
-					wavBytes = null;
+					sound.loadCompressedDataFromByteArray(soundBytes, soundBytes.length);
 				}
-				else if (soundData.format == CSoundData.MP3)
-				{
-					soundData.sound.loadCompressedDataFromByteArray(soundBytes, soundBytes.length);
-				}
+//				else if (soundData.format == CSound.WAV)
+//				{
+					//TODO: play with as3wavSound
+//				}
 			}
 			else
 			{
-				this._soundQueue ||= new <CSoundData>[];
+				this._soundQueue ||= new <CSound>[];
 				this._soundQueue.push(soundData);
 			}
+
+			soundData.sound = sound;
+
+			this._sounds ||= {};
+			this._sounds[assetID] ||= {};
+			this._sounds[assetID][soundData.soundID] = sound;
+			return true;
 		}
 
 		public function loadSounds(onSuccess: Function, onFail: Function): void
@@ -64,12 +54,12 @@ package com.catalystapps.gaf.sound
 			this.loadSound();
 		}
 
-		public function startSound(soundConfig: CSound, assetID: String): void
+		public function startSound(soundConfig: CFrameSound, assetID: String): void
 		{
-			var sound: Sound = _sounds[assetID][soundConfig.soundID]["sound"];
+			var sound: Sound = _sounds[assetID][soundConfig.soundID];
 			switch (soundConfig.action)
 			{
-				case CSound.STOP:
+				case CFrameSound.ACTION_STOP:
 					if (this.soundChannels
 					&&  this.soundChannels[assetID]
 					&&  this.soundChannels[assetID][soundConfig.soundID])
@@ -83,14 +73,14 @@ package com.catalystapps.gaf.sound
 						delete this.soundChannels[assetID][soundConfig.soundID];
 					}
 					break;
-				case CSound.CONTINUE:
+				case CFrameSound.ACTION_CONTINUE:
 					if (this.soundChannels
 					&&  this.soundChannels[assetID]
 					&&  this.soundChannels[assetID][soundConfig.soundID])
 					{
 						break; //sound already in play - no need to launch it again
 					}
-				case CSound.START:
+				case CFrameSound.ACTION_START:
 					var soundData: SoundData = new SoundData(soundConfig, assetID);
 					soundData.soundChannel = sound.play(0, soundConfig.repeatCount);
 					soundData.addEventListener(Event.SOUND_COMPLETE, onSoundPlayEnded);
@@ -100,6 +90,23 @@ package com.catalystapps.gaf.sound
 					this.soundChannels[assetID][soundConfig.soundID].push(soundData);
 					break;
 			}
+		}
+
+		public function stopAllSounds(): void
+		{
+			var channels: Vector.<SoundData>;
+			for (var assetID: String in this.soundChannels)
+			{
+				for (var soundID: String in this.soundChannels[assetID])
+				{
+					channels = this.soundChannels[assetID][soundID];
+					for (var i: int = 0; i < channels.length; i++)
+					{
+						channels[i].stop();
+					}
+				}
+			}
+			this.soundChannels = null;
 		}
 
 		private function onSoundPlayEnded(event: Event): void
@@ -113,10 +120,9 @@ package com.catalystapps.gaf.sound
 
 		private function loadSound(): void
 		{
-			var soundDataConfig: CSoundData = _soundQueue.pop();
+			var soundDataConfig: CSound = _soundQueue.pop();
 			with (soundDataConfig)
 			{
-				sound = new Sound();
 				sound.addEventListener(Event.COMPLETE, onSoundLoaded);
 				sound.addEventListener(IOErrorEvent.IO_ERROR, onError);
 				sound.load(new URLRequest(soundDataConfig.source));
@@ -133,7 +139,6 @@ package com.catalystapps.gaf.sound
 			}
 			else
 			{
-				trace("this.onSuccess.length = ", this.onSuccess.length);
 				this.onSuccess();
 				this.onSuccess = null;
 				this.onFail = null;

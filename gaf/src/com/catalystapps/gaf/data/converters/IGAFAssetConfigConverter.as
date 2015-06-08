@@ -10,5 +10,6 @@ package com.catalystapps.gaf.data.converters
 	{
 		function convert(async: Boolean = false): void;
 		function get config(): GAFAssetConfig;
+		function set ignoreSounds(ignoreSounds: Boolean): void;
 	}
 }

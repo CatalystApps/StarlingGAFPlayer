@@ -588,6 +588,11 @@ package com.catalystapps.gaf.data.converters
 			return this._config;
 		}
 
+		public function set ignoreSounds(ignoreSounds: Boolean): void
+		{
+			//method stub
+		}
+
 		public function get assetID(): String
 		{
 			return this._assetID;

@@ -2,7 +2,7 @@ package com.catalystapps.gaf.sound
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import com.catalystapps.gaf.data.config.CSound;
+	import com.catalystapps.gaf.data.config.CFrameSound;
 	import flash.media.SoundChannel;
 
 	/**
@@ -12,9 +12,9 @@ package com.catalystapps.gaf.sound
 	{
 		private var _soundChannel: SoundChannel;
 		private var _assetID: String;
-		private var _config: CSound;
+		private var _config: CFrameSound;
 
-		public function SoundData(config: CSound, assetID: String)
+		public function SoundData(config: CFrameSound, assetID: String)
 		{
 			this._config = config;
 			this._assetID = assetID;
@@ -30,7 +30,7 @@ package com.catalystapps.gaf.sound
 			return this._assetID;
 		}
 
-		public function get config(): CSound
+		public function get config(): CFrameSound
 		{
 			return this._config;
 		}

@@ -1,30 +1,23 @@
 package com.catalystapps.gaf.data.config
 {
+	import flash.media.Sound;
 	/**
 	 * @author Ivan Avdeenko
 	 */
 	public class CSound
 	{
-		public static const STOP: uint = 1;
-		public static const START: uint = 2;
-		public static const CONTINUE: uint = 3;
-		public var soundID: uint;
-		public var action: uint;
-		public var repeatCount: uint; //0 and 1 means play sound once
-		public var linkage: String;
+		public static const GAF_PLAY_SOUND: String = "gafPlaySound";
+		public static const WAV: uint = 0;
+		public static const MP3: uint = 1;
 
-		public function CSound(data: Object)
-		{
-			this.soundID = data.id;
-			this.action = data.action;
-			if ("linkage" in data)
-			{
-				this.linkage = data.linkage;
-			}
-			if ("repeat" in data)
-			{
-				this.repeatCount = data.repeat;
-			}
-		}
+		public var soundID: uint;
+		public var linkageName: String;
+		public var source: String;
+		public var format: uint;
+		public var rate: uint;
+		public var sampleSize: uint;
+		public var sampleCount: uint;
+		public var stereo: Boolean;
+		public var sound: Sound;
 	}
 }

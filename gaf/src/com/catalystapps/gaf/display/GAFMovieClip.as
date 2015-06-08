@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.data.config.CSound;
+	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
@@ -414,7 +416,7 @@ package com.catalystapps.gaf.display
 						}
 					}
 				}
-				else
+				else if (framesToPlay > 0)
 				{
 					this.changeCurrentFrame(false);
 				}
@@ -614,7 +616,7 @@ package com.catalystapps.gaf.display
 			this._inPlay = false;
 
 			if (applyToAllChildren
-					&& this._config.animationConfigFrames.frames.length > 0)
+			&& this._config.animationConfigFrames.frames.length > 0)
 			{
 				var child: DisplayObjectContainer;
 				var childMC: GAFMovieClip;
@@ -734,11 +736,15 @@ package com.catalystapps.gaf.display
 								}
 								this.dispatchEventWith(type, bubbles, data);
 							}
+							if (type == CSound.GAF_PLAY_SOUND
+							&& GAF.autoPlaySounds)
+							{
+								this._gafTimeline.startSound(this.currentFrame);
+							}
 							break;
 					}
 				}
 			}
-			this._gafTimeline.startSound(this.currentFrame);
 		}
 
 		private function checkAndSetCurrentFrame(frame: *): void

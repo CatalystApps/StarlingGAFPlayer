@@ -1,6 +1,5 @@
 package com.catalystapps.gaf.data.config
 {
-	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.display3D.Context3DTextureFormat;
 	import com.catalystapps.gaf.core.GAFTextureMappingManager;

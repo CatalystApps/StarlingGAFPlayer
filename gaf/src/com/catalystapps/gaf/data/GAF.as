@@ -14,7 +14,11 @@ package com.catalystapps.gaf.data
 		 * (the number of draw calls depends on objects order in display list)
 		 */
 		public static var use99alpha: Boolean;
-		public static var autoPlaySounds: Boolean;
+		
+		/**
+		 * Play sounds, triggered by the event "gafPlaySound" in a frame of the GAFMovieClip.
+		 */
+		public static var autoPlaySounds: Boolean = true;
 		
 		/** @private */
 		gaf_internal static var useDeviceFonts: Boolean;

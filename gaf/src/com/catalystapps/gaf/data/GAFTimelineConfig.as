@@ -1,7 +1,7 @@
 package com.catalystapps.gaf.data
 {
 	import flash.utils.Dictionary;
-	import com.catalystapps.gaf.data.config.CSound;
+	import com.catalystapps.gaf.data.config.CFrameSound;
 	import com.catalystapps.gaf.data.config.CAnimationFrames;
 	import com.catalystapps.gaf.data.config.CAnimationObjects;
 	import com.catalystapps.gaf.data.config.CAnimationSequences;
@@ -102,10 +102,10 @@ package com.catalystapps.gaf.data
 
 		public function addSound(data: Object, frame: uint): void
 		{
-			this._sounds[frame] = new CSound(data);
+			this._sounds[frame] = new CFrameSound(data);
 		}
 
-		public function getSound(frame: uint): CSound
+		public function getSound(frame: uint): CFrameSound
 		{
 			return this._sounds[frame];
 		}

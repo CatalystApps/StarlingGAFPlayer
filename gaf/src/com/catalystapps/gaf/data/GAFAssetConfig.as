@@ -3,7 +3,7 @@
  */
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.data.config.CSoundData;
+	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CStage;
 
 	/**
@@ -23,7 +23,7 @@ package com.catalystapps.gaf.data
 		private var _stageConfig: CStage;
 
 		private var _timelines: Vector.<GAFTimelineConfig>;
-		private var _sounds: Vector.<CSoundData>;
+		private var _sounds: Vector.<CSound>;
 
 		public function GAFAssetConfig(id: String)
 		{
@@ -34,9 +34,9 @@ package com.catalystapps.gaf.data
 			this._timelines = new Vector.<GAFTimelineConfig>();
 		}
 
-		public function addSound(soundData: CSoundData): void
+		public function addSound(soundData: CSound): void
 		{
-			this._sounds ||= new Vector.<CSoundData>();
+			this._sounds ||= new Vector.<CSound>();
 			this._sounds.push(soundData);
 		}
 
@@ -118,7 +118,7 @@ package com.catalystapps.gaf.data
 			return this._id;
 		}
 
-		public function get sounds(): Vector.<CSoundData>
+		public function get sounds(): Vector.<CSound>
 		{
 			return _sounds;
 		}
