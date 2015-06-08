@@ -573,9 +573,10 @@ package com.catalystapps.gaf.core
 				else
 				{
 					this.gfxData.removeImages();
-					for each (var bd: BitmapData in this.pngImgs)
-					{
-						bd.dispose();
+					if (!Starling.handleLostContext) {
+						for each (var bd : BitmapData in this.pngImgs) {
+							bd.dispose();
+						}
 					}
 					this.pngImgs = null;
 				}
