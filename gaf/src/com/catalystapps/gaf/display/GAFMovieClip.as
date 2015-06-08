@@ -414,7 +414,7 @@ package com.catalystapps.gaf.display
 						}
 					}
 				}
-				else
+				else if (framesToPlay > 0)
 				{
 					this.changeCurrentFrame(false);
 				}
@@ -614,7 +614,7 @@ package com.catalystapps.gaf.display
 			this._inPlay = false;
 
 			if (applyToAllChildren
-					&& this._config.animationConfigFrames.frames.length > 0)
+			&& this._config.animationConfigFrames.frames.length > 0)
 			{
 				var child: DisplayObjectContainer;
 				var childMC: GAFMovieClip;
