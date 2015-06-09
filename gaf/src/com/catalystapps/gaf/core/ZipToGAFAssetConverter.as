@@ -595,7 +595,7 @@ package com.catalystapps.gaf.core
 
 				if (!this._gafBundle)
 				{
-					this._gafBundle = new GAFBundle(this.soundManager);
+					this._gafBundle = new GAFBundle();
 				}
 
 				for each (var timeline: GAFTimeline in timelines)
@@ -659,6 +659,7 @@ package com.catalystapps.gaf.core
 
 			var timeline: GAFTimeline = new GAFTimeline(config);
 			timeline.gafgfxData = this.gfxData;
+			timeline.soundManager = this.soundManager;
 
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{

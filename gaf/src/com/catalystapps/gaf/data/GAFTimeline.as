@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.sound.SoundManager;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CFrameSound;
@@ -36,6 +37,7 @@ package com.catalystapps.gaf.data
 
 		private var _config: GAFTimelineConfig;
 
+		private var _soundManager: SoundManager;
 		private var _gafgfxData: GAFGFXData;
 		private var _gafBundle: GAFBundle;
 
@@ -225,7 +227,7 @@ package com.catalystapps.gaf.data
 			var soundConfig: CFrameSound = this.config.getSound(frame);
 			if (soundConfig)
 			{
-				this.gafBundle.soundManager.startSound(soundConfig, this._config.assetID);
+				this.soundManager.startSound(soundConfig, this._config.assetID);
 			}
 		}
 
@@ -432,6 +434,16 @@ package com.catalystapps.gaf.data
 		public function set gafBundle(gafBundle: GAFBundle): void
 		{
 			this._gafBundle = gafBundle;
+		}
+
+		public function get soundManager(): SoundManager
+		{
+			return _soundManager;
+		}
+
+		public function set soundManager(soundManager: SoundManager): void
+		{
+			_soundManager = soundManager;
 		}
 
 		//--------------------------------------------------------------------------

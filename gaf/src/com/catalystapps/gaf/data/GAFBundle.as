@@ -1,6 +1,5 @@
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.sound.SoundManager;
 	import com.catalystapps.gaf.core.gaf_internal;
 	/**
 	 * GAFBundle is utility class that used to save all converted GAFTimelines from bundle in one place with easy access after conversion complete
@@ -19,7 +18,6 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
-		private var _soundManager: SoundManager;
 		private var _timelines: Vector.<GAFTimeline>;
 		private var _timelinesDictionary: Object = {};
 		private var _timelinesByLinkage: Object = {};
@@ -31,10 +29,9 @@ package com.catalystapps.gaf.data
 		//--------------------------------------------------------------------------
 
 		/** @private */
-		public function GAFBundle(soundManager: SoundManager)
+		public function GAFBundle()
 		{
 			this._timelines = new Vector.<GAFTimeline>();
-			this._soundManager = soundManager;
 		}
 
 		//--------------------------------------------------------------------------
@@ -153,11 +150,6 @@ package com.catalystapps.gaf.data
 		public function get timelines(): Vector.<GAFTimeline>
 		{
 			return this._timelines;
-		}
-
-		public function get soundManager(): SoundManager
-		{
-			return _soundManager;
 		}
 	}
 }
