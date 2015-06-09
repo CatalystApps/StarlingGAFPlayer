@@ -102,12 +102,6 @@ package com.catalystapps.gaf.core
 		public var textureFormat: String = GAFGFXData.BGRA;
 
 		/**
-		 * Indicates keep or not to keep all atlases as BitmapData for further usage.
-		 * All saved atlases available through <code>gafgfxData</code> property in <code>GAFTimeline</code>
-		 * By default converter won't keep images for further usage.
-		 */
-		public static var keepImagesInRAM: Boolean = false;
-		/**
 		 * Indicates keep or not to keep zip file content as ByteArray for further usage.
 		 * It's available through get <code>zip</code> property.
 		 * By default converter won't keep zip content for further usage.
@@ -427,21 +421,21 @@ package com.catalystapps.gaf.core
 
 		private function finalizeParsing(): void
 		{
-			if (!ZipToGAFAssetConverter.keepImagesInRAM)
+			if (this.textureFormat == GAFGFXData.ATF)
 			{
-				if (this.textureFormat == GAFGFXData.ATF)
-				{
-					this.atfData = null;
-				}
-				else
+				this.atfData = null;
+			}
+			else
+			{
+				if (!Starling.handleLostContext)
 				{
 					this.gfxData.removeImages();
 					for each (var bd: BitmapData in this.pngImgs)
 					{
 						bd.dispose();
 					}
-					this.pngImgs = null;
 				}
+				this.pngImgs = null;
 			}
 
 			if (this._zip && !ZipToGAFAssetConverter.keepZipInRAM)
