@@ -1,26 +1,23 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.sound.SoundManager;
-	import flash.media.Sound;
-	import com.catalystapps.gaf.data.config.CSound;
-	import deng.fzip.FZip;
-	import deng.fzip.FZipErrorEvent;
-	import deng.fzip.FZipFile;
-	import deng.fzip.FZipLibrary;
-
-	import starling.core.Starling;
-
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
+	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.IGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
+	import com.catalystapps.gaf.sound.SoundManager;
 	import com.catalystapps.gaf.utils.MathUtility;
+
+	import deng.fzip.FZip;
+	import deng.fzip.FZipErrorEvent;
+	import deng.fzip.FZipFile;
+	import deng.fzip.FZipLibrary;
 
 	import flash.display.BitmapData;
 	import flash.display.Loader;
@@ -28,6 +25,7 @@ package com.catalystapps.gaf.core
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
+	import flash.media.Sound;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -36,6 +34,8 @@ package com.catalystapps.gaf.core
 	import flash.utils.clearTimeout;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
+
+	import starling.core.Starling;
 
 	/** Dispatched when convertation completed */
 	[Event(name="complete", type="flash.events.Event")]
@@ -190,6 +190,8 @@ package com.catalystapps.gaf.core
 			this._defaultScale = defaultScale;
 			this._defaultContentScaleFactor = defaultContentScaleFactor;
 
+			this._gafBundle = new GAFBundle();
+
 			if (data is ByteArray)
 			{
 				this._zip = new FZip();
@@ -201,7 +203,7 @@ package com.catalystapps.gaf.core
 				this._zipLoader.addEventListener(Event.COMPLETE, this.onZipLoadedComplete);
 				this._zipLoader.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
 				this._zipLoader.addZip(this._zip);
-				
+
 				if (!ZipToGAFAssetConverter.keepZipInRAM)
 				{
 					(data as ByteArray).clear();
@@ -345,13 +347,13 @@ package com.catalystapps.gaf.core
 		{
 			this.atlasSourceURLs = [];
 
-			var configs: Vector.<GAFTimelineConfig>;
+			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 
 			for (var id: String in this.gafAssetConfigs)
 			{
-				configs = this.gafAssetConfigs[id];
+				gafTimelineConfigs = this.gafAssetConfigs[id].timelines;
 
-				for each (var config: GAFTimelineConfig in configs)
+				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
 					var folderURL: String = this.getFolderURL(id);
 
@@ -368,7 +370,7 @@ package com.catalystapps.gaf.core
 										var url: String = folderURL + source.source;
 
 										if (source.source != "no_atlas"
-										&&  this.atlasSourceURLs.indexOf(url) == -1)
+												&& this.atlasSourceURLs.indexOf(url) == -1)
 										{
 											this.atlasSourceURLs.push(url);
 										}
@@ -506,13 +508,13 @@ package com.catalystapps.gaf.core
 			{
 				zipFile = this._zip.getFileAt(i);
 				fileName = zipFile.filename;
-				
+
 				switch (fileName.substr(fileName.toLowerCase().lastIndexOf(".")))
 				{
 					case ".png":
 						fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
 						bmp = this._zipLoader.getBitmapData(zipFile.filename);
-	
+
 						this.pngImgs[fileName] = bmp;
 						break;
 					case ".atf":
@@ -569,7 +571,7 @@ package com.catalystapps.gaf.core
 			if (!Starling.current.contextValid)
 			{
 				Starling.current.stage3D.addEventListener(Event.CONTEXT3D_CREATE,
-						function(event: Event): void
+						function (event: Event): void
 						{
 							event.currentTarget.removeEventListener(event.type, arguments.callee);
 							createGAFTimelines();
@@ -584,18 +586,13 @@ package com.catalystapps.gaf.core
 			for (i = 0; i < this.gafAssetsIDs.length; i++)
 			{
 				gafAssetConfigID = this.gafAssetsIDs[i];
-				gafTimelineConfigs = this.gafAssetConfigs[gafAssetConfigID];
+				gafTimelineConfigs = this.gafAssetConfigs[gafAssetConfigID].timelines;
 
 				var timelines: Vector.<GAFTimeline> = new Vector.<GAFTimeline>();
 
 				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
 					timelines.push(this.createTimeline(config));
-				}
-
-				if (!this._gafBundle)
-				{
-					this._gafBundle = new GAFBundle();
 				}
 
 				for each (var timeline: GAFTimeline in timelines)
@@ -640,12 +637,12 @@ package com.catalystapps.gaf.core
 								if (this.pngImgs[taSource.source])
 								{
 									this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id,
-									                      this.pngImgs[taSource.source]);
+											this.pngImgs[taSource.source]);
 								}
 								else if (this.atfData[taSource.source])
 								{
 									this.gfxData.addATFData(cScale.scale, cCSF.csf, taSource.id,
-									                      this.atfData[taSource.source]);
+											this.atfData[taSource.source]);
 								}
 								else
 								{
@@ -738,7 +735,10 @@ package com.catalystapps.gaf.core
 			{
 				this.dispatchEvent(event);
 			}
-			else throw new Error(event.text);
+			else
+			{
+				throw new Error(event.text);
+			}
 		}
 
 		private function onConverted(event: Event): void
@@ -747,7 +747,7 @@ package com.catalystapps.gaf.core
 			var converter: IGAFAssetConfigConverter = event.target as IGAFAssetConfigConverter;
 			converter.removeEventListener(Event.COMPLETE, onConverted);
 
-			this.gafAssetConfigs[configID] = converter.config.timelines;
+			this.gafAssetConfigs[configID] = converter.config;
 			var sounds: Vector.<CSound> = converter.config.sounds;
 			if (sounds && !this._ignoreSounds)
 			{
@@ -785,14 +785,14 @@ package com.catalystapps.gaf.core
 		private function onAtlasLoadIOError(event: IOErrorEvent): void
 		{
 			(event.target as EventDispatcher).removeEventListener(event.type, onAtlasLoadIOError);
-			
+
 			this.zipProcessError("Error occured while loading " + this.atlasSourceURLs[this.atlasSourceIndex], 6);
 		}
 
 		private function onPNGLoadComplete(event: Event): void
 		{
 			(event.target as EventDispatcher).removeEventListener(event.type, onPNGLoadComplete);
-			
+
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
@@ -815,7 +815,7 @@ package com.catalystapps.gaf.core
 			var loader: URLLoader = event.target as URLLoader;
 			loader.removeEventListener(event.type, onATFLoadComplete);
 			loader.removeEventListener(event.type, onConfigIoError);
-			
+
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
@@ -837,14 +837,14 @@ package com.catalystapps.gaf.core
 		{
 			(event.target as URLLoader).removeEventListener(event.type, onATFLoadComplete);
 			(event.target as URLLoader).removeEventListener(event.type, onConfigIoError);
-			
+
 			this.zipProcessError("Error occurred while loading " + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex], 5);
 		}
 
 		private function onConfigUrlLoaderComplete(event: Event): void
 		{
 			(event.target as URLLoader).removeEventListener(event.type, onConfigUrlLoaderComplete);
-			
+
 			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
 
 			this.gafAssetsIDs.push(url);
@@ -874,7 +874,7 @@ package com.catalystapps.gaf.core
 		 */
 		/*public function get gafAsset(): GAFAsset
 		 {
-			 return _gafAsset;
+		 	return _gafAsset;
 		 }*/
 
 		/**

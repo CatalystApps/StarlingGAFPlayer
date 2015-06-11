@@ -5,6 +5,7 @@ package com.catalystapps.gaf.data
 {
 	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CStage;
+	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 
 	/**
 	 * @private
@@ -20,9 +21,13 @@ package com.catalystapps.gaf.data
 		private var _fileLength: uint;
 		private var _scaleValues: Vector.<Number>;
 		private var _csfValues: Vector.<Number>;
+		private var _defaultScale: Number;
+		private var _defaultContentScaleFactor: Number;
+
 		private var _stageConfig: CStage;
 
 		private var _timelines: Vector.<GAFTimelineConfig>;
+		private var _allTextureAtlases: Vector.<CTextureAtlasScale>;
 		private var _sounds: Vector.<CSound>;
 
 		public function GAFAssetConfig(id: String)
@@ -32,6 +37,7 @@ package com.catalystapps.gaf.data
 			this._csfValues = new Vector.<Number>();
 
 			this._timelines = new Vector.<GAFTimelineConfig>();
+			this._allTextureAtlases = new Vector.<CTextureAtlasScale>();
 		}
 
 		public function addSound(soundData: CSound): void
@@ -98,9 +104,34 @@ package com.catalystapps.gaf.data
 			return this._csfValues;
 		}
 
+		public function get defaultScale(): Number
+		{
+			return this._defaultScale;
+		}
+
+		public function set defaultScale(value: Number): void
+		{
+			this._defaultScale = value;
+		}
+
+		public function get defaultContentScaleFactor(): Number
+		{
+			return this._defaultContentScaleFactor;
+		}
+
+		public function set defaultContentScaleFactor(value: Number): void
+		{
+			this._defaultContentScaleFactor = value;
+		}
+
 		public function get timelines(): Vector.<GAFTimelineConfig>
 		{
 			return this._timelines;
+		}
+
+		public function get allTextureAtlases(): Vector.<CTextureAtlasScale>
+		{
+			return this._allTextureAtlases;
 		}
 
 		public function get stageConfig(): CStage
@@ -120,7 +151,7 @@ package com.catalystapps.gaf.data
 
 		public function get sounds(): Vector.<CSound>
 		{
-			return _sounds;
+			return this._sounds;
 		}
 	}
 }

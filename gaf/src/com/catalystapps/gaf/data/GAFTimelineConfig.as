@@ -64,8 +64,6 @@ package com.catalystapps.gaf.data
 		{
 			this._version = version;
 
-			this._allTextureAtlases = new Vector.<CTextureAtlasScale>();
-
 			this._animationConfigFrames = new CAnimationFrames();
 			this._animationObjects = new CAnimationObjects();
 			this._animationSequences = new CAnimationSequences();
