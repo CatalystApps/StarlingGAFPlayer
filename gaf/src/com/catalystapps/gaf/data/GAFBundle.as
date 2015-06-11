@@ -45,9 +45,15 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			for each (var timeline: GAFTimeline in this._timelines)
+			if (this._timelines.length > 0)
 			{
-				timeline.dispose();
+				GAF.soundManager.stopAll();
+				this._timelines[0].gafSoundData.gaf_internal::dispose();
+
+				for each (var timeline: GAFTimeline in this._timelines)
+				{
+					timeline.dispose();
+				}
 			}
 		}
 

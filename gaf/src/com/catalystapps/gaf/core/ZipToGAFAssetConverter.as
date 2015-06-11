@@ -11,7 +11,7 @@ package com.catalystapps.gaf.core
 	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.IGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.JsonGAFAssetConfigConverter;
-	import com.catalystapps.gaf.sound.SoundManager;
+	import com.catalystapps.gaf.sound.GAFSoundData;
 	import com.catalystapps.gaf.utils.MathUtility;
 
 	import deng.fzip.FZip;
@@ -125,7 +125,7 @@ package com.catalystapps.gaf.core
 		private var gafAssetConfigs: Object = {};
 		private var gafAssetsIDs: Array = [];
 
-		private var soundManager: SoundManager;
+		private var soundData: GAFSoundData;
 
 		private var sounds: Object = {};
 		private var pngImgs: Object = {};
@@ -162,7 +162,7 @@ package com.catalystapps.gaf.core
 			this.id = id;
 
 			this.gfxData = new GAFGFXData();
-			this.soundManager = new SoundManager();
+			this.soundData = new GAFSoundData();
 		}
 
 		//--------------------------------------------------------------------------
@@ -608,9 +608,9 @@ package com.catalystapps.gaf.core
 				throw new Error("No animations found.");
 			}
 
-			if (this.soundManager.hasSoundsToLoad && !this._ignoreSounds)
+			if (this.soundData.gaf_internal::hasSoundsToLoad && !this._ignoreSounds)
 			{
-				this.soundManager.loadSounds(this.finalizeParsing, this.onSoundLoadIOError);
+				this.soundData.gaf_internal::loadSounds(this.finalizeParsing, this.onSoundLoadIOError);
 			}
 			else
 			{
@@ -656,7 +656,7 @@ package com.catalystapps.gaf.core
 
 			var timeline: GAFTimeline = new GAFTimeline(config);
 			timeline.gafgfxData = this.gfxData;
-			timeline.soundManager = this.soundManager;
+			timeline.gafSoundData = this.soundData;
 
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
@@ -743,6 +743,8 @@ package com.catalystapps.gaf.core
 
 		private function onConverted(event: Event): void
 		{
+			use namespace gaf_internal;
+
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var converter: IGAFAssetConfigConverter = event.target as IGAFAssetConfigConverter;
 			converter.removeEventListener(Event.COMPLETE, onConverted);
@@ -755,7 +757,7 @@ package com.catalystapps.gaf.core
 				{
 					var assetID: String = this.getFolderURL(configID);
 					sounds[i].source = assetID + sounds[i].source;
-					this.soundManager.addSound(sounds[i], converter.config.id, this.sounds[sounds[i].source]);
+					this.soundData.addSound(sounds[i], converter.config.id, this.sounds[sounds[i].source]);
 					if (this.sounds[sounds[i].source])
 					{
 						delete this.sounds[sounds[i].source];

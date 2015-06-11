@@ -2,37 +2,26 @@ package com.catalystapps.gaf.sound
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import com.catalystapps.gaf.data.config.CFrameSound;
 	import flash.media.SoundChannel;
 
 	/**
 	 * @author Ivan Avdeenko
 	 */
-	public class SoundData extends EventDispatcher
+	public class GAFSoundChannel extends EventDispatcher
 	{
 		private var _soundChannel: SoundChannel;
-		private var _assetID: String;
-		private var _config: CFrameSound;
+		private var _soundID: uint;
+		private var _swfName: String;
 
-		public function SoundData(config: CFrameSound, assetID: String)
+		public function GAFSoundChannel(swfName: String, soundID: uint)
 		{
-			this._config = config;
-			this._assetID = assetID;
+			this._swfName = swfName;
+			this._soundID = soundID;
 		}
 
 		public function stop(): void
 		{
-			 this._soundChannel.stop();
-		}
-
-		public function get assetID(): String
-		{
-			return this._assetID;
-		}
-
-		public function get config(): CFrameSound
-		{
-			return this._config;
+			this._soundChannel.stop();
 		}
 
 		public function get soundChannel(): SoundChannel
@@ -53,6 +42,16 @@ package com.catalystapps.gaf.sound
 		private function onComplete(event: Event): void
 		{
 			this.dispatchEvent(event);
+		}
+
+		public function get soundID(): uint
+		{
+			return _soundID;
+		}
+
+		public function get swfName(): String
+		{
+			return _swfName;
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.sound.SoundManager;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CFrameSound;
@@ -8,6 +7,9 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.display.IGAFTexture;
+	import com.catalystapps.gaf.sound.GAFSoundData;
+
+	import flash.media.Sound;
 
 	/**
 	 * <p>GAFTimeline represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation.
@@ -37,7 +39,7 @@ package com.catalystapps.gaf.data
 
 		private var _config: GAFTimelineConfig;
 
-		private var _soundManager: SoundManager;
+		private var _gafSoundData: GAFSoundData;
 		private var _gafgfxData: GAFGFXData;
 		private var _gafBundle: GAFBundle;
 
@@ -94,6 +96,9 @@ package com.catalystapps.gaf.data
 		public function dispose(): void
 		{
 			this._config.dispose();
+			this._gafBundle = null;
+			this._gafgfxData = null;
+			this._gafSoundData = null;
 		}
 
 		/**
@@ -222,12 +227,33 @@ package com.catalystapps.gaf.data
 			}
 		}
 
+		/** @private */
 		public function startSound(frame: uint): void
 		{
-			var soundConfig: CFrameSound = this.config.getSound(frame);
-			if (soundConfig)
+			var frameSoundConfig: CFrameSound = this._config.getSound(frame);
+			if (frameSoundConfig)
 			{
-				this.soundManager.startSound(soundConfig, this._config.assetID);
+				use namespace gaf_internal;
+				if (frameSoundConfig.action == CFrameSound.ACTION_STOP)
+				{
+					GAF.soundManager.stop(frameSoundConfig.soundID, this._config.assetID);
+				}
+				else
+				{
+					var sound: Sound;
+					if (frameSoundConfig.linkage.length > 0)
+					{
+						sound = this.gafSoundData.getSoundByLinkage(frameSoundConfig.linkage);
+					}
+					else
+					{
+						sound = this.gafSoundData.getSound(frameSoundConfig.soundID, this._config.assetID);
+					}
+					var soundOptions: Object = {};
+					soundOptions["continue"] = frameSoundConfig.action == CFrameSound.ACTION_CONTINUE;
+					soundOptions["repeatCount"] = frameSoundConfig.repeatCount;
+					GAF.soundManager.play(sound, frameSoundConfig.soundID, soundOptions, this._config.assetID);
+				}
 			}
 		}
 
@@ -436,14 +462,14 @@ package com.catalystapps.gaf.data
 			this._gafBundle = gafBundle;
 		}
 
-		public function get soundManager(): SoundManager
+		public function get gafSoundData(): GAFSoundData
 		{
-			return _soundManager;
+			return _gafSoundData;
 		}
 
-		public function set soundManager(soundManager: SoundManager): void
+		public function set gafSoundData(gafSoundData: GAFSoundData): void
 		{
-			_soundManager = soundManager;
+			_gafSoundData = gafSoundData;
 		}
 
 		//--------------------------------------------------------------------------
