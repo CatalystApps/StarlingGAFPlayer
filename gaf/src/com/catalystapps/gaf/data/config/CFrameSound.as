@@ -12,7 +12,6 @@ package com.catalystapps.gaf.data.config
 		public var action: uint;
 		public var repeatCount: uint; //0 and 1 means play sound once
 		public var linkage: String;
-		public var sound: CSound;
 
 		public function CFrameSound(data: Object)
 		{

@@ -644,20 +644,6 @@ package com.catalystapps.gaf.data.converters
 								}
 								data = JSON.parse(action.params[3]);
 								timelineConfig.addSound(data, frameNumber);
-								var sound: CSound;
-								var s: uint = config.sounds.length;
-								while (--s > 0)
-								{
-									if (config.sounds[s].soundID == data.id)
-									{
-										sound = config.sounds[s];
-										break;
-									}
-								}
-								if (sound)
-								{
-									timelineConfig.getSound(frameNumber).sound = sound;
-								}
 							}
 
 							currentFrame.addAction(action);
