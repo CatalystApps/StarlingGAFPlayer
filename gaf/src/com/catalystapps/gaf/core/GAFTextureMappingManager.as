@@ -41,15 +41,6 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 
-		public static function addGAFTimeline(timeline: GAFTimeline): void
-		{
-			use namespace gaf_internal;
-			if (!_timelinesCollection[timeline.uniqueID])
-			{
-				_timelinesCollection[timeline.uniqueID] = timeline;
-			}
-		}
-
 		public static function getMappedTexture(id: String, mappedAssetID: String): IGAFTexture
 		{
 			var result: IGAFTexture;

@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFGFXData;
 	import com.catalystapps.gaf.data.GAFTimeline;
@@ -581,25 +583,27 @@ package com.catalystapps.gaf.core
 
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 			var gafAssetConfigID: String;
+			var gafAssetConfig: GAFAssetConfig;
 			var i: uint;
 
 			for (i = 0; i < this.gafAssetsIDs.length; i++)
 			{
 				gafAssetConfigID = this.gafAssetsIDs[i];
-				gafTimelineConfigs = this.gafAssetConfigs[gafAssetConfigID].timelines;
+				gafAssetConfig = this.gafAssetConfigs[gafAssetConfigID];
+				gafTimelineConfigs = gafAssetConfig.timelines;
 
-				var timelines: Vector.<GAFTimeline> = new Vector.<GAFTimeline>();
-
+				var gafAsset: GAFAsset = new GAFAsset(gafAssetConfig);
 				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
-					timelines.push(this.createTimeline(config));
+					gafAsset.addGAFTimeline(this.createTimeline(config));
 				}
 
+				this._gafBundle.gaf_internal::addGAFAsset(gafAsset);
+
+				var timelines: Vector.<GAFTimeline> = gafAsset.timelines;
 				for each (var timeline: GAFTimeline in timelines)
 				{
-					this._gafBundle.addGAFTimeline(timeline);
-
-					timeline.gafBundle = this._gafBundle;
+					timeline.gafAsset = gafAsset;
 				}
 			}
 

@@ -19,6 +19,7 @@ package com.catalystapps.gaf.data.config
 
 		private var _elementsVector: Vector.<CTextureAtlasElement>;
 		private var _elementsDictionary: Object;
+		private var _elementsByLinkage: Object;
 
 		//--------------------------------------------------------------------------
 		//
@@ -30,6 +31,7 @@ package com.catalystapps.gaf.data.config
 		{
 			this._elementsVector = new Vector.<CTextureAtlasElement>();
 			this._elementsDictionary = {};
+			this._elementsByLinkage = {};
 		}
 
 		//--------------------------------------------------------------------------
@@ -45,6 +47,11 @@ package com.catalystapps.gaf.data.config
 				this._elementsDictionary[element.id] = element;
 
 				this._elementsVector.push(element);
+
+				if (element.linkage)
+				{
+					this._elementsByLinkage[element.linkage] = element;
+				}
 			}
 		}
 
@@ -53,6 +60,18 @@ package com.catalystapps.gaf.data.config
 			if (this._elementsDictionary[id])
 			{
 				return this._elementsDictionary[id];
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		public function getElementByLinkage(linkage: String): CTextureAtlasElement
+		{
+			if (this._elementsByLinkage[linkage])
+			{
+				return this._elementsByLinkage[linkage];
 			}
 			else
 			{

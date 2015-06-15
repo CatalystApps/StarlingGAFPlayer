@@ -32,16 +32,12 @@ package com.catalystapps.gaf.data
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		/** @private */
-		gaf_internal var _uniqueID: String;
-		/** @private */
-		gaf_internal var _uniqueLinkage: String;
 
 		private var _config: GAFTimelineConfig;
 
 		private var _gafSoundData: GAFSoundData;
 		private var _gafgfxData: GAFGFXData;
-		private var _gafBundle: GAFBundle;
+		private var _gafAsset: GAFAsset;
 
 		//--------------------------------------------------------------------------
 		//
@@ -57,12 +53,6 @@ package com.catalystapps.gaf.data
 		public function GAFTimeline(timelineConfig: GAFTimelineConfig)
 		{
 			this._config = timelineConfig;
-
-			this.gaf_internal::_uniqueID = timelineConfig.assetID + "::" + timelineConfig.id;
-			if (timelineConfig.linkage)
-			{
-				this.gaf_internal::_uniqueLinkage = timelineConfig.assetID + "::" + timelineConfig.linkage;
-			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -96,7 +86,7 @@ package com.catalystapps.gaf.data
 		public function dispose(): void
 		{
 			this._config.dispose();
-			this._gafBundle = null;
+			this._gafAsset = null;
 			this._gafgfxData = null;
 			this._gafSoundData = null;
 		}
@@ -309,12 +299,15 @@ package com.catalystapps.gaf.data
 		 */
 		public function get id(): String
 		{
-			return this.config.assetID;
+			return this.config.id;
 		}
 
-		public function set id(value: String): void
+		/**
+		 * Timeline linkage in a *.fla file library
+		 */
+		public function get linkage(): String
 		{
-			this.config.assetID = value;
+			return this.config.linkage;
 		}
 
 		/** @private
@@ -323,18 +316,6 @@ package com.catalystapps.gaf.data
 		public function get assetID(): String
 		{
 			return this.config.assetID;
-		}
-
-		/** @private */
-		gaf_internal function get uniqueID(): String
-		{
-			return this.gaf_internal::_uniqueID;
-		}
-
-		/** @private */
-		gaf_internal function get uniqueLinkage(): String
-		{
-			return this.gaf_internal::_uniqueLinkage;
 		}
 
 		/** @private */
@@ -451,15 +432,15 @@ package com.catalystapps.gaf.data
 		}
 
 		/** @private */
-		public function get gafBundle(): GAFBundle
+		public function get gafAsset(): GAFAsset
 		{
-			return this._gafBundle;
+			return this._gafAsset;
 		}
 
 		/** @private */
-		public function set gafBundle(gafBundle: GAFBundle): void
+		public function set gafAsset(gafBundle: GAFAsset): void
 		{
-			this._gafBundle = gafBundle;
+			this._gafAsset = gafBundle;
 		}
 
 		public function get gafSoundData(): GAFSoundData

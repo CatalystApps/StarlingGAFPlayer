@@ -87,33 +87,32 @@ package com.catalystapps.gaf.data.config
 
 		public function set scale(scale: Number): void
 		{
-			_scale = scale;
+			this._scale = scale;
 		}
 
 		public function get scale(): Number
 		{
-			return _scale;
+			return this._scale;
 		}
 
 		public function get allContentScaleFactors(): Vector.<CTextureAtlasCSF>
 		{
-			return _allContentScaleFactors;
+			return this._allContentScaleFactors;
 		}
 
 		public function set allContentScaleFactors(value: Vector.<CTextureAtlasCSF>): void
 		{
-			_allContentScaleFactors = value;
+			this._allContentScaleFactors = value;
 		}
 
 		public function get contentScaleFactor(): CTextureAtlasCSF
 		{
-			return _contentScaleFactor;
+			return this._contentScaleFactor;
 		}
 
 		public function set contentScaleFactor(value: CTextureAtlasCSF): void
 		{
-			_contentScaleFactor = value;
+			this._contentScaleFactor = value;
 		}
-
 	}
 }

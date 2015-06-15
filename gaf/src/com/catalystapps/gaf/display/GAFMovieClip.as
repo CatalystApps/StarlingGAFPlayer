@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.core.gaf_internal;
@@ -136,7 +137,7 @@ package com.catalystapps.gaf.display
 			this._addToJuggler = addToJuggler;
 			this._mappedAssetID = mappedAssetID;
 
-			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafBundle);
+			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafAsset);
 
 			if (this._config.bounds)
 			{
@@ -371,7 +372,7 @@ package com.catalystapps.gaf.display
 
 			this.play();
 		}
-		
+
 		/**
 		 * Set the <code>loop</code> value to the GAFMovieClip instance and for the all children.
 		 */
@@ -1046,7 +1047,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function initialize(textureAtlas: CTextureAtlas, gafBundle: GAFBundle): void
+		private function initialize(textureAtlas: CTextureAtlas, gafAsset: GAFAsset): void
 		{
 			this._displayObjectsDictionary = {};
 			this._pixelMasksDictionary = {};
@@ -1083,7 +1084,7 @@ package com.catalystapps.gaf.display
 						displayObject = new GAFTextField(tfObj);
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
-						displayObject = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this._config.assetID, animationObjectConfig.regionID));
+						displayObject = new GAFMovieClip(gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID));
 						break;
 				}
 
