@@ -4,7 +4,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.core.gaf_internal;
-	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;

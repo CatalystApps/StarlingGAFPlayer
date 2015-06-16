@@ -81,6 +81,7 @@ package com.catalystapps.gaf.data
 				{
 					this._timelinesByLinkage[timeline.linkage] = timeline;
 				}
+				timeline.gafAsset = this;
 			}
 			else
 			{

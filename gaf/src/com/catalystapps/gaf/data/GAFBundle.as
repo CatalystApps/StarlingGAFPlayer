@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.sound.GAFSoundData;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.display.IGAFTexture;
 
@@ -20,6 +21,7 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
+		private var _soundData: GAFSoundData;
 		private var _gafAssets: Vector.<GAFAsset>;
 		private var _gafAssetsDictionary: Object; // GAFAssetConfig by SWF name
 
@@ -47,16 +49,12 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			if (this._gafAssets.length > 0)
+			GAF.soundManager.stopAll();
+			this._soundData.gaf_internal::dispose();
+
+			for each (var gafAsset: GAFAsset in this._gafAssets)
 			{
-				GAF.soundManager.stopAll();
-
-				this._gafAssets[0].timelines[0].gafSoundData.gaf_internal::dispose();
-
-				for each (var gafAsset: GAFAsset in this._gafAssets)
-				{
-					gafAsset.dispose();
-				}
+				gafAsset.dispose();
 			}
 		}
 
@@ -104,7 +102,6 @@ package com.catalystapps.gaf.data
 		 */
 		public function getGAFTimeline(swfName: String, linkage: String): GAFTimeline
 		{
-			var i: uint;
 			var gafTimeline: GAFTimeline;
 			var gafAsset: GAFAsset = this._gafAssetsDictionary[swfName];
 			if (gafAsset)
@@ -139,7 +136,6 @@ package com.catalystapps.gaf.data
 		 */
 		gaf_internal function getGAFTimelineBySWFNameAndID(swfName: String, id: String): GAFTimeline
 		{
-			var i: uint;
 			var gafTimeline: GAFTimeline;
 			var gafAsset: GAFAsset = this._gafAssetsDictionary[swfName];
 			if (gafAsset)
@@ -200,6 +196,16 @@ package com.catalystapps.gaf.data
 			}
 
 			return timelines;
+		}
+
+		public function get soundData(): GAFSoundData
+		{
+			return this._soundData;
+		}
+
+		public function set soundData(soundData: GAFSoundData): void
+		{
+			_soundData = soundData;
 		}
 	}
 }

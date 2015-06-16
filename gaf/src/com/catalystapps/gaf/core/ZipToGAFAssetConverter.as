@@ -161,7 +161,7 @@ package com.catalystapps.gaf.core
 		/** @private */
 		public function ZipToGAFAssetConverter(id: String = null)
 		{
-			this.id = id;
+			this._id = id;
 
 			this.gfxData = new GAFGFXData();
 			this.soundData = new GAFSoundData();
@@ -193,6 +193,7 @@ package com.catalystapps.gaf.core
 			this._defaultContentScaleFactor = defaultContentScaleFactor;
 
 			this._gafBundle = new GAFBundle();
+			this._gafBundle.soundData = this.soundData;
 
 			if (data is ByteArray)
 			{
@@ -599,12 +600,6 @@ package com.catalystapps.gaf.core
 				}
 
 				this._gafBundle.gaf_internal::addGAFAsset(gafAsset);
-
-				var timelines: Vector.<GAFTimeline> = gafAsset.timelines;
-				for each (var timeline: GAFTimeline in timelines)
-				{
-					timeline.gafAsset = gafAsset;
-				}
 			}
 
 			if (!this._gafBundle.timelines.length)

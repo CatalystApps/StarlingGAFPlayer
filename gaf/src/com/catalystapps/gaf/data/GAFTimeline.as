@@ -231,7 +231,7 @@ package com.catalystapps.gaf.data
 				else
 				{
 					var sound: Sound;
-					if (frameSoundConfig.linkage.length > 0)
+					if (frameSoundConfig.linkage)
 					{
 						sound = this.gafSoundData.getSoundByLinkage(frameSoundConfig.linkage);
 					}
