@@ -33,12 +33,10 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
-		public function CTextureAtlasElement(id: String, atlasID: String, region: Rectangle, pivotMatrix: Matrix)
+		public function CTextureAtlasElement(id: String, atlasID: String)
 		{
 			this._id = id;
 			this._atlasID = atlasID;
-			this._region = region;
-			this._pivotMatrix = pivotMatrix;
 		}
 
 		//--------------------------------------------------------------------------
@@ -79,6 +77,11 @@ package com.catalystapps.gaf.data.config
 		public function get region(): Rectangle
 		{
 			return this._region;
+		}
+
+		public function set region(region: Rectangle): void
+		{
+			_region = region;
 		}
 
 		public function get pivotMatrix(): Matrix

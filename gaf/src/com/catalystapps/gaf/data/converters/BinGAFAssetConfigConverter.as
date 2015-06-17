@@ -37,7 +37,7 @@ package com.catalystapps.gaf.data.converters
 	/**
 	 * @private
 	 */
-	public class BinGAFAssetConfigConverter extends EventDispatcher implements IGAFAssetConfigConverter
+	public class BinGAFAssetConfigConverter extends EventDispatcher
 	{
 		private static const SIGNATURE_GAF: uint = 0x00474146;
 		private static const SIGNATURE_GAC: uint = 0x00474143;
@@ -89,13 +89,10 @@ package com.catalystapps.gaf.data.converters
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		public function BinGAFAssetConfigConverter(assetID: String, bytes: ByteArray, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN)
+		public function BinGAFAssetConfigConverter(assetID: String, bytes: ByteArray)
 		{
-			this._defaultContentScaleFactor = defaultContentScaleFactor;
-			this._defaultScale = defaultScale;
 			this._bytes = bytes;
 			this._assetID = assetID;
-
 			this._textureElementSizes = {};
 		}
 
@@ -742,6 +739,7 @@ package com.catalystapps.gaf.data.converters
 			var elementAtlasID: uint;
 			var rotation: Boolean;
 			var linkageName: String;
+			var matrix: Matrix;
 
 			for (i = 0; i < elementsLength; i++)
 			{
@@ -781,9 +779,18 @@ package com.catalystapps.gaf.data.converters
 
 				if (!elements.getElement(elementAtlasID.toString()))
 				{
-					element = new CTextureAtlasElement(elementAtlasID.toString(), atlasID.toString(),
-							new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight),
-							new Matrix(1 / elementScaleX, 0, 0, 1 / elementScaleY, -pivot.x / elementScaleX, -pivot.y / elementScaleY));
+					matrix = new Matrix();
+					if (rotation)
+					{
+						matrix.ty = -elementHeight;
+						matrix.rotate(Math.PI/2);
+					}
+					matrix.tx -= pivot.x / elementScaleX;
+					matrix.ty -= pivot.y / elementScaleY;
+					matrix.scale(1 / elementScaleX, 1 / elementScaleY);
+					element = new CTextureAtlasElement(elementAtlasID.toString(), atlasID.toString());
+					element.region = new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight);
+					element.pivotMatrix = matrix;
 					element.scale9Grid = scale9Grid;
 					element.linkage = linkageName;
 					elements.addElement(element);
@@ -1189,6 +1196,16 @@ package com.catalystapps.gaf.data.converters
 				soundData.sampleCount = bytes.readUnsignedInt();
 				config.addSound(soundData);
 			}
+		}
+
+		public function set defaultScale(defaultScale: Number): void
+		{
+			_defaultScale = defaultScale;
+		}
+
+		public function set defaultCSF(csf: Number): void
+		{
+			_defaultContentScaleFactor = csf;
 		}
 	}
 }
