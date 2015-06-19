@@ -865,8 +865,8 @@ package com.catalystapps.gaf.display
 							this.renderDebug(mc, instance, true);
 
 							pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
-
-							pixelMaskObject.addChildAt(displayObject as DisplayObject, maskIndex++);
+							pixelMaskObject.addChild(displayObject as DisplayObject);
+							maskIndex++;
 
 							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
 
@@ -874,7 +874,7 @@ package com.catalystapps.gaf.display
 
 							if (maskIndex == 1)
 							{
-								this.addChildAt(pixelMaskObject, zIndex++);
+								this.addChild(pixelMaskObject);
 							}
 						}
 						else //if display object is not masked
@@ -890,9 +890,7 @@ package com.catalystapps.gaf.display
 							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
 							displayObject.setFilterConfig(instance.filter, this._scale);
 
-							this.addChildAt(displayObject as DisplayObject, zIndex);
-
-							zIndex++;
+							this.addChild(displayObject as DisplayObject);
 						}
 
 						if (mc && mc._started)
