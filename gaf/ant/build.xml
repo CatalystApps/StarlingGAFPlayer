@@ -11,7 +11,7 @@
   <property name="FLEX_HOME" value="${sdk.dir}" />
 
   <target name="build">
-    <compc output="${deploy.dir}/gaf.swc">
+    <compc output="${deploy.dir}/gaf.swc" inline="true">
       <include-sources dir="${src.dir}" includes="*" />
       <include-libraries file="${lib.dir}/FZip.swc" />
       <external-library-path file="${lib.dir}/starling.swc" />

@@ -26,6 +26,7 @@ package com.catalystapps.gaf.data.config
 		private var _region: Rectangle;
 		private var _pivotMatrix: Matrix;
 		private var _scale9Grid: Rectangle;
+		private var _rotated: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -117,6 +118,16 @@ package com.catalystapps.gaf.data.config
 		public function set linkage(value: String): void
 		{
 			this._linkage = value;
+		}
+
+		public function get rotated():Boolean
+		{
+			return this._rotated;
+		}
+
+		public function set rotated(value:Boolean):void
+		{
+			this._rotated = value;
 		}
 	}
 }

@@ -78,7 +78,7 @@ package com.catalystapps.gaf.data.config
 
 				atlas = atlasesDictionary[element.atlasID];
 
-				atlas.addRegion(element.id, element.region);
+				atlas.addRegion(element.id, element.region, null, element.rotated);
 			}
 
 			var result: CTextureAtlas = new CTextureAtlas(atlasesDictionary, textureAtlasConfig);

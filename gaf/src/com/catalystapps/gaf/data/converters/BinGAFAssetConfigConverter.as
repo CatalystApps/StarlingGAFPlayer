@@ -780,11 +780,6 @@ package com.catalystapps.gaf.data.converters
 				if (!elements.getElement(elementAtlasID.toString()))
 				{
 					matrix = new Matrix();
-					if (rotation)
-					{
-						matrix.tx = -elementWidth;
-						matrix.rotate(-Math.PI/2);
-					}
 					matrix.tx -= pivot.x / elementScaleX;
 					matrix.ty -= pivot.y / elementScaleY;
 					matrix.scale(1 / elementScaleX, 1 / elementScaleY);
@@ -793,6 +788,7 @@ package com.catalystapps.gaf.data.converters
 					element.pivotMatrix = matrix;
 					element.scale9Grid = scale9Grid;
 					element.linkage = linkageName;
+					element.rotated = rotation;
 					elements.addElement(element);
 
 					sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
