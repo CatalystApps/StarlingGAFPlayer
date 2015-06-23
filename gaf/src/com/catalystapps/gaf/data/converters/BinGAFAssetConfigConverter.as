@@ -782,8 +782,8 @@ package com.catalystapps.gaf.data.converters
 					matrix = new Matrix();
 					if (rotation)
 					{
-						matrix.ty = -elementHeight;
-						matrix.rotate(Math.PI/2);
+						matrix.tx = -elementWidth;
+						matrix.rotate(-Math.PI/2);
 					}
 					matrix.tx -= pivot.x / elementScaleX;
 					matrix.ty -= pivot.y / elementScaleY;
