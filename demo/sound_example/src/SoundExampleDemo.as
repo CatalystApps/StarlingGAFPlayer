@@ -62,12 +62,12 @@ package
 			{
 				if (mute)
 				{
-					GAFSoundManager.instance.setVolume(1);
+					GAFSoundManager.getInstance().setVolume(1);
 					muteBtn.gotoAndStop(1);
 				}
 				else
 				{
-					GAFSoundManager.instance.setVolume(0);
+					GAFSoundManager.getInstance().setVolume(0);
 					muteBtn.gotoAndStop(2);
 				}
 

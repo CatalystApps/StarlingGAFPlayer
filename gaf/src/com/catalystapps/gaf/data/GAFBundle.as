@@ -50,7 +50,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			GAFSoundManager.instance.stopAll();
+			GAFSoundManager.getInstance().stopAll();
 			this._soundData.gaf_internal::dispose();
 
 			for each (var gafAsset: GAFAsset in this._gafAssets)

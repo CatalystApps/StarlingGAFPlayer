@@ -227,7 +227,7 @@ package com.catalystapps.gaf.data
 				use namespace gaf_internal;
 				if (frameSoundConfig.action == CFrameSound.ACTION_STOP)
 				{
-					GAFSoundManager.instance.stop(frameSoundConfig.soundID, this._config.assetID);
+					GAFSoundManager.getInstance().stop(frameSoundConfig.soundID, this._config.assetID);
 				}
 				else
 				{
@@ -243,7 +243,7 @@ package com.catalystapps.gaf.data
 					var soundOptions: Object = {};
 					soundOptions["continue"] = frameSoundConfig.action == CFrameSound.ACTION_CONTINUE;
 					soundOptions["repeatCount"] = frameSoundConfig.repeatCount;
-					GAFSoundManager.instance.play(sound, frameSoundConfig.soundID, soundOptions, this._config.assetID);
+					GAFSoundManager.getInstance().play(sound, frameSoundConfig.soundID, soundOptions, this._config.assetID);
 				}
 			}
 		}

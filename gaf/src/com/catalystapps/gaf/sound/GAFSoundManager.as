@@ -1,10 +1,11 @@
 package com.catalystapps.gaf.sound
 {
-	import flash.media.SoundTransform;
 	import com.catalystapps.gaf.core.gaf_internal;
 
 	import flash.events.Event;
 	import flash.media.Sound;
+	import flash.media.SoundTransform;
+
 	/** @private
 	 * @author Ivan Avdeenko
 	 */
@@ -12,7 +13,7 @@ package com.catalystapps.gaf.sound
 	{
 		private var volume: Number = 1;
 		private var soundChannels: Object;
-		private static var _instance: GAFSoundManager;
+		private static var _getInstance: GAFSoundManager;
 
 		public function GAFSoundManager(singleton: Singleton)
 		{
@@ -100,10 +101,10 @@ package com.catalystapps.gaf.sound
 			delete soundChannels[soundChannel.swfName][soundChannel.soundID];
 		}
 
-		public static function get instance(): GAFSoundManager
+		public static function getInstance(): GAFSoundManager
 		{
-			_instance ||= new GAFSoundManager(new Singleton());
-			return _instance;
+			_getInstance ||= new GAFSoundManager(new Singleton());
+			return _getInstance;
 		}
 	}
 }
