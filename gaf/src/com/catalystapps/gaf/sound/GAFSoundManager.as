@@ -13,7 +13,7 @@ package com.catalystapps.gaf.sound
 		private var volume: Number = 1;
 		private var soundChannels: Object;
 		private static var _instance: GAFSoundManager;
-		
+
 		public function GAFSoundManager(singleton: Singleton)
 		{
 			if (!singleton)

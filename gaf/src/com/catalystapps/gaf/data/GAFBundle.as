@@ -1,8 +1,9 @@
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.sound.GAFSoundData;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.display.IGAFTexture;
+	import com.catalystapps.gaf.sound.GAFSoundData;
+	import com.catalystapps.gaf.sound.GAFSoundManager;
 
 	/**
 	 * GAFBundle is utility class that used to save all converted GAFTimelines from bundle in one place with easy access after conversion complete
@@ -49,7 +50,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			GAF.soundManager.stopAll();
+			GAFSoundManager.instance.stopAll();
 			this._soundData.gaf_internal::dispose();
 
 			for each (var gafAsset: GAFAsset in this._gafAssets)

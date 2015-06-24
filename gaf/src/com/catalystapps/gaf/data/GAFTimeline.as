@@ -8,6 +8,7 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.display.IGAFTexture;
 	import com.catalystapps.gaf.sound.GAFSoundData;
+	import com.catalystapps.gaf.sound.GAFSoundManager;
 
 	import flash.media.Sound;
 
@@ -226,7 +227,7 @@ package com.catalystapps.gaf.data
 				use namespace gaf_internal;
 				if (frameSoundConfig.action == CFrameSound.ACTION_STOP)
 				{
-					GAF.soundManager.stop(frameSoundConfig.soundID, this._config.assetID);
+					GAFSoundManager.instance.stop(frameSoundConfig.soundID, this._config.assetID);
 				}
 				else
 				{
@@ -242,7 +243,7 @@ package com.catalystapps.gaf.data
 					var soundOptions: Object = {};
 					soundOptions["continue"] = frameSoundConfig.action == CFrameSound.ACTION_CONTINUE;
 					soundOptions["repeatCount"] = frameSoundConfig.repeatCount;
-					GAF.soundManager.play(sound, frameSoundConfig.soundID, soundOptions, this._config.assetID);
+					GAFSoundManager.instance.play(sound, frameSoundConfig.soundID, soundOptions, this._config.assetID);
 				}
 			}
 		}
