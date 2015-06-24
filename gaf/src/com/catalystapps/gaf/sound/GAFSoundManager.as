@@ -10,6 +10,7 @@ package com.catalystapps.gaf.sound
 	 */
 	public class GAFSoundManager
 	{
+		private var volume: Number = 1;
 		private var soundChannels: Object;
 		private static var _instance: GAFSoundManager;
 		
@@ -19,11 +20,12 @@ package com.catalystapps.gaf.sound
 			{
 				throw new Error("GAFSoundManager is Singleton. Use GAFSoundManager.instance or GAF.soundManager instead");
 			}
-			_instance = this;
 		}
 
 		public function setVolume(volume: Number): void
 		{
+			this.volume = volume;
+
 			var channels: Vector.<GAFSoundChannel>;
 			for (var swfName: String in soundChannels)
 			{
@@ -65,7 +67,7 @@ package com.catalystapps.gaf.sound
 				return; //sound already in play - no need to launch it again
 			}
 			var soundData: GAFSoundChannel = new GAFSoundChannel(swfName, soundID);
-			soundData.soundChannel = sound.play(0, soundOptions["repeatCount"]);
+			soundData.soundChannel = sound.play(0, soundOptions["repeatCount"], new SoundTransform(this.volume));
 			soundData.addEventListener(Event.SOUND_COMPLETE, onSoundPlayEnded);
 			soundChannels ||= {};
 			soundChannels[swfName] ||= {};
@@ -100,10 +102,7 @@ package com.catalystapps.gaf.sound
 
 		public static function get instance(): GAFSoundManager
 		{
-			if (!_instance)
-			{
-				new GAFSoundManager(new Singleton());
-			}
+			_instance ||= new GAFSoundManager(new Singleton());
 			return _instance;
 		}
 	}
