@@ -739,7 +739,6 @@ package com.catalystapps.gaf.data.converters
 			var elementAtlasID: uint;
 			var rotation: Boolean;
 			var linkageName: String;
-			var matrix: Matrix;
 
 			for (i = 0; i < elementsLength; i++)
 			{
@@ -779,13 +778,9 @@ package com.catalystapps.gaf.data.converters
 
 				if (!elements.getElement(elementAtlasID.toString()))
 				{
-					matrix = new Matrix();
-					matrix.tx -= pivot.x / elementScaleX;
-					matrix.ty -= pivot.y / elementScaleY;
-					matrix.scale(1 / elementScaleX, 1 / elementScaleY);
 					element = new CTextureAtlasElement(elementAtlasID.toString(), atlasID.toString());
 					element.region = new Rectangle(int(topLeft.x), int(topLeft.y), elementWidth, elementHeight);
-					element.pivotMatrix = matrix;
+					element.pivotMatrix = new Matrix(1 / elementScaleX, 0, 0, 1 / elementScaleY, -pivot.x / elementScaleX, -pivot.y / elementScaleY);
 					element.scale9Grid = scale9Grid;
 					element.linkage = linkageName;
 					element.rotated = rotation;
