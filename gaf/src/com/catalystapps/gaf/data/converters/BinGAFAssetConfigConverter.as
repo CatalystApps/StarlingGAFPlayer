@@ -786,7 +786,14 @@ package com.catalystapps.gaf.data.converters
 					element.rotated = rotation;
 					elements.addElement(element);
 
-					sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
+					if (element.rotated)
+					{
+						sHelperRectangle.setTo(0, 0, elementHeight, elementWidth);
+					}
+					else
+					{
+						sHelperRectangle.setTo(0, 0, elementWidth, elementHeight);
+					}
 					sHelperMatrix.copyFrom(element.pivotMatrix);
 					var invertScale: Number = 1 / scale;
 					sHelperMatrix.scale(invertScale, invertScale);
