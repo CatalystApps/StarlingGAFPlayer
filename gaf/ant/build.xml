@@ -21,20 +21,20 @@
   </target>
 
   <target name="doc" depends="clean">
-  	<exec executable="${sdk.dir}/bin/asdoc.exe">
-  	    <arg value="-doc-sources"/>
-  		<arg value="${src.dir}"/>
-  		<arg value="-library-path"/>
-  		<arg value="${lib.dir}"/>
-  		<arg value="-output"/>
-  		<arg value="${doc.dir}"/>
-  		<arg value="-lenient"/>
-  	</exec>
+    <exec executable="${sdk.dir}/bin/asdoc.exe">
+      <arg value="-doc-sources"/>
+      <arg value="${src.dir}"/>
+      <arg value="-library-path"/>
+      <arg value="${lib.dir}"/>
+      <arg value="-output"/>
+      <arg value="${doc.dir}"/>
+      <arg value="-lenient"/>
+    </exec>
   </target>
 
   <target name="clean">
     <delete includeEmptyDirs="true">
-	   <fileset dir="${doc.dir}" includes="**/*"/>
-	</delete>
+      <fileset dir="${doc.dir}" includes="**/*"/>
+    </delete>
   </target>
 </project>
