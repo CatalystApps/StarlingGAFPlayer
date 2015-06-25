@@ -32,7 +32,12 @@ package com.catalystapps.gaf.sound
 			var sound: Sound = new Sound();
 			if (soundBytes)
 			{
-				if (soundData.format == CSound.MP3)
+				if (soundBytes.position > 0)
+				{
+					soundData.sound = this._sounds[soundData.linkageName];
+					return;
+				}
+				else
 				{
 					sound.loadCompressedDataFromByteArray(soundBytes, soundBytes.length);
 				}

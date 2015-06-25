@@ -457,6 +457,7 @@ package com.catalystapps.gaf.core
 				this._zip.close();
 				this._zip = null;
 			}
+			this.sounds = null;
 
 			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
@@ -546,7 +547,6 @@ package com.catalystapps.gaf.core
 			var configSource: Object = this.gafAssetConfigSources[configID];
 			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
 
-			;
 			if (configSource is ByteArray)
 			{
 				var converter: BinGAFAssetConfigConverter = new BinGAFAssetConfigConverter(gafAssetID, configSource as ByteArray);
@@ -561,7 +561,6 @@ package com.catalystapps.gaf.core
 			{
 				throw new Error();
 			}
-
 		}
 
 		private function createGAFTimelines(): void
@@ -752,10 +751,6 @@ package com.catalystapps.gaf.core
 					var assetID: String = this.getFolderURL(configID);
 					sounds[i].source = assetID + sounds[i].source;
 					this.soundData.addSound(sounds[i], converter.config.id, this.sounds[sounds[i].source]);
-					if (this.sounds[sounds[i].source])
-					{
-						delete this.sounds[sounds[i].source];
-					}
 				}
 			}
 
