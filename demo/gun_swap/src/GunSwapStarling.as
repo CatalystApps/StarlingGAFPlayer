@@ -22,8 +22,8 @@ package
 	{
 		private var _gafMovieClip: GAFMovieClip;
 		private var _gunSlot: GAFImage;
-		private var _redGun: IGAFTexture;
-		private var _blueGun: IGAFTexture;
+		private var _gun1: IGAFTexture;
+		private var _gun2: IGAFTexture;
 		private var _currentGun: IGAFTexture;
 
 		[Embed(source="../design/gun_swap.zip", mimeType="application/octet-stream")]
@@ -49,13 +49,13 @@ package
 
 			this._gunSlot = this._gafMovieClip.getChildByName("GUN") as GAFImage;
 
-			this._redGun  = gafBundle.getCustomRegion("gun_swap", "gun");
-			this._blueGun = gafBundle.getCustomRegion("gun_swap", "gun2");
+			this._gun1 = gafBundle.getCustomRegion("gun_swap", "gun1");
+			this._gun2 = gafBundle.getCustomRegion("gun_swap", "gun2");
 			//this is the texture, made from exported bitmap
 			//thus we need to adjust its' pivot matrix
-			this._blueGun.pivotMatrix.translate(-24.2, -41.55);
+			this._gun2.pivotMatrix.translate(-24.2, -41.55);
 
-			this.setGun(this._redGun);
+			this.setGun(this._gun1);
 
 			this.addChild(this._gafMovieClip);
 
@@ -67,13 +67,13 @@ package
 			var touch: Touch = event.getTouch(this, TouchPhase.BEGAN);
 			if (touch)
 			{
-				if (this._currentGun == this._blueGun)
+				if (this._currentGun == this._gun2)
 				{
-					this.setGun(this._redGun);
+					this.setGun(this._gun1);
 				}
 				else
 				{
-					this.setGun(this._blueGun);
+					this.setGun(this._gun2);
 				}
 			}
 		}
