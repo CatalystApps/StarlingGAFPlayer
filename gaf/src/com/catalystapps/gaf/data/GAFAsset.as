@@ -95,12 +95,8 @@ package com.catalystapps.gaf.data
 		 */
 		public function getGAFTimelineByLinkage(linkage: String): GAFTimeline
 		{
-			var i: uint;
-			var gafTimeline: GAFTimeline;
-			while (!gafTimeline && i < this._timelines.length)
-			{
-				gafTimeline = this._timelinesByLinkage[linkage];
-			}
+			var gafTimeline: GAFTimeline = this._timelinesByLinkage[linkage];
+
 			return gafTimeline;
 		}
 

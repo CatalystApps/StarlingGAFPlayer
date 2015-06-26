@@ -1,5 +1,6 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.sound.GAFSoundManager;
 
 	import starling.events.Touch;
@@ -44,7 +45,8 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			timeline = converter.gafTimeline;
+			var gafBundle: GAFBundle = converter.gafBundle;
+			timeline = gafBundle.getGAFTimeline("SoundsExample_Tank", "rootTimeline");
 			mc = new GAFMovieClip(timeline);
 			muteBtn = mc.mute_btn;
 
