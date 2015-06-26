@@ -5,14 +5,14 @@ package
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
 
-	[SWF(backgroundColor="#FFFFFF", frameRate="60", width="1024", height="768")]
+	[SWF(backgroundColor="#FFFFFF", frameRate="60", width="800", height="600")]
 	public class GunSwapMain extends Sprite
 	{
 		private var _starling: Starling;
 
 		public function GunSwapMain()
 		{
-			_starling = new Starling(GunSwapStarling, stage, new Rectangle(0, 0, 1024, 768));
+			_starling = new Starling(GunSwapStarling, stage, new Rectangle(0, 0, 800, 600));
 			_starling.showStats = true;
 			_starling.start();
 		}
