@@ -98,8 +98,8 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by <code>swfName</code> and <code>linkage<code/>.
-		 * @param swfName is the name of SWF file where original timeline was located (or the name of the *.gaf config file where it is located)
-		 * @param linkage is the linkage name of the timeline
+		 * @param swfName is the name of SWF file where original timeline was located (or the name of the *.gaf config file where it is located).
+		 * @param linkage is the linkage name of the timeline. If you need to get the Main Timeline from SWF use the "rootTimeline" linkage name.
 		 */
 		public function getGAFTimeline(swfName: String, linkage: String): GAFTimeline
 		{
