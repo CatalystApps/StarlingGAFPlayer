@@ -54,10 +54,10 @@ package com.catalystapps.gaf.data.config
 
 		public static function textureFromImg(img: BitmapData, csf: Number, format: String = Context3DTextureFormat.BGRA): Texture
 		{
-			return Texture.fromBitmapData(img, false, false, csf, format);
+			return Texture.fromBitmapData(img, true, false, csf, format);
 		}
 		
-		public static function textureFromATF(data: ByteArray, csf: Number, useMipMaps: Boolean = false): Texture
+		public static function textureFromATF(data: ByteArray, csf: Number, useMipMaps: Boolean = true): Texture
 		{
 			return Texture.fromAtfData(data, csf, useMipMaps);
 		}
