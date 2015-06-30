@@ -446,11 +446,13 @@ package com.catalystapps.gaf.data
 			this._gafAsset = gafBundle;
 		}
 
+		/** @private */
 		public function get gafSoundData(): GAFSoundData
 		{
 			return this._gafSoundData;
 		}
 
+		/** @private */
 		public function set gafSoundData(gafSoundData: GAFSoundData): void
 		{
 			this._gafSoundData = gafSoundData;
