@@ -47,12 +47,12 @@ package com.catalystapps.gaf.sound
 
 		public function get soundID(): uint
 		{
-			return _soundID;
+			return this._soundID;
 		}
 
 		public function get swfName(): String
 		{
-			return _swfName;
+			return this._swfName;
 		}
 	}
 }

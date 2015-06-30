@@ -8,7 +8,7 @@ package com.catalystapps.gaf.sound
 	import flash.media.Sound;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	/**
+	/** @private
 	 * @author Ivan Avdeenko
 	 * @private
 	 */
@@ -45,7 +45,7 @@ package com.catalystapps.gaf.sound
 			}
 			else
 			{
-				this._soundQueue ||= new <CSound>[];
+				this._soundQueue ||= new Vector.<CSound>();
 				this._soundQueue.push(soundData);
 			}
 
@@ -81,9 +81,9 @@ package com.catalystapps.gaf.sound
 
 		gaf_internal function dispose(): void
 		{
-			for (var soundUID: String in this._sounds)
+			for each (var sound: Sound in this._sounds)
 			{
-				Sound(this._sounds[soundUID]).close();
+				sound.close();
 			}
 		}
 

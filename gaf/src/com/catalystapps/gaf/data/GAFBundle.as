@@ -62,7 +62,7 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by timelineID
 		 * @param swfName is the name of swf file, used to create gaf file
-		 * @return GAFTimeline timeline on the stage of swf file
+		 * @return <code>GAFTimeline</code> on the stage of swf file
 		 */
 		[Deprecated(replacement="com.catalystapps.gaf.data.GAFBundle.getGAFTimeline()", since="5.0")]
 		public function getGAFTimelineByID(swfName: String): GAFTimeline
@@ -99,8 +99,8 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by <code>swfName</code> and <code>linkage<code/>.
-		 * @param swfName is the name of SWF file where original timeline was located (or the name of the *.gaf config file where it is located)
-		 * @param linkage is the linkage name of the timeline
+		 * @param swfName is the name of SWF file where original timeline was located (or the name of the *.gaf config file where it is located).
+		 * @param linkage is the linkage name of the timeline. If you need to get the Main Timeline from SWF use the "rootTimeline" linkage name.
 		 * @return <code>GAFTimeline</code> from bundle
 		 */
 		public function getGAFTimeline(swfName: String, linkage: String): GAFTimeline
@@ -144,6 +144,9 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
+		/**
+		 * @private
+		 */
 		gaf_internal function getGAFTimelineBySWFNameAndID(swfName: String, id: String): GAFTimeline
 		{
 			var gafTimeline: GAFTimeline;
@@ -156,6 +159,9 @@ package com.catalystapps.gaf.data
 			return gafTimeline;
 		}
 
+		/**
+		 * @private
+		 */
 		gaf_internal function addGAFAsset(gafAsset: GAFAsset): void
 		{
 			use namespace gaf_internal;

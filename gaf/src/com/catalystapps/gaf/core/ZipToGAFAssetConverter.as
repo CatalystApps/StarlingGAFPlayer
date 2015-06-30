@@ -879,6 +879,7 @@ package com.catalystapps.gaf.core
 		/**
 		 * Returns the first <code>GAFTimeline</code> in a <code>GAFBundle</code>.
 		 */
+		[Deprecated(replacement="com.catalystapps.gaf.data.GAFBundle.getGAFTimeline()", since="5.0")]
 		public function get gafTimeline(): GAFTimeline
 		{
 			if (_gafBundle && _gafBundle.timelines.length > 0)

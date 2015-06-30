@@ -34,7 +34,7 @@ package com.catalystapps.gaf.sound
 
 		/**
 		 * The volume of the GAF sounds, ranging from 0 (silent) to 1 (full volume).
-		 * @param volume - the volume of the sound
+		 * @param volume the volume of the sound
 		 */
 		public function setVolume(volume: Number): void
 		{

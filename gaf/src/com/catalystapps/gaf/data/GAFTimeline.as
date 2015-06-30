@@ -48,7 +48,6 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Creates an GAFTimeline object
-		 *
 		 * @param timelineConfig - GAF timeline config
 		 */
 		public function GAFTimeline(timelineConfig: GAFTimelineConfig)
@@ -65,7 +64,7 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns GAF Texture by name of an instance inside a timeline.
 		 * @param animationObjectName name of an instance inside a timeline
-		 * @return IGAFTexture
+		 * @return GAF Texture
 		 */
 		public function getTextureByName(animationObjectName: String): IGAFTexture
 		{
@@ -449,12 +448,12 @@ package com.catalystapps.gaf.data
 
 		public function get gafSoundData(): GAFSoundData
 		{
-			return _gafSoundData;
+			return this._gafSoundData;
 		}
 
 		public function set gafSoundData(gafSoundData: GAFSoundData): void
 		{
-			_gafSoundData = gafSoundData;
+			this._gafSoundData = gafSoundData;
 		}
 
 		//--------------------------------------------------------------------------

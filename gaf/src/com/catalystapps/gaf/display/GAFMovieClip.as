@@ -261,7 +261,7 @@ package com.catalystapps.gaf.display
 		/**
 		 * Returns id of the sequence where animation is right now. If there is no sequences - returns <code>null</code>.
 		 *
-		 * @return String
+		 * @return id of the sequence
 		 */
 		public function get currentSequence(): String
 		{
@@ -278,7 +278,7 @@ package com.catalystapps.gaf.display
 		 *
 		 * @param id Sequence ID
 		 * @param play Play or not immediately. <code>true</code> - starts playing from sequence start frame. <code>false</code> - go to sequence start frame and stop
-		 * @return
+		 * @return sequence to play
 		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
