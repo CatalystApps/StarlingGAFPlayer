@@ -37,9 +37,9 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
-		private var _texturesDictionary: Object;
-		private var _imagesDictionary: Object;
-		private var _atfDictionary: Object;
+		private var _texturesDictionary: Object = {};
+		private var _imagesDictionary: Object = {};
+		private var _atfDictionary: Object = {};
 		
 		//--------------------------------------------------------------------------
 		//
@@ -50,9 +50,6 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function GAFGFXData()
 		{
-			this._texturesDictionary = {};
-			this._imagesDictionary = {};
-			this._atfDictionary = {};
 		}
 		
 		//--------------------------------------------------------------------------

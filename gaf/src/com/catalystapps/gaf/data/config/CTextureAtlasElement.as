@@ -21,10 +21,12 @@ package com.catalystapps.gaf.data.config
 		//--------------------------------------------------------------------------
 
 		private var _id: String;
+		private var _linkage: String;
 		private var _atlasID: String;
 		private var _region: Rectangle;
 		private var _pivotMatrix: Matrix;
 		private var _scale9Grid: Rectangle;
+		private var _rotated: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -32,12 +34,10 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
-		public function CTextureAtlasElement(id: String, atlasID: String, region: Rectangle, pivotMatrix: Matrix)
+		public function CTextureAtlasElement(id: String, atlasID: String)
 		{
 			this._id = id;
 			this._atlasID = atlasID;
-			this._region = region;
-			this._pivotMatrix = pivotMatrix;
 		}
 
 		//--------------------------------------------------------------------------
@@ -72,37 +72,62 @@ package com.catalystapps.gaf.data.config
 
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function get region(): Rectangle
 		{
-			return _region;
+			return this._region;
+		}
+
+		public function set region(region: Rectangle): void
+		{
+			_region = region;
 		}
 
 		public function get pivotMatrix(): Matrix
 		{
-			return _pivotMatrix;
+			return this._pivotMatrix;
 		}
 
 		public function set pivotMatrix(pivotMatrix: Matrix): void
 		{
-			_pivotMatrix = pivotMatrix;
+			this._pivotMatrix = pivotMatrix;
 		}
 
 		public function get atlasID(): String
 		{
-			return _atlasID;
+			return this._atlasID;
 		}
 
 		public function get scale9Grid(): Rectangle
 		{
-			return _scale9Grid;
+			return this._scale9Grid;
 		}
 
 		public function set scale9Grid(value: Rectangle): void
 		{
-			_scale9Grid = value;
+			this._scale9Grid = value;
+		}
+
+		public function get linkage(): String
+		{
+			return this._linkage;
+		}
+
+		public function set linkage(value: String): void
+		{
+			this._linkage = value;
+		}
+
+		public function get rotated():Boolean
+		{
+			return this._rotated;
+		}
+
+		public function set rotated(value:Boolean):void
+		{
+			this._rotated = value;
 		}
 	}
 }

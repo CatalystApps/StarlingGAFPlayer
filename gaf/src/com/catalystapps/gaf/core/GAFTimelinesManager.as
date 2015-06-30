@@ -56,6 +56,7 @@ package com.catalystapps.gaf.core
 		 * Returns instance of <code>GAFMovieClip</code>. In case when <code>GAFTimeline</code> with specified ID is absent - returns <code>null</code>
 		 *
 		 * @param id Timeline ID
+		 * @return GAFMovieClip
 		 */
 		public static function getGAFMovieClip(id: String): GAFMovieClip
 		{
@@ -73,6 +74,7 @@ package com.catalystapps.gaf.core
 		 * Check is there timeline in collection
 		 *
 		 * @param id Asset ID
+		 * @return A Boolean value of true if there is timeline in collection; otherwise, false.
 		 */
 		public static function hasGAFAsset(id: String): Boolean
 		{
@@ -88,6 +90,7 @@ package com.catalystapps.gaf.core
 
 		/**
 		 * Total number of timelines in collection
+		 * @return number of timelines
 		 */
 		public static function get timelinesTotal(): uint
 		{
