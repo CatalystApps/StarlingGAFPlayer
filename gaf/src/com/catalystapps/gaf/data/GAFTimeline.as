@@ -48,7 +48,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Creates an GAFTimeline object
-		 * @param timelineConfig - GAF timeline config
+		 * @param timelineConfig GAF timeline config
 		 */
 		public function GAFTimeline(timelineConfig: GAFTimelineConfig)
 		{
@@ -96,10 +96,10 @@ package com.catalystapps.gaf.data
 		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
 		 * before asset conversion)
 		 *
-		 * @param content - content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
-		 * @param scale - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
-		 * @param csf - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
-		 * @param format - defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
+		 * @param content content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
+		 * @param scale in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
+		 * @param csf in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
+		 * @param format defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
 		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "brga"): void
 		{
@@ -165,9 +165,9 @@ package com.catalystapps.gaf.data
 		/**
 		 * Unload all all graphical data connected with this asset from device GPU memory. Used in case of manual control of video memory usage
 		 *
-		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
-		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
-		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param content content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
+		 * @param scale in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param csf in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 */
 		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
 		{

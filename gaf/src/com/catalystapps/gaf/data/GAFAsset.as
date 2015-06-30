@@ -92,7 +92,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Returns <code>GAFTimeline</code> from gaf asset by linkage
-		 * @param linkage - linkage in a *.fla file library
+		 * @param linkage linkage in a *.fla file library
 		 * @return <code>GAFTimeline</code> from gaf asset
 		 */
 		public function getGAFTimelineByLinkage(linkage: String): GAFTimeline
@@ -110,7 +110,7 @@ package com.catalystapps.gaf.data
 
 		/** @private
 		 * Returns <code>GAFTimeline</code> from gaf asset by ID
-		 * @param id - internal timeline id
+		 * @param id internal timeline id
 		 * @return <code>GAFTimeline</code> from gaf asset
 		 */
 		gaf_internal function getGAFTimelineByID(id: String): GAFTimeline
@@ -120,7 +120,7 @@ package com.catalystapps.gaf.data
 
 		/** @private
 		 * Returns <code>GAFTimeline</code> from gaf asset bundle by linkage
-		 * @param linkage - linkage in a *.fla file library
+		 * @param linkage linkage in a *.fla file library
 		 * @return <code>GAFTimeline</code> from gaf asset
 		 */
 		gaf_internal function getGAFTimelineByLinkage(linkage: String): GAFTimeline
