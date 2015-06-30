@@ -3,6 +3,7 @@ package com.catalystapps.gaf.data.config
 	import flash.media.Sound;
 	/**
 	 * @author Ivan Avdeenko
+	 * @private
 	 */
 	public class CSound
 	{

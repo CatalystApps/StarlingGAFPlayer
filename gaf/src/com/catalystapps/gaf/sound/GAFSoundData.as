@@ -10,6 +10,7 @@ package com.catalystapps.gaf.sound
 	import flash.utils.ByteArray;
 	/**
 	 * @author Ivan Avdeenko
+	 * @private
 	 */
 	public class GAFSoundData
 	{
@@ -80,7 +81,7 @@ package com.catalystapps.gaf.sound
 
 		gaf_internal function dispose(): void
 		{
-			for (var soundUID: uint in this._sounds)
+			for (var soundUID: String in this._sounds)
 			{
 				Sound(this._sounds[soundUID]).close();
 			}

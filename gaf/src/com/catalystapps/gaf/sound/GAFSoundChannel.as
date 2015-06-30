@@ -6,6 +6,7 @@ package com.catalystapps.gaf.sound
 
 	/**
 	 * @author Ivan Avdeenko
+	 * @private
 	 */
 	public class GAFSoundChannel extends EventDispatcher
 	{

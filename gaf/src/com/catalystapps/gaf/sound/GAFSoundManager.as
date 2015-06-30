@@ -6,8 +6,13 @@ package com.catalystapps.gaf.sound
 	import flash.media.Sound;
 	import flash.media.SoundTransform;
 
-	/** @private
+	/**
 	 * @author Ivan Avdeenko
+	 */
+
+	/**
+	 * The <code>GAFSoundManager</code> provides an interface to control GAF sound playback.
+	 * All adjustments made through <code>GAFSoundManager</code> affects all GAF sounds.
 	 */
 	public class GAFSoundManager
 	{
@@ -15,6 +20,10 @@ package com.catalystapps.gaf.sound
 		private var soundChannels: Object;
 		private static var _getInstance: GAFSoundManager;
 
+		/**
+		 * @private
+		 * @param singleton
+		 */
 		public function GAFSoundManager(singleton: Singleton)
 		{
 			if (!singleton)
@@ -23,6 +32,10 @@ package com.catalystapps.gaf.sound
 			}
 		}
 
+		/**
+		 * The volume of the GAF sounds, ranging from 0 (silent) to 1 (full volume).
+		 * @param volume - the volume of the sound
+		 */
 		public function setVolume(volume: Number): void
 		{
 			this.volume = volume;
@@ -41,6 +54,9 @@ package com.catalystapps.gaf.sound
 			}
 		}
 
+		/**
+		 * Stops all GAF sounds currently playing
+		 */
 		public function stopAll(): void
 		{
 			var channels: Vector.<GAFSoundChannel>;
@@ -58,12 +74,19 @@ package com.catalystapps.gaf.sound
 			soundChannels = null;
 		}
 
+		/**
+		 * @private
+		 * @param sound
+		 * @param soundID
+		 * @param soundOptions
+		 * @param swfName
+		 */
 		gaf_internal function play(sound: Sound, soundID: uint, soundOptions: Object, swfName: String): void
 		{
 			if (soundOptions["continue"]
-			&&  soundChannels
-			&&  soundChannels[swfName]
-			&&  soundChannels[swfName][soundID])
+					&& soundChannels
+					&& soundChannels[swfName]
+					&& soundChannels[swfName][soundID])
 			{
 				return; //sound already in play - no need to launch it again
 			}
@@ -76,11 +99,16 @@ package com.catalystapps.gaf.sound
 			Vector.<GAFSoundChannel>(soundChannels[swfName][soundID]).push(soundData);
 		}
 
+		/**
+		 * @private
+		 * @param soundID
+		 * @param swfName
+		 */
 		gaf_internal function stop(soundID: uint, swfName: String): void
 		{
 			if (soundChannels
-			&&  soundChannels[swfName]
-			&&  soundChannels[swfName][soundID])
+					&& soundChannels[swfName]
+					&& soundChannels[swfName][soundID])
 			{
 				var channels: Vector.<GAFSoundChannel> = soundChannels[swfName][soundID];
 				for (var i: int = 0; i < channels.length; i++)
@@ -92,6 +120,10 @@ package com.catalystapps.gaf.sound
 			}
 		}
 
+		/**
+		 * @private
+		 * @param event
+		 */
 		private function onSoundPlayEnded(event: Event): void
 		{
 			var soundChannel: GAFSoundChannel = event.target as GAFSoundChannel;
@@ -101,6 +133,10 @@ package com.catalystapps.gaf.sound
 			delete soundChannels[soundChannel.swfName][soundChannel.soundID];
 		}
 
+		/**
+		 * The instance of the <code>GAFSoundManager</code> (singleton)
+		 * @return The instance of the <code>GAFSoundManager</code>
+		 */
 		public static function getInstance(): GAFSoundManager
 		{
 			_getInstance ||= new GAFSoundManager(new Singleton());
@@ -108,5 +144,7 @@ package com.catalystapps.gaf.sound
 		}
 	}
 }
-
-internal class Singleton {}
+/** @private */
+internal class Singleton
+{
+}

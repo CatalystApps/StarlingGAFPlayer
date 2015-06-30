@@ -15,6 +15,7 @@ package com.catalystapps.gaf.data
 
 	import starling.textures.Texture;
 
+	/** @private */
 	public class GAFAsset
 	{
 		//--------------------------------------------------------------------------

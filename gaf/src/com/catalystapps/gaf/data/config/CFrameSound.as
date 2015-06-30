@@ -2,6 +2,7 @@ package com.catalystapps.gaf.data.config
 {
 	/**
 	 * @author Ivan Avdeenko
+	 * @private
 	 */
 	public class CFrameSound
 	{

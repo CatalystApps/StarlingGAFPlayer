@@ -2,6 +2,7 @@ package com.catalystapps.gaf.data.converters
 {
 	/**
 	 * @author Ivan Avdeenko
+	 * @private
 	 */
 	public class ErrorConstants
 	{

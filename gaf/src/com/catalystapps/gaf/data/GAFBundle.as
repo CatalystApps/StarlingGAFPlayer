@@ -80,6 +80,7 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns <code>GAFTimeline</code> from bundle by linkage
 		 * @param linkage linkage in a *.fla file library
+		 * @return <code>GAFTimeline</code> from bundle
 		 */
 		[Deprecated(replacement="com.catalystapps.gaf.data.GAFBundle.getGAFTimeline()", since="5.0")]
 		public function getGAFTimelineByLinkage(linkage: String): GAFTimeline
@@ -100,6 +101,7 @@ package com.catalystapps.gaf.data
 		 * Returns <code>GAFTimeline</code> from bundle by <code>swfName</code> and <code>linkage<code/>.
 		 * @param swfName is the name of SWF file where original timeline was located (or the name of the *.gaf config file where it is located)
 		 * @param linkage is the linkage name of the timeline
+		 * @return <code>GAFTimeline</code> from bundle
 		 */
 		public function getGAFTimeline(swfName: String, linkage: String): GAFTimeline
 		{
@@ -113,6 +115,17 @@ package com.catalystapps.gaf.data
 			return gafTimeline;
 		}
 
+		/**
+		 * Returns <code>IGAFTexture</code> (custom image) from bundle by <code>swfName</code> and <code>linkage<code/>.
+		 * Then it can be used to replace animation parts or create new animation parts.
+		 * @param swfName is the name of SWF file where original Bitmap/Sprite was located (or the name of the *.gaf config file where it is located)
+		 * @param linkage is the linkage name of the Bitmap/Sprite
+		 * @param scale Texture atlas Scale that will be used for <code>IGAFTexture</code> creation. Possible values are values from converted animation config.
+		 * @param csf Texture atlas content scale factor (CSF) that will be used for <code>IGAFTexture</code> creation. Possible values are values from converted animation config.
+		 * @return <code>IGAFTexture</code> (custom image) from bundle.
+		 * @see com.catalystapps.gaf.display.GAFImage
+		 * @see com.catalystapps.gaf.display.GAFImage#changeTexture()
+		 */
 		public function getCustomRegion(swfName: String, linkage: String, scale: Number = NaN, csf: Number = NaN): IGAFTexture
 		{
 			var gafTexture: IGAFTexture;
@@ -131,10 +144,6 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
-		/**
-		 * Returns <code>GAFTimeline</code> from bundle by linkage
-		 * @param linkage linkage in a *.fla file library
-		 */
 		gaf_internal function getGAFTimelineBySWFNameAndID(swfName: String, id: String): GAFTimeline
 		{
 			var gafTimeline: GAFTimeline;
@@ -150,6 +159,7 @@ package com.catalystapps.gaf.data
 		gaf_internal function addGAFAsset(gafAsset: GAFAsset): void
 		{
 			use namespace gaf_internal;
+
 			if (!this._gafAssetsDictionary[gafAsset.id])
 			{
 				this._gafAssetsDictionary[gafAsset.id] = gafAsset;
@@ -182,6 +192,7 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns all <code>GAFTimeline's</code> from bundle as <code>Vector</code>
 		 */
+		[Deprecated(replacement="com.catalystapps.gaf.data.GAFBundle.getGAFTimeline()", since="5.0")]
 		public function get timelines(): Vector.<GAFTimeline>
 		{
 			var gafAsset: GAFAsset;
@@ -199,11 +210,19 @@ package com.catalystapps.gaf.data
 			return timelines;
 		}
 
+		/**
+		 * @private
+		 */
 		public function get soundData(): GAFSoundData
 		{
 			return this._soundData;
 		}
 
+
+		/**
+		 * @private
+		 * @param soundData
+		 */
 		public function set soundData(soundData: GAFSoundData): void
 		{
 			_soundData = soundData;

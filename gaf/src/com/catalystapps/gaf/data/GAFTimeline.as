@@ -102,7 +102,7 @@ package com.catalystapps.gaf.data
 		 * @param csf - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
 		 * @param format - defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = GAFGFXData.BGRA): void
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "brga"): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
@@ -112,12 +112,12 @@ package com.catalystapps.gaf.data
 			var textures: Object;
 			var csfConfig: CTextureAtlasCSF;
 
-			switch(content)
+			switch (content)
 			{
 				case CONTENT_ALL:
-					for each(var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
+					for each (var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
 					{
-						for each(csfConfig in scaleConfig.allContentScaleFactors)
+						for each (csfConfig in scaleConfig.allContentScaleFactors)
 						{
 							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf, format);
 
@@ -179,16 +179,18 @@ package com.catalystapps.gaf.data
 
 			var csfConfig: CTextureAtlasCSF;
 
-			switch(content)
+			switch (content)
 			{
 				case CONTENT_ALL:
-					for each(var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
+					for each (var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
 					{
-						for each(csfConfig in scaleConfig.allContentScaleFactors)
+						for each (csfConfig in scaleConfig.allContentScaleFactors)
 						{
 							this._gafgfxData.disposeTextures(scaleConfig.scale, csfConfig.csf);
 							if (csfConfig.atlas)
+							{
 								csfConfig.atlas.dispose();
+							}
 							csfConfig.atlas = null;
 						}
 					}
@@ -205,14 +207,14 @@ package com.catalystapps.gaf.data
 
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
-					if(csfConfig)
+					if (csfConfig)
 					{
 						this._gafgfxData.disposeTextures(scale, csf);
 						if (csfConfig.atlas)
 						{
-						csfConfig.atlas.dispose();
-						csfConfig.atlas = null;
-					}
+							csfConfig.atlas.dispose();
+							csfConfig.atlas = null;
+						}
 					}
 					return;
 			}
@@ -225,6 +227,7 @@ package com.catalystapps.gaf.data
 			if (frameSoundConfig)
 			{
 				use namespace gaf_internal;
+
 				if (frameSoundConfig.action == CFrameSound.ACTION_STOP)
 				{
 					GAFSoundManager.getInstance().stop(frameSoundConfig.soundID, this._config.assetID);
@@ -258,11 +261,11 @@ package com.catalystapps.gaf.data
 		{
 			var scaleConfig: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
 
-			if(scaleConfig)
+			if (scaleConfig)
 			{
 				var csfConfig: CTextureAtlasCSF = scaleConfig.getTextureAtlasForCSF(csf);
 
-				if(csfConfig)
+				if (csfConfig)
 				{
 					return csfConfig;
 				}
@@ -362,7 +365,7 @@ package com.catalystapps.gaf.data
 
 				var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
 
-				if(taCSF)
+				if (taCSF)
 				{
 					this._config.textureAtlas.contentScaleFactor = taCSF;
 				}
@@ -400,7 +403,7 @@ package com.catalystapps.gaf.data
 
 			var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
 
-			if(taCSF)
+			if (taCSF)
 			{
 				this._config.textureAtlas.contentScaleFactor = taCSF;
 			}
