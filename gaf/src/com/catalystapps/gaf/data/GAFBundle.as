@@ -98,7 +98,7 @@ package com.catalystapps.gaf.data
 		}
 
 		/**
-		 * Returns <code>GAFTimeline</code> from bundle by <code>swfName</code> and <code>linkage<code/>.
+		 * Returns <code>GAFTimeline</code> from bundle by <code>swfName</code> and <code>linkage</code>.
 		 * @param swfName is the name of SWF file where original timeline was located (or the name of the *.gaf config file where it is located).
 		 * @param linkage is the linkage name of the timeline. If you need to get the Main Timeline from SWF use the "rootTimeline" linkage name.
 		 * @return <code>GAFTimeline</code> from bundle
@@ -116,7 +116,7 @@ package com.catalystapps.gaf.data
 		}
 
 		/**
-		 * Returns <code>IGAFTexture</code> (custom image) from bundle by <code>swfName</code> and <code>linkage<code/>.
+		 * Returns <code>IGAFTexture</code> (custom image) from bundle by <code>swfName</code> and <code>linkage</code>.
 		 * Then it can be used to replace animation parts or create new animation parts.
 		 * @param swfName is the name of SWF file where original Bitmap/Sprite was located (or the name of the *.gaf config file where it is located)
 		 * @param linkage is the linkage name of the Bitmap/Sprite
