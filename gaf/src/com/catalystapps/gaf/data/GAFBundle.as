@@ -224,14 +224,19 @@ package com.catalystapps.gaf.data
 			return this._soundData;
 		}
 
-
 		/**
 		 * @private
 		 * @param soundData
 		 */
 		public function set soundData(soundData: GAFSoundData): void
 		{
-			_soundData = soundData;
+			this._soundData = soundData;
+		}
+
+		/** @private */
+		public function get gafAssets(): Vector.<GAFAsset>
+		{
+			return this._gafAssets;
 		}
 	}
 }

@@ -579,6 +579,7 @@ package com.catalystapps.gaf.core
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 			var gafAssetConfigID: String;
 			var gafAssetConfig: GAFAssetConfig;
+			var gafAsset: GAFAsset;
 			var i: uint;
 
 			for (i = 0; i < this.gafAssetsIDs.length; i++)
@@ -587,7 +588,7 @@ package com.catalystapps.gaf.core
 				gafAssetConfig = this.gafAssetConfigs[gafAssetConfigID];
 				gafTimelineConfigs = gafAssetConfig.timelines;
 
-				var gafAsset: GAFAsset = new GAFAsset(gafAssetConfig);
+				gafAsset = new GAFAsset(gafAssetConfig);
 				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
 					gafAsset.addGAFTimeline(this.createTimeline(config));
@@ -596,7 +597,7 @@ package com.catalystapps.gaf.core
 				this._gafBundle.gaf_internal::addGAFAsset(gafAsset);
 			}
 
-			if (!this._gafBundle.timelines.length)
+			if (!gafAsset || !gafAsset.timelines.length)
 			{
 				this.zipProcessError(ErrorConstants.TIMELINES_NOT_FOUND);
 			}
@@ -873,7 +874,7 @@ package com.catalystapps.gaf.core
 		 */
 		public function get gafBundle(): GAFBundle
 		{
-			return _gafBundle;
+			return this._gafBundle;
 		}
 
 		/**
@@ -882,11 +883,16 @@ package com.catalystapps.gaf.core
 		[Deprecated(replacement="com.catalystapps.gaf.data.GAFBundle.getGAFTimeline()", since="5.0")]
 		public function get gafTimeline(): GAFTimeline
 		{
-			if (_gafBundle && _gafBundle.timelines.length > 0)
+			if (this._gafBundle && this._gafBundle.gafAssets.length > 0)
 			{
-				return _gafBundle.timelines[0];
+				for each (var asset: GAFAsset in this._gafBundle.gafAssets)
+				{
+					if (asset.timelines.length > 0)
+					{
+						return asset.timelines[0];
+					}
+				}
 			}
-
 			return null;
 		}
 
@@ -895,7 +901,7 @@ package com.catalystapps.gaf.core
 		 */
 		public function get zip(): FZip
 		{
-			return _zip;
+			return this._zip;
 		}
 
 		/**
@@ -903,7 +909,7 @@ package com.catalystapps.gaf.core
 		 */
 		public function get zipLoader(): FZipLibrary
 		{
-			return _zipLoader;
+			return this._zipLoader;
 		}
 
 		/**
@@ -911,17 +917,17 @@ package com.catalystapps.gaf.core
 		 */
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function set id(value: String): void
 		{
-			_id = value;
+			this._id = value;
 		}
 
 		public function get parseConfigAsync(): Boolean
 		{
-			return _parseConfigAsync;
+			return this._parseConfigAsync;
 		}
 
 		/**
@@ -941,7 +947,7 @@ package com.catalystapps.gaf.core
 		 */
 		public function set ignoreSounds(ignoreSounds: Boolean): void
 		{
-			_ignoreSounds = ignoreSounds;
+			this._ignoreSounds = ignoreSounds;
 		}
 	}
 }
