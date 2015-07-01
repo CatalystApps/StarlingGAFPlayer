@@ -1,7 +1,8 @@
 package com.catalystapps.gaf.core
 {
 	/**
-	 * @author Programmer
+	 * @author Ivan Avdeenko
+	 * @private
 	 */
 	public namespace gaf_internal = "http://gafmedia.com/gaf-library";
 }

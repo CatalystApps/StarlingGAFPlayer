@@ -79,37 +79,37 @@ package com.catalystapps.gaf.data.config
 
 		public function get csf(): Number
 		{
-			return _csf;
+			return this._csf;
 		}
 
 		public function get sources(): Vector.<CTextureAtlasSource>
 		{
-			return _sources;
+			return this._sources;
 		}
 
 		public function set sources(sources: Vector.<CTextureAtlasSource>): void
 		{
-			_sources = sources;
+			this._sources = sources;
 		}
 
 		public function get atlas(): CTextureAtlas
 		{
-			return _atlas;
+			return this._atlas;
 		}
 
 		public function set atlas(atlas: CTextureAtlas): void
 		{
-			_atlas = atlas;
+			this._atlas = atlas;
 		}
 
 		public function get elements(): CTextureAtlasElements
 		{
-			return _elements;
+			return this._elements;
 		}
 
 		public function set elements(elements: CTextureAtlasElements): void
 		{
-			_elements = elements;
+			this._elements = elements;
 		}
 	}
 }

@@ -7,11 +7,10 @@ package com.catalystapps.gaf.display
 	import flash.geom.Point;
 
 	import starling.core.Starling;
-
 	import starling.display.Image;
 
 	/**
-	 * @private
+	 * GAFImage represents static GAF display object that is part of the <code>GAFMovieClip</code>.
 	 */
 	public class GAFImage extends Image implements IGAFImage, IMaxSize, IGAFDebug
 	{
@@ -35,6 +34,7 @@ package com.catalystapps.gaf.display
 
 		private var _maxSize: Point;
 
+		/** @private */
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		//--------------------------------------------------------------------------
@@ -44,9 +44,8 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		/**
-		 * GAFImage represents display object that is part of the <code>GAFMovieClip</code>
-		 * @param assetTexture The texture displayed by this image.
-		 * @see com.catalystapps.gaf.display.GAFScale9Image
+		 * Creates a new <code>GAFImage</code> instance.
+		 * @param assetTexture <code>IGAFTexture</code> from which it will be created.
 		 */
 		public function GAFImage(assetTexture: IGAFTexture)
 		{
@@ -61,10 +60,12 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/** @private */
 		public function invalidateSize(): void
 		{
 		}
 
+		/** @private */
 		public function set debugColors(value: Vector.<uint>): void
 		{
 			var alpha0: Number;
@@ -115,6 +116,10 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		/**
+		 * Change the texture of the <code>GAFImage</code> to a new one.
+		 * @param newTexture the new <code>IGAFTexture</code> which will be used to replace existing one.
+		 */
 		public function changeTexture(newTexture: IGAFTexture): void
 		{
 			this.texture = newTexture.texture;
@@ -176,9 +181,11 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/** @private */
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
+
 			if (isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
@@ -186,9 +193,11 @@ package com.catalystapps.gaf.display
 			this.alpha = 1;
 		}
 
+		/** @private */
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
+
 			if (isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
@@ -196,9 +205,11 @@ package com.catalystapps.gaf.display
 			this.alpha = .05;
 		}
 
+		/** @private */
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;
+
 			if (!isNaN(this.__debugOriginalAlpha))
 			{
 				this.alpha = this.__debugOriginalAlpha;
@@ -213,7 +224,7 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		/**
-		 * Disposes all resources of the display object
+		 * Disposes all resources of the display object.
 		 */
 		override public function dispose(): void
 		{
@@ -247,16 +258,23 @@ package com.catalystapps.gaf.display
 			this._maxSize = value;
 		}
 
+
+		/**
+		 * Returns current <code>IGAFTexture</code>.
+		 * @return current <code>IGAFTexture</code>
+		 */
 		public function get assetTexture(): IGAFTexture
 		{
 			return this._assetTexture;
 		}
 
+		/** @private */
 		public function get zIndex(): uint
 		{
 			return this._zIndex;
 		}
 
+		/** @private */
 		public function set zIndex(value: uint): void
 		{
 			this._zIndex = value;

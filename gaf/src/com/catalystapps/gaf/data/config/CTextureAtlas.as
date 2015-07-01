@@ -1,15 +1,15 @@
 package com.catalystapps.gaf.data.config
 {
-	import flash.geom.Rectangle;
-	import flash.utils.ByteArray;
-	import flash.display3D.Context3DTextureFormat;
 	import com.catalystapps.gaf.core.GAFTextureMappingManager;
+	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.display.GAFScale9Texture;
 	import com.catalystapps.gaf.display.GAFTexture;
 	import com.catalystapps.gaf.display.IGAFTexture;
 
 	import flash.display.BitmapData;
+	import flash.display3D.Context3DTextureFormat;
 	import flash.geom.Matrix;
+	import flash.utils.ByteArray;
 
 	import starling.textures.Texture;
 	import starling.textures.TextureAtlas;
@@ -63,7 +63,7 @@ package com.catalystapps.gaf.data.config
 		}
 
 		public static function createFromTextures(texturesDictionary: Object,
-		                                          textureAtlasConfig: CTextureAtlasCSF): CTextureAtlas
+												  textureAtlasConfig: CTextureAtlasCSF): CTextureAtlas
 		{
 			var atlasesDictionary: Object = {};
 
@@ -78,7 +78,7 @@ package com.catalystapps.gaf.data.config
 
 				atlas = atlasesDictionary[element.atlasID];
 
-				atlas.addRegion(element.id, element.region);
+				atlas.addRegion(element.id, element.region, null, element.rotated);
 			}
 
 			var result: CTextureAtlas = new CTextureAtlas(atlasesDictionary, textureAtlasConfig);
@@ -100,7 +100,7 @@ package com.catalystapps.gaf.data.config
 
 			if (textureAtlasElement)
 			{
-				var texture: Texture = this.getTextureByIDAndAtlasID(id, textureAtlasElement.atlasID);
+				var texture: Texture = this.gaf_internal::getTextureByIDAndAtlasID(id, textureAtlasElement.atlasID);
 
 				var pivotMatrix: Matrix;
 
@@ -141,7 +141,7 @@ package com.catalystapps.gaf.data.config
 		//
 		//--------------------------------------------------------------------------
 
-		private function getTextureByIDAndAtlasID(id: String, atlasID: String): Texture
+		gaf_internal function getTextureByIDAndAtlasID(id: String, atlasID: String): Texture
 		{
 			var textureAtlas: TextureAtlas = this._textureAtlasesDictionary[atlasID];
 

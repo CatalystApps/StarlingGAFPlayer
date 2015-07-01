@@ -1,7 +1,9 @@
 package com.catalystapps.gaf.display
 {
+	import com.catalystapps.gaf.data.GAFAsset;
+	import com.catalystapps.gaf.data.config.CSound;
+	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.core.gaf_internal;
-	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
@@ -134,7 +136,7 @@ package com.catalystapps.gaf.display
 			this._addToJuggler = addToJuggler;
 			this._mappedAssetID = mappedAssetID;
 
-			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafBundle);
+			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafAsset);
 
 			if (this._config.bounds)
 			{
@@ -259,7 +261,7 @@ package com.catalystapps.gaf.display
 		/**
 		 * Returns id of the sequence where animation is right now. If there is no sequences - returns <code>null</code>.
 		 *
-		 * @return String
+		 * @return id of the sequence
 		 */
 		public function get currentSequence(): String
 		{
@@ -276,7 +278,7 @@ package com.catalystapps.gaf.display
 		 *
 		 * @param id Sequence ID
 		 * @param play Play or not immediately. <code>true</code> - starts playing from sequence start frame. <code>false</code> - go to sequence start frame and stop
-		 * @return
+		 * @return sequence to play
 		 */
 		public function setSequence(id: String, play: Boolean = true): CAnimationSequence
 		{
@@ -369,7 +371,7 @@ package com.catalystapps.gaf.display
 
 			this.play();
 		}
-		
+
 		/**
 		 * Set the <code>loop</code> value to the GAFMovieClip instance and for the all children.
 		 */
@@ -734,6 +736,11 @@ package com.catalystapps.gaf.display
 								}
 								this.dispatchEventWith(type, bubbles, data);
 							}
+							if (type == CSound.GAF_PLAY_SOUND
+							&& GAF.autoPlaySounds)
+							{
+								this._gafTimeline.startSound(this.currentFrame);
+							}
 							break;
 					}
 				}
@@ -1037,7 +1044,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function initialize(textureAtlas: CTextureAtlas, gafBundle: GAFBundle): void
+		private function initialize(textureAtlas: CTextureAtlas, gafAsset: GAFAsset): void
 		{
 			this._displayObjectsDictionary = {};
 			this._pixelMasksDictionary = {};
@@ -1074,7 +1081,7 @@ package com.catalystapps.gaf.display
 						displayObject = new GAFTextField(tfObj);
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
-						displayObject = new GAFMovieClip(gafBundle.gaf_internal::getGAFTimelineByID(this._config.assetID, animationObjectConfig.regionID));
+						displayObject = new GAFMovieClip(gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID));
 						break;
 				}
 

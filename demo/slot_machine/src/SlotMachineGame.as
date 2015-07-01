@@ -34,7 +34,7 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafTimeline;
+			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafBundle.getGAFTimeline("slot_machine_design", "rootTimeline");
 
 			_machine = new SlotMachine(timeline);
 

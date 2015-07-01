@@ -521,7 +521,7 @@ package com.catalystapps.gaf.display
 					sHelperImage.setVertexAlpha(i, this._debugAlphas[indexes[i]]);
 				}
 			}
-			return this._debugColors;
+			return this._debugColors != null;
 		}
 
 		gaf_internal function __debugHighlight(): void

@@ -2,10 +2,15 @@ package com.catalystapps.gaf.data
 {
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
+	import com.catalystapps.gaf.data.config.CFrameSound;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
 	import com.catalystapps.gaf.display.IGAFTexture;
+	import com.catalystapps.gaf.sound.GAFSoundData;
+	import com.catalystapps.gaf.sound.GAFSoundManager;
+
+	import flash.media.Sound;
 
 	/**
 	 * <p>GAFTimeline represents converted GAF file. It is like a library symbol in Flash IDE that contains all information about GAF animation.
@@ -28,15 +33,12 @@ package com.catalystapps.gaf.data
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		/** @private */
-		gaf_internal var _uniqueID: String;
-		/** @private */
-		gaf_internal var _uniqueLinkage: String;
 
 		private var _config: GAFTimelineConfig;
 
+		private var _gafSoundData: GAFSoundData;
 		private var _gafgfxData: GAFGFXData;
-		private var _gafBundle: GAFBundle;
+		private var _gafAsset: GAFAsset;
 
 		//--------------------------------------------------------------------------
 		//
@@ -46,18 +48,11 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Creates an GAFTimeline object
-		 *
-		 * @param timelineConfig - GAF timeline config
+		 * @param timelineConfig GAF timeline config
 		 */
 		public function GAFTimeline(timelineConfig: GAFTimelineConfig)
 		{
 			this._config = timelineConfig;
-
-			this.gaf_internal::_uniqueID = timelineConfig.assetID + "::" + timelineConfig.id;
-			if (timelineConfig.linkage)
-			{
-				this.gaf_internal::_uniqueLinkage = timelineConfig.assetID + "::" + timelineConfig.linkage;
-			}
 		}
 
 		//--------------------------------------------------------------------------
@@ -69,7 +64,7 @@ package com.catalystapps.gaf.data
 		/**
 		 * Returns GAF Texture by name of an instance inside a timeline.
 		 * @param animationObjectName name of an instance inside a timeline
-		 * @return IGAFTexture
+		 * @return GAF Texture
 		 */
 		public function getTextureByName(animationObjectName: String): IGAFTexture
 		{
@@ -91,6 +86,9 @@ package com.catalystapps.gaf.data
 		public function dispose(): void
 		{
 			this._config.dispose();
+			this._gafAsset = null;
+			this._gafgfxData = null;
+			this._gafSoundData = null;
 		}
 
 		/**
@@ -98,12 +96,12 @@ package com.catalystapps.gaf.data
 		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
 		 * before asset conversion)
 		 *
-		 * @param content - content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
-		 * @param scale - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
-		 * @param csf - in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
-		 * @param format - defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
+		 * @param content content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
+		 * @param scale in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
+		 * @param csf in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
+		 * @param format defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = GAFGFXData.BGRA): void
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "brga"): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
@@ -113,12 +111,12 @@ package com.catalystapps.gaf.data
 			var textures: Object;
 			var csfConfig: CTextureAtlasCSF;
 
-			switch(content)
+			switch (content)
 			{
 				case CONTENT_ALL:
-					for each(var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
+					for each (var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
 					{
-						for each(csfConfig in scaleConfig.allContentScaleFactors)
+						for each (csfConfig in scaleConfig.allContentScaleFactors)
 						{
 							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf, format);
 
@@ -167,9 +165,9 @@ package com.catalystapps.gaf.data
 		/**
 		 * Unload all all graphical data connected with this asset from device GPU memory. Used in case of manual control of video memory usage
 		 *
-		 * @param content - content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
-		 * @param scale - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
-		 * @param csf - in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param content content type that should be loaded (CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY)
+		 * @param scale in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
+		 * @param csf in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 */
 		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
 		{
@@ -180,16 +178,18 @@ package com.catalystapps.gaf.data
 
 			var csfConfig: CTextureAtlasCSF;
 
-			switch(content)
+			switch (content)
 			{
 				case CONTENT_ALL:
-					for each(var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
+					for each (var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
 					{
-						for each(csfConfig in scaleConfig.allContentScaleFactors)
+						for each (csfConfig in scaleConfig.allContentScaleFactors)
 						{
 							this._gafgfxData.disposeTextures(scaleConfig.scale, csfConfig.csf);
 							if (csfConfig.atlas)
+							{
 								csfConfig.atlas.dispose();
+							}
 							csfConfig.atlas = null;
 						}
 					}
@@ -206,16 +206,47 @@ package com.catalystapps.gaf.data
 
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
-					if(csfConfig)
+					if (csfConfig)
 					{
 						this._gafgfxData.disposeTextures(scale, csf);
 						if (csfConfig.atlas)
 						{
-						csfConfig.atlas.dispose();
-						csfConfig.atlas = null;
-					}
+							csfConfig.atlas.dispose();
+							csfConfig.atlas = null;
+						}
 					}
 					return;
+			}
+		}
+
+		/** @private */
+		public function startSound(frame: uint): void
+		{
+			var frameSoundConfig: CFrameSound = this._config.getSound(frame);
+			if (frameSoundConfig)
+			{
+				use namespace gaf_internal;
+
+				if (frameSoundConfig.action == CFrameSound.ACTION_STOP)
+				{
+					GAFSoundManager.getInstance().stop(frameSoundConfig.soundID, this._config.assetID);
+				}
+				else
+				{
+					var sound: Sound;
+					if (frameSoundConfig.linkage)
+					{
+						sound = this.gafSoundData.getSoundByLinkage(frameSoundConfig.linkage);
+					}
+					else
+					{
+						sound = this.gafSoundData.getSound(frameSoundConfig.soundID, this._config.assetID);
+					}
+					var soundOptions: Object = {};
+					soundOptions["continue"] = frameSoundConfig.action == CFrameSound.ACTION_CONTINUE;
+					soundOptions["repeatCount"] = frameSoundConfig.repeatCount;
+					GAFSoundManager.getInstance().play(sound, frameSoundConfig.soundID, soundOptions, this._config.assetID);
+				}
 			}
 		}
 
@@ -229,11 +260,11 @@ package com.catalystapps.gaf.data
 		{
 			var scaleConfig: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
 
-			if(scaleConfig)
+			if (scaleConfig)
 			{
 				var csfConfig: CTextureAtlasCSF = scaleConfig.getTextureAtlasForCSF(csf);
 
-				if(csfConfig)
+				if (csfConfig)
 				{
 					return csfConfig;
 				}
@@ -271,12 +302,15 @@ package com.catalystapps.gaf.data
 		 */
 		public function get id(): String
 		{
-			return this.config.assetID;
+			return this.config.id;
 		}
 
-		public function set id(value: String): void
+		/**
+		 * Timeline linkage in a *.fla file library
+		 */
+		public function get linkage(): String
 		{
-			this.config.assetID = value;
+			return this.config.linkage;
 		}
 
 		/** @private
@@ -285,18 +319,6 @@ package com.catalystapps.gaf.data
 		public function get assetID(): String
 		{
 			return this.config.assetID;
-		}
-
-		/** @private */
-		gaf_internal function get uniqueID(): String
-		{
-			return this.gaf_internal::_uniqueID;
-		}
-
-		/** @private */
-		gaf_internal function get uniqueLinkage(): String
-		{
-			return this.gaf_internal::_uniqueLinkage;
 		}
 
 		/** @private */
@@ -342,7 +364,7 @@ package com.catalystapps.gaf.data
 
 				var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
 
-				if(taCSF)
+				if (taCSF)
 				{
 					this._config.textureAtlas.contentScaleFactor = taCSF;
 				}
@@ -380,7 +402,7 @@ package com.catalystapps.gaf.data
 
 			var taCSF: CTextureAtlasCSF = this._config.textureAtlas.getTextureAtlasForCSF(csf);
 
-			if(taCSF)
+			if (taCSF)
 			{
 				this._config.textureAtlas.contentScaleFactor = taCSF;
 			}
@@ -413,15 +435,27 @@ package com.catalystapps.gaf.data
 		}
 
 		/** @private */
-		public function get gafBundle(): GAFBundle
+		public function get gafAsset(): GAFAsset
 		{
-			return this._gafBundle;
+			return this._gafAsset;
 		}
 
 		/** @private */
-		public function set gafBundle(gafBundle: GAFBundle): void
+		public function set gafAsset(gafBundle: GAFAsset): void
 		{
-			this._gafBundle = gafBundle;
+			this._gafAsset = gafBundle;
+		}
+
+		/** @private */
+		public function get gafSoundData(): GAFSoundData
+		{
+			return this._gafSoundData;
+		}
+
+		/** @private */
+		public function set gafSoundData(gafSoundData: GAFSoundData): void
+		{
+			this._gafSoundData = gafSoundData;
 		}
 
 		//--------------------------------------------------------------------------

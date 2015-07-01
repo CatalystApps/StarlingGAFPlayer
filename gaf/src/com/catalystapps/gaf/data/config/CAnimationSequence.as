@@ -86,6 +86,7 @@ package com.catalystapps.gaf.data.config
 
 		/**
 		 * Sequence ID
+		 * @return Sequence ID
 		 */
 		public function get id(): String
 		{
@@ -94,6 +95,7 @@ package com.catalystapps.gaf.data.config
 
 		/**
 		 * Sequence start frame number
+		 * @return Sequence start frame number
 		 */
 		public function get startFrameNo(): uint
 		{
@@ -102,6 +104,7 @@ package com.catalystapps.gaf.data.config
 
 		/**
 		 * Sequence end frame number
+		 * @return Sequence end frame number
 		 */
 		public function get endFrameNo(): uint
 		{
