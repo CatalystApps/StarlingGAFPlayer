@@ -46,7 +46,7 @@ package
 		private var _state: uint;
 		private var _rewardType: String;
 
-		private var _prizeSequence: Vector.<uint>;
+		//private var _prizeSequence: Vector.<uint>;
 		private var _prize: uint;
 
 		private var _timer: Timer;
@@ -59,7 +59,7 @@ package
 			_state = MACHINE_STATE_INITIAL;
 			_rewardType = REWARD_CHIPS;
 
-			_prizeSequence = new <uint>[PRIZE_C1000K, PRIZE_NONE, PRIZE_C1000K, PRIZE_C1K, PRIZE_C1000K, PRIZE_C500K];
+			//_prizeSequence = new <uint>[PRIZE_C1000K, PRIZE_NONE, PRIZE_C1000K, PRIZE_C1K, PRIZE_C1000K, PRIZE_C500K];
 			_prize = 0;
 
 			_centralCoins = new Vector.<GAFMovieClip>(3, true);
@@ -303,7 +303,7 @@ package
 		private function generateSpinResult(prize: uint): Vector.<Vector.<int>>
 		{
 			var l: uint = 3;
-			var result = new Vector.<Vector.<int>>(l, true);
+			var result: Vector.<Vector.<int>> = new Vector.<Vector.<int>>(l, true);
 			var i: uint;
 			for (i = 0; i < l; i++)
 			{
