@@ -1059,9 +1059,9 @@ package com.catalystapps.gaf.display
 
 			var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
 
+			var displayObject: DisplayObject;
 			for each (var animationObjectConfig: CAnimationObject in animationObjectsDictionary)
 			{
-				var displayObject: DisplayObject;
 				switch (animationObjectConfig.type)
 				{
 					case CAnimationObject.TYPE_TEXTURE:
@@ -1081,7 +1081,8 @@ package com.catalystapps.gaf.display
 						displayObject = new GAFTextField(tfObj);
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
-						displayObject = new GAFMovieClip(gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID));
+						var timeline: GAFTimeline = gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID);
+						displayObject = new GAFMovieClip(timeline, "", this.fps, this._addToJuggler);
 						break;
 				}
 
