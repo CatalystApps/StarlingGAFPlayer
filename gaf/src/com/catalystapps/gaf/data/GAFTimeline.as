@@ -159,7 +159,6 @@ package com.catalystapps.gaf.data
 					}
 					return;
 			}
-
 		}
 
 		/**
@@ -181,39 +180,19 @@ package com.catalystapps.gaf.data
 			switch (content)
 			{
 				case CONTENT_ALL:
-					for each (var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
-					{
-						for each (csfConfig in scaleConfig.allContentScaleFactors)
-						{
-							this._gafgfxData.disposeTextures(scaleConfig.scale, csfConfig.csf);
-							if (csfConfig.atlas)
-							{
-								csfConfig.atlas.dispose();
-							}
-							csfConfig.atlas = null;
-						}
-					}
+					this._gafgfxData.disposeTextures();
+					this._config.dispose();
 					return;
-
 				case CONTENT_DEFAULT:
 					this._gafgfxData.disposeTextures(this.scale, this.contentScaleFactor);
-					if (this._config.textureAtlas.contentScaleFactor.atlas)
-					{
-						this._config.textureAtlas.contentScaleFactor.atlas.dispose();
-						this._config.textureAtlas.contentScaleFactor.atlas = null;
-					}
+					this._config.textureAtlas.contentScaleFactor.dispose();
 					return;
-
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
 					if (csfConfig)
 					{
 						this._gafgfxData.disposeTextures(scale, csf);
-						if (csfConfig.atlas)
-						{
-							csfConfig.atlas.dispose();
-							csfConfig.atlas = null;
-						}
+						csfConfig.dispose();
 					}
 					return;
 			}

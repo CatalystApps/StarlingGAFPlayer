@@ -84,9 +84,9 @@ package com.catalystapps.gaf.sound
 		gaf_internal function play(sound: Sound, soundID: uint, soundOptions: Object, swfName: String): void
 		{
 			if (soundOptions["continue"]
-					&& soundChannels
-					&& soundChannels[swfName]
-					&& soundChannels[swfName][soundID])
+			&&  soundChannels
+			&&  soundChannels[swfName]
+			&&  soundChannels[swfName][soundID])
 			{
 				return; //sound already in play - no need to launch it again
 			}
@@ -107,8 +107,8 @@ package com.catalystapps.gaf.sound
 		gaf_internal function stop(soundID: uint, swfName: String): void
 		{
 			if (soundChannels
-					&& soundChannels[swfName]
-					&& soundChannels[swfName][soundID])
+			&&  soundChannels[swfName]
+			&&  soundChannels[swfName][soundID])
 			{
 				var channels: Vector.<GAFSoundChannel> = soundChannels[swfName][soundID];
 				for (var i: int = 0; i < channels.length; i++)
