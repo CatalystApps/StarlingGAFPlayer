@@ -101,7 +101,7 @@ package com.catalystapps.gaf.data
 		 * @param csf in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
 		 * @param format defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "brga"): void
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "bgra"): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
