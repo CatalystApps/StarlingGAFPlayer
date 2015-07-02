@@ -421,6 +421,10 @@ package com.catalystapps.gaf.display
 					this.changeCurrentFrame(false);
 				}
 			}
+			for (i = 0; i < this._mcVector.length; i++)
+			{
+				this._mcVector[i].advanceTime(passedTime);
+			}
 		}
 
 		/** Shows bounds of a whole animation with a pivot point.
@@ -821,7 +825,6 @@ package com.catalystapps.gaf.display
 			var frames: Vector.<CAnimationFrame> = this._config.animationConfigFrames.frames;
 			if (frames.length > this._currentFrame)
 			{
-				var zIndex: uint;
 				var maskIndex: int;
 				var mc: GAFMovieClip;
 				var maskPivotMatrix: Matrix;
@@ -1082,7 +1085,7 @@ package com.catalystapps.gaf.display
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
 						var timeline: GAFTimeline = gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID);
-						displayObject = new GAFMovieClip(timeline, "", this.fps, this._addToJuggler);
+						displayObject = new GAFMovieClip(timeline, "", this.fps, false);
 						break;
 				}
 
