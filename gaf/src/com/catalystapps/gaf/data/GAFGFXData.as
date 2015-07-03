@@ -436,7 +436,7 @@ package com.catalystapps.gaf.data
 			}
 			if (!dictionary[imageID])
 			{
-				dictionary[imageID] = CTextureAtlas.textureFromImg(img, csf, format);
+				dictionary[imageID] = Texture.fromBitmapData(img, false, false, csf, format);
 			}
 		}
 		
@@ -448,7 +448,7 @@ package com.catalystapps.gaf.data
 			}
 			if (!dictionary[imageID])
 			{
-				dictionary[imageID] = CTextureAtlas.textureFromATF(data, csf);
+				dictionary[imageID] = Texture.fromAtfData(data, csf, false);
 			}
 		}
 			

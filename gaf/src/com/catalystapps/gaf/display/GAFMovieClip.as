@@ -64,7 +64,6 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
-		private var _mappedAssetID: String;
 
 		private var _displayObjectsDictionary: Object;
 		private var _pixelMasksDictionary: Object;
@@ -123,18 +122,16 @@ package com.catalystapps.gaf.display
 		 * Creates a new GAFMovieClip instance.
 		 *
 		 * @param gafTimeline <code>GAFTimeline</code> from what <code>GAFMovieClip</code> will be created
-		 * @param mappedAssetID To be defined. For now - use default value
 		 * @param fps defines the frame rate of the movie clip. If not set - the stage config frame rate will be used instead.
 		 * @param addToJuggler if <code>true - GAFMovieClip</code> will be added to <code>Starling.juggler</code>
 		 * and removed automatically on <code>dispose</code>
 		 */
-		public function GAFMovieClip(gafTimeline: GAFTimeline, mappedAssetID: String = "", fps: int = -1, addToJuggler: Boolean = true)
+		public function GAFMovieClip(gafTimeline: GAFTimeline, fps: int = -1, addToJuggler: Boolean = true)
 		{
 			this._gafTimeline = gafTimeline;
 			this._config = gafTimeline.config;
 			this._scale = gafTimeline.scale;
 			this._addToJuggler = addToJuggler;
-			this._mappedAssetID = mappedAssetID;
 
 			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafAsset);
 
@@ -1068,7 +1065,7 @@ package com.catalystapps.gaf.display
 				switch (animationObjectConfig.type)
 				{
 					case CAnimationObject.TYPE_TEXTURE:
-						var texture: IGAFTexture = textureAtlas.getTexture(animationObjectConfig.regionID, this._mappedAssetID);
+						var texture: IGAFTexture = textureAtlas.getTexture(animationObjectConfig.regionID);
 						if (texture is GAFScale9Texture && !animationObjectConfig.mask) // GAFScale9Image doesn't work as mask
 						{
 							displayObject = new GAFScale9Image(texture as GAFScale9Texture);
@@ -1085,7 +1082,7 @@ package com.catalystapps.gaf.display
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
 						var timeline: GAFTimeline = gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID);
-						displayObject = new GAFMovieClip(timeline, "", this.fps, false);
+						displayObject = new GAFMovieClip(timeline, this.fps, false);
 						break;
 				}
 
