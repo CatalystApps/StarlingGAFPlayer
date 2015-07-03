@@ -140,16 +140,15 @@ package com.catalystapps.gaf.data.converters
 					break;
 			}
 
-			var timelineConfig: GAFTimelineConfig;
 			if (this._config.versionMajor < 4)
 			{
-				timelineConfig = new GAFTimelineConfig(this._config.versionMajor + "." + this._config.versionMinor);
-				timelineConfig.id = "0";
-				timelineConfig.assetID = this._assetID;
-				timelineConfig.framesCount = this._bytes.readShort();
-				timelineConfig.bounds = new Rectangle(this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat());
-				timelineConfig.pivot = new Point(this._bytes.readFloat(), this._bytes.readFloat());
-				this._config.timelines.push(timelineConfig);
+				this._currentTimeline = new GAFTimelineConfig(this._config.versionMajor + "." + this._config.versionMinor);
+				this._currentTimeline.id = "0";
+				this._currentTimeline.assetID = this._assetID;
+				this._currentTimeline.framesCount = this._bytes.readShort();
+				this._currentTimeline.bounds = new Rectangle(this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat());
+				this._currentTimeline.pivot = new Point(this._bytes.readFloat(), this._bytes.readFloat());
+				this._config.timelines.push(this._currentTimeline);
 			}
 			else
 			{
@@ -306,8 +305,6 @@ package com.catalystapps.gaf.data.converters
 				timelineConfig.linkage = this._bytes.readUTF();
 			}
 
-			timelineConfig.allTextureAtlases = this._config.allTextureAtlases;
-
 			this._config.timelines.push(timelineConfig);
 
 			this._isTimeline = true;
@@ -402,6 +399,8 @@ package com.catalystapps.gaf.data.converters
 
 			for each (var timelineConfig: GAFTimelineConfig in this._config.timelines)
 			{
+				timelineConfig.allTextureAtlases = this._config.allTextureAtlases;
+
 				for each (textureAtlasScale in this._config.allTextureAtlases)
 				{
 					if (!isNaN(this._defaultScale) && MathUtility.equals(this._defaultScale, textureAtlasScale.scale))
