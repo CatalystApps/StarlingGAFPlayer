@@ -1,5 +1,6 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFBundle;
 	import starling.display.Sprite;
 	import starling.utils.AssetManager;
 
@@ -15,9 +16,8 @@ package
 	public class MainStarling extends Sprite
 	{
 		private var gafMovieClip: GAFMovieClip;
-		
 		private var assetManager: AssetManager;
-		
+
 		public function MainStarling()
 		{
 			assetManager = new AssetManager();
@@ -41,9 +41,9 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var converter: ZipToGAFAssetConverter = event.target as ZipToGAFAssetConverter;
+			var bundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
 
-			gafMovieClip = new GAFMovieClip(converter.gafTimeline);
+			gafMovieClip = new GAFMovieClip(bundle.getGAFTimeline("RedRobot", "rootTimeline"));
 			gafMovieClip.addEventListener("playSoundSteps", onPlaySound);
 			gafMovieClip.play();
 

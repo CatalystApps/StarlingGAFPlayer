@@ -1,5 +1,5 @@
 package
-com.catalystapps{
+{
 	import com.catalystapps.gaf.display.GAFMovieClip;
 	import com.catalystapps.gaf.data.GAFTimeline;
 	import starling.animation.IAnimatable;

@@ -1,5 +1,4 @@
-package 
-com.catalystapps
+package
 {
 	import starling.utils.SystemUtil;
 	import starling.core.Starling;
@@ -22,17 +21,17 @@ com.catalystapps
 			var viewport: Rectangle = new Rectangle(0, 0, stage.fullScreenWidth, stage.fullScreenHeight);
 			scale = new Point(xScale, yScale);
 			
-			//this block is needed to run multi_resolution.swf on desktop
-			//it disables scaling feature, required for mobile devices
-			//if you want to use it: add -define+=CONFIG::RELEASE,!{debug} to your compiler arguments
-			CONFIG::RELEASE
+			/**This block is needed to run multi_resolution.swf on desktop.
+			 * It disables scaling feature, required for mobile devices.
+			 * Remove the block below to run the demo on mobile devices.
+			 */
+			//start block
+			if (SystemUtil.isDesktop)
 			{
-				if (SystemUtil.isDesktop)
-				{
-					viewport.setTo(0, 0, stage.stageWidth, stage.stageHeight);
-					scale.setTo(1, 1);
-				}
+				viewport.setTo(0, 0, stage.stageWidth, stage.stageHeight);
+				scale.setTo(1, 1);
 			}
+			//end block
 			
 			Starling.handleLostContext = true;
 			starling = new Starling(MainStarling, stage, viewport);

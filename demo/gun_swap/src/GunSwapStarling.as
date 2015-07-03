@@ -1,8 +1,9 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFTimeline;
+	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.display.IGAFTexture;
 	import com.catalystapps.gaf.display.GAFImage;
-	import starling.display.Quad;
 	import starling.display.Sprite;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
@@ -21,8 +22,8 @@ package
 	{
 		private var _gafMovieClip: GAFMovieClip;
 		private var _gunSlot: GAFImage;
-		private var _redGun: IGAFTexture;
-		private var _blueGun: IGAFTexture;
+		private var _gun1: IGAFTexture;
+		private var _gun2: IGAFTexture;
 		private var _currentGun: IGAFTexture;
 
 		[Embed(source="../design/gun_swap.zip", mimeType="application/octet-stream")]
@@ -38,24 +39,22 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var converter: ZipToGAFAssetConverter = event.target as ZipToGAFAssetConverter;
+			var gafBundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
+			//"gun_swap" - the name of the SWF which was converted to GAF
+			var gafTimeline: GAFTimeline = gafBundle.getGAFTimeline("gun_swap", "rootTimeline");
 
-			this._gafMovieClip = new GAFMovieClip(converter.gafTimeline);
+			this._gafMovieClip = new GAFMovieClip(gafTimeline);
 			this._gafMovieClip.play(true);
-			this._gafMovieClip.setSequence("walk_right");
-			this._gafMovieClip.x = stage.stageWidth / 2;
-			this._gafMovieClip.y = stage.stageHeight / 2;
 
 			this._gunSlot = this._gafMovieClip.getChildByName("GUN") as GAFImage;
 
-			this._redGun  = converter.gafBundle.getCustomRegion(converter.gafTimeline.assetID, "gun");
-			this._blueGun = converter.gafBundle.getCustomRegion(converter.gafTimeline.assetID, "gun2");
-			//this is the texture, made from exported bitmap
+			this._gun1 = gafBundle.getCustomRegion("gun_swap", "gun1");
+			this._gun2 = gafBundle.getCustomRegion("gun_swap", "gun2");
+			//"gun2" texture is made from Bitmap
 			//thus we need to adjust its' pivot matrix
-			this._blueGun.pivotMatrix.translate(-24.2, -41.55);
+			this._gun2.pivotMatrix.translate(-24.2, -41.55);
 
-			this._currentGun = this._redGun;
-			this.setGun(this._currentGun);
+			this.setGun(this._gun1);
 
 			this.addChild(this._gafMovieClip);
 
@@ -67,20 +66,20 @@ package
 			var touch: Touch = event.getTouch(this, TouchPhase.BEGAN);
 			if (touch)
 			{
-				if (this._currentGun == this._blueGun)
+				if (this._currentGun == this._gun2)
 				{
-					this._currentGun = this._redGun;
+					setGun(this._gun1);
 				}
 				else
 				{
-					this._currentGun = this._blueGun;
+					setGun(this._gun2);
 				}
-				setGun(this._currentGun);
 			}
 		}
 
 		private function setGun(gun: IGAFTexture): void
 		{
+			this._currentGun = gun;
 			this._gunSlot.changeTexture(gun);
 		}
 	}
