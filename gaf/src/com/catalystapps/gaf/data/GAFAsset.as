@@ -73,6 +73,10 @@ package com.catalystapps.gaf.data
 					timeline.dispose();
 				}
 			}
+			this._timelines = null;
+
+			this._config.dispose();
+			this._config = null;
 		}
 
 		/** @private */

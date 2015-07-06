@@ -83,6 +83,18 @@ package com.catalystapps.gaf.data
 			{
 				cTextureAtlasScale.dispose();
 			}
+			this._allTextureAtlases = null;
+
+			this._animationConfigFrames = null;
+			this._animationSequences = null;
+			this._animationObjects = null;
+			this._textureAtlas = null;
+			this._textFields = null;
+			this._namedParts = null;
+			this._warnings = null;
+			this._bounds = null;
+			this._sounds = null;
+			this._pivot = null;
 		}
 
 		public function getTextureAtlasForScale(scale: Number): CTextureAtlasScale

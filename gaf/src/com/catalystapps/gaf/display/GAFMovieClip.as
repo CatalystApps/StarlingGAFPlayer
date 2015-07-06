@@ -1256,9 +1256,22 @@ package com.catalystapps.gaf.display
 				this._pixelMasksVector[i].dispose();
 			}
 
+			if (this._boundsAndPivot)
+			{
+				this._boundsAndPivot.dispose();
+				this._boundsAndPivot = null;
+			}
+
+			this._displayObjectsDictionary = null;
+			this._pixelMasksDictionary = null;
+			this._displayObjectsVector = null;
+			this._pixelMasksVector = null;
+			this._imagesVector = null;
+			this._mcVector = null;
+			this._config = null;
+
 			super.dispose();
 
-			this._config = null;
 			this._disposed = true;
 		}
 

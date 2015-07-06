@@ -52,11 +52,13 @@ package com.catalystapps.gaf.data
 		{
 			GAFSoundManager.getInstance().stopAll();
 			this._soundData.gaf_internal::dispose();
+			this._soundData = null;
 
 			for each (var gafAsset: GAFAsset in this._gafAssets)
 			{
 				gafAsset.dispose();
 			}
+			this._gafAssets = null;
 		}
 
 		/**

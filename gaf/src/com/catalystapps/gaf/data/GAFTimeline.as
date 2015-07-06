@@ -86,6 +86,7 @@ package com.catalystapps.gaf.data
 		public function dispose(): void
 		{
 			this._config.dispose();
+			this._config = null;
 			this._gafAsset = null;
 			this._gafgfxData = null;
 			this._gafSoundData = null;
