@@ -36,7 +36,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		private var _zIndex: uint;
+		private static const HELPER_MATRIX: Matrix = new Matrix();
 
 		private var _pivotMatrix: Matrix;
 
@@ -45,7 +45,13 @@ package com.catalystapps.gaf.display
 
 		private var _maxSize: Point;
 
+		private var _pivotChanged: Boolean;
+		private var _scale: Number;
+		private var _csf: Number;
+
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
+
+		private var _orientationChanged: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -57,13 +63,20 @@ package com.catalystapps.gaf.display
 		 * GAFTextField represents text field that is part of the <code>GAFMovieClip</code>
 		 * @param config
 		 */
-		public function GAFTextField(config: CTextFieldObject)
+		public function GAFTextField(config: CTextFieldObject, scale: Number = 1, csf: Number = 1)
 		{
 			super();
+
+			if (isNaN(scale)) scale = 1;
+			if (isNaN(csf)) csf = 1;
+
+			this._scale = scale;
+			this._csf = csf;
 
 			this._pivotMatrix = new Matrix();
 			this._pivotMatrix.tx = config.pivotPoint.x;
 			this._pivotMatrix.ty = config.pivotPoint.y;
+			this._pivotMatrix.scale(scale, scale);
 
 			if (!isNaN(config.width))
 			{
@@ -88,10 +101,10 @@ package com.catalystapps.gaf.display
 			this.textEditorProperties.wordWrap = config.wordWrap;
 			this.textEditorFactory = function (): ITextEditor
 			{
-				var textEditor: GAFTextFieldTextEditor = new GAFTextFieldTextEditor();
-				if (_filterConfig && !isNaN(_filterScale))
+				var textEditor: GAFTextFieldTextEditor = new GAFTextFieldTextEditor(_scale, _csf);
+				if (this._filterConfig && !isNaN(this._filterScale))
 				{
-					textEditor.setFilterConfig(_filterConfig, _filterScale);
+					textEditor.setFilterConfig(this._filterConfig, this._filterScale);
 				}
 				return textEditor;
 			};
@@ -116,6 +129,12 @@ package com.catalystapps.gaf.display
 				(this.textEditor as TextFieldTextEditor).invalidate(INVALIDATION_FLAG_SIZE);
 			}
 			this.invalidate(INVALIDATION_FLAG_SIZE);
+		}
+
+		/** @private */
+		public function invalidateOrientation(): void
+		{
+			this._orientationChanged = true;
 		}
 
 		/** @private */
@@ -232,6 +251,16 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		[Inline]
+		private function updateTransformMatrix(): void
+		{
+			if (this._orientationChanged)
+			{
+				this.transformationMatrix = this.transformationMatrix;
+				this._orientationChanged = false;
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -243,6 +272,60 @@ package com.catalystapps.gaf.display
 			super.transformationMatrix = matrix;
 
 			this.invalidateSize();
+		}
+
+		override public function set pivotX(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotX = value;
+		}
+
+		override public function set pivotY(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotY = value;
+		}
+
+		override public function get x(): Number
+		{
+			updateTransformMatrix();
+			return super.x;
+		}
+
+		override public function get y(): Number
+		{
+			updateTransformMatrix();
+			return super.y;
+		}
+
+		override public function get rotation(): Number
+		{
+			updateTransformMatrix();
+			return super.rotation;
+		}
+
+		override public function get scaleX(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleX;
+		}
+
+		override public function get scaleY(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleY;
+		}
+
+		override public function get skewX(): Number
+		{
+			updateTransformMatrix();
+			return super.skewX;
+		}
+
+		override public function get skewY(): Number
+		{
+			updateTransformMatrix();
+			return super.skewY;
 		}
 
 		//--------------------------------------------------------------------------
@@ -257,19 +340,18 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		public function get zIndex(): uint
-		{
-			return this._zIndex;
-		}
-
-		public function set zIndex(value: uint): void
-		{
-			this._zIndex = value;
-		}
-
+		/** @private */
 		public function get pivotMatrix(): Matrix
 		{
-			return this._pivotMatrix;
+			HELPER_MATRIX.copyFrom(this._pivotMatrix);
+
+			if (this._pivotChanged)
+			{
+				HELPER_MATRIX.tx = this.pivotX;
+				HELPER_MATRIX.ty = this.pivotY;
+			}
+
+			return HELPER_MATRIX;
 		}
 
 		/** @private */

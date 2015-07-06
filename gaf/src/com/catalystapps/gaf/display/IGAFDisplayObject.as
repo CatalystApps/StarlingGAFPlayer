@@ -9,10 +9,12 @@ package com.catalystapps.gaf.display
 	 */
 	public interface IGAFDisplayObject
 	{
+		function setFilterConfig(value: CFilter, scale: Number = 1): void;
+		function invalidateOrientation(): void;
+		function dispose(): void;
+
 		function get alpha(): Number;
 		function set alpha(value: Number): void;
-
-		function setFilterConfig(value: CFilter, scale: Number = 1): void;
 
 		function get parent(): DisplayObjectContainer;
 
@@ -22,15 +24,12 @@ package com.catalystapps.gaf.display
 		function get visible(): Boolean;
 		function set visible(value: Boolean): void;
 
-		function get zIndex(): uint;
-		function set zIndex(zIndex: uint): void;
-
 		function get transformationMatrix(): Matrix;
 		function set transformationMatrix(matrix: Matrix): void;
 
+		function get pivotMatrix(): Matrix;
+
 		function get name(): String;
 		function set name(value: String): void;
-
-		function dispose(): void;
 	}
 }

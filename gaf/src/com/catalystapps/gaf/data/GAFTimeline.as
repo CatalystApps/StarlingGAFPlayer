@@ -331,10 +331,16 @@ package com.catalystapps.gaf.data
 		 */
 		public function set scale(scale: Number): void
 		{
+			if (this._gafAsset.gaf_internal::hasScale(scale))
+			{
+				this._gafAsset.scale = scale;
+			}
+
 			if (!this._config.textureAtlas)
 			{
 				return;
 			}
+
 			var csf: Number = this.contentScaleFactor;
 			var taScale: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
 			if (taScale)
@@ -360,11 +366,7 @@ package com.catalystapps.gaf.data
 
 		public function get scale(): Number
 		{
-			if (this._config.textureAtlas)
-			{
-				return this._config.textureAtlas.scale;
-			}
-			return 1;
+			return this._gafAsset.scale;
 		}
 
 		/**
@@ -374,6 +376,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function set contentScaleFactor(csf: Number): void
 		{
+			if (this._gafAsset.gaf_internal::hasCSF(csf))
+			{
+				this._gafAsset.csf = csf;
+			}
+
 			if (!this._config.textureAtlas)
 			{
 				return;
@@ -393,11 +400,7 @@ package com.catalystapps.gaf.data
 
 		public function get contentScaleFactor(): Number
 		{
-			if (this._config.textureAtlas)
-			{
-				return this._config.textureAtlas.contentScaleFactor.csf;
-			}
-			return 1;
+			return this._gafAsset.csf;
 		}
 
 		/**
@@ -420,9 +423,9 @@ package com.catalystapps.gaf.data
 		}
 
 		/** @private */
-		public function set gafAsset(gafBundle: GAFAsset): void
+		public function set gafAsset(asset: GAFAsset): void
 		{
-			this._gafAsset = gafBundle;
+			this._gafAsset = asset;
 		}
 
 		/** @private */

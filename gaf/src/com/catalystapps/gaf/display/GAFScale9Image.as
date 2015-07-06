@@ -93,14 +93,17 @@ package com.catalystapps.gaf.display
 
 		private var _debugColors: Vector.<uint>;
 		private var _debugAlphas: Vector.<Number>;
-		private var _zIndex: uint;
 
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
 		private var _maxSize: Point;
 
+		private var _pivotChanged: Boolean;
+
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
+
+		private var _orientationChanged: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -478,6 +481,13 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		/** @private */
+		public function invalidateOrientation(): void
+		{
+			this._orientationChanged = true;
+			invalidateSize();
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
@@ -551,6 +561,16 @@ package com.catalystapps.gaf.display
 			{
 				this.alpha = this.__debugOriginalAlpha;
 				this.__debugOriginalAlpha = NaN;
+			}
+		}
+
+		[Inline]
+		private function updateTransformMatrix(): void
+		{
+			if (this._orientationChanged)
+			{
+				this.transformationMatrix = this.transformationMatrix;
+				this._orientationChanged = false;
 			}
 		}
 
@@ -693,6 +713,60 @@ package com.catalystapps.gaf.display
 				this._layoutChanged = true;
 				this.invalidate();
 			}
+		}
+
+		override public function set pivotX(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotX = value;
+		}
+
+		override public function set pivotY(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotY = value;
+		}
+
+		override public function get x(): Number
+		{
+			updateTransformMatrix();
+			return super.x;
+		}
+
+		override public function get y(): Number
+		{
+			updateTransformMatrix();
+			return super.y;
+		}
+
+		override public function get rotation(): Number
+		{
+			updateTransformMatrix();
+			return super.rotation;
+		}
+
+		override public function get scaleX(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleX;
+		}
+
+		override public function get scaleY(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleY;
+		}
+
+		override public function get skewX(): Number
+		{
+			updateTransformMatrix();
+			return super.skewX;
+		}
+
+		override public function get skewY(): Number
+		{
+			updateTransformMatrix();
+			return super.skewY;
 		}
 
 		//--------------------------------------------------------------------------
@@ -888,22 +962,6 @@ package com.catalystapps.gaf.display
 			return this._depth;
 		}
 
-		/**
-		 * @private
-		 */
-		public function get zIndex(): uint
-		{
-			return this._zIndex;
-		}
-
-		/**
-		 * @private
-		 */
-		public function set zIndex(value: uint): void
-		{
-			this._zIndex = value;
-		}
-
 		/** @private */
 		public function get maxSize(): Point
 		{
@@ -914,6 +972,20 @@ package com.catalystapps.gaf.display
 		public function set maxSize(value: Point): void
 		{
 			this._maxSize = value;
+		}
+
+		/** @private */
+		public function get pivotMatrix(): Matrix
+		{
+			HELPER_MATRIX.copyFrom(this._textures.pivotMatrix);
+
+			if (this._pivotChanged)
+			{
+				HELPER_MATRIX.tx = HELPER_MATRIX.a * this.pivotX;
+				HELPER_MATRIX.ty = HELPER_MATRIX.d * this.pivotY;
+			}
+
+			return HELPER_MATRIX;
 		}
 
 		//--------------------------------------------------------------------------

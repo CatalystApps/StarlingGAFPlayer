@@ -36,6 +36,9 @@ package com.catalystapps.gaf.data
 		private var _timelinesDictionary: Object = {};
 		private var _timelinesByLinkage: Object = {};
 
+		private var _scale: Number;
+		private var _csf: Number;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -45,6 +48,9 @@ package com.catalystapps.gaf.data
 		public function GAFAsset(config: GAFAssetConfig)
 		{
 			this._config = config;
+
+			this._scale = config.defaultScale;
+			this._csf = config.defaultContentScaleFactor;
 
 			this._timelines = new Vector.<GAFTimeline>();
 		}
@@ -82,7 +88,6 @@ package com.catalystapps.gaf.data
 				{
 					this._timelinesByLinkage[timeline.linkage] = timeline;
 				}
-				timeline.gafAsset = this;
 			}
 			else
 			{
@@ -130,8 +135,8 @@ package com.catalystapps.gaf.data
 
 		gaf_internal function getCustomRegion(linkage: String, scale: Number = NaN, csf: Number = NaN): IGAFTexture
 		{
-			if (isNaN(scale)) scale = this._config.defaultScale;
-			if (isNaN(csf)) csf = this._config.defaultContentScaleFactor;
+			if (isNaN(scale)) scale = this._scale;
+			if (isNaN(csf)) csf = this._csf;
 
 			var gafTexture: IGAFTexture;
 			var atlasScale: CTextureAtlasScale;
@@ -173,6 +178,18 @@ package com.catalystapps.gaf.data
 			return gafTexture;
 		}
 
+		/** @private */
+		gaf_internal function hasScale(value: Number): Boolean
+		{
+			return this._config.scaleValues.indexOf(value) >= 0;
+		}
+
+		/** @private */
+		gaf_internal function hasCSF(value: Number): Boolean
+		{
+			return this._config.csfValues.indexOf(value) >= 0;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -203,6 +220,26 @@ package com.catalystapps.gaf.data
 		public function get id(): String
 		{
 			return this._config.id;
+		}
+
+		public function get scale(): Number
+		{
+			return this._scale;
+		}
+
+		public function set scale(value: Number): void
+		{
+			this._scale = value;
+		}
+
+		public function get csf(): Number
+		{
+			return this._csf;
+		}
+
+		public function set csf(value: Number): void
+		{
+			this._csf = value;
 		}
 	}
 }

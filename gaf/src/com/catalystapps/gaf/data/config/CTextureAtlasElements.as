@@ -105,7 +105,7 @@ package com.catalystapps.gaf.data.config
 
 		public function get elementsVector(): Vector.<CTextureAtlasElement>
 		{
-			return _elementsVector;
+			return this._elementsVector;
 		}
 
 	}

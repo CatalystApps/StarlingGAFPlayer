@@ -122,32 +122,32 @@ package com.catalystapps.gaf.data.config
 		// --------------------------------------------------------------------------
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function get matrix(): Matrix
 		{
-			return _matrix;
+			return this._matrix;
 		}
 
 		public function get alpha(): Number
 		{
-			return _alpha;
+			return this._alpha;
 		}
 
 		public function get maskID(): String
 		{
-			return _maskID;
+			return this._maskID;
 		}
 
 		public function get filter(): CFilter
 		{
-			return _filter;
+			return this._filter;
 		}
 
 		public function get zIndex(): uint
 		{
-			return _zIndex;
+			return this._zIndex;
 		}
 	}
 }

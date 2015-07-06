@@ -64,12 +64,12 @@ package com.catalystapps.gaf.data.config
 
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function get source(): String
 		{
-			return _source;
+			return this._source;
 		}
 
 	}
