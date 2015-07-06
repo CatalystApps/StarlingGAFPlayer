@@ -103,7 +103,7 @@ package com.catalystapps.gaf.data
 		 * @param linkage is the linkage name of the timeline. If you need to get the Main Timeline from SWF use the "rootTimeline" linkage name.
 		 * @return <code>GAFTimeline</code> from bundle
 		 */
-		public function getGAFTimeline(swfName: String, linkage: String): GAFTimeline
+		public function getGAFTimeline(swfName: String, linkage: String = "rootTimeline"): GAFTimeline
 		{
 			var gafTimeline: GAFTimeline;
 			var gafAsset: GAFAsset = this._gafAssetsDictionary[swfName];
