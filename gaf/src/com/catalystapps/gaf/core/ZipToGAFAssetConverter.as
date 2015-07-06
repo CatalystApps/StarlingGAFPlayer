@@ -591,7 +591,7 @@ package com.catalystapps.gaf.core
 				gafAsset = new GAFAsset(gafAssetConfig);
 				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
-					gafAsset.addGAFTimeline(this.createTimeline(config));
+					gafAsset.addGAFTimeline(this.createTimeline(config, gafAsset));
 				}
 
 				this._gafBundle.gaf_internal::addGAFAsset(gafAsset);
@@ -612,7 +612,7 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function createTimeline(config: GAFTimelineConfig): GAFTimeline
+		private function createTimeline(config: GAFTimelineConfig, asset: GAFAsset): GAFTimeline
 		{
 			for each (var cScale: CTextureAtlasScale in config.allTextureAtlases)
 			{
@@ -651,6 +651,7 @@ package com.catalystapps.gaf.core
 			var timeline: GAFTimeline = new GAFTimeline(config);
 			timeline.gafgfxData = this.gfxData;
 			timeline.gafSoundData = this.soundData;
+			timeline.gafAsset = asset;
 
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
@@ -866,7 +867,7 @@ package com.catalystapps.gaf.core
 		 */
 		/*public function get gafAsset(): GAFAsset
 		 {
-		 	return _gafAsset;
+		 	return this._gafAsset;
 		 }*/
 
 		/**

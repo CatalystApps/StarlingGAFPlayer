@@ -85,7 +85,7 @@ package com.catalystapps.gaf.data.config
 
 		public function get textFieldObjectsDictionary(): Object
 		{
-			return _textFieldObjectsDictionary;
+			return this._textFieldObjectsDictionary;
 		}
 
 		//--------------------------------------------------------------------------

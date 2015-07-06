@@ -50,7 +50,7 @@ package com.catalystapps.gaf.display
 		public static const EVENT_TYPE_SEQUENCE_START: String = "typeSequenceStart";
 		public static const EVENT_TYPE_SEQUENCE_END: String = "typeSequenceEnd";
 
-		private static const defaultMatrix: Matrix = new Matrix();
+		private static const HELPER_MATRIX: Matrix = new Matrix();
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
@@ -94,6 +94,7 @@ package com.catalystapps.gaf.display
 		private var _addToJuggler: Boolean;
 
 		private var _scale: Number;
+		private var _contentScaleFactor: Number;
 		private var _currentTime: Number = 0;
 		// Hold the current time spent animating
 		private var _lastFrameTime: Number = 0;
@@ -104,13 +105,16 @@ package com.catalystapps.gaf.display
 		private var _finalFrame: int;
 		private var _currentFrame: uint;
 		private var _totalFrames: uint;
-		private var _zIndex: uint;
 
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
+		private var _pivotChanged: Boolean;
+
 		/** @private */
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
+
+		private var _orientationChanged: Boolean;
 
 		// --------------------------------------------------------------------------
 		//
@@ -131,6 +135,7 @@ package com.catalystapps.gaf.display
 			this._gafTimeline = gafTimeline;
 			this._config = gafTimeline.config;
 			this._scale = gafTimeline.scale;
+			this._contentScaleFactor = gafTimeline.contentScaleFactor;
 			this._addToJuggler = addToJuggler;
 
 			this.initialize(gafTimeline.textureAtlas, gafTimeline.gafAsset);
@@ -182,7 +187,8 @@ package com.catalystapps.gaf.display
 		 */
 		public function showMaskByID(id: String): void
 		{
-			var maskObject: DisplayObject = this._displayObjectsDictionary[id];
+			var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[id];
+			var maskAsDisplayObject: DisplayObject = maskObject as DisplayObject;
 			var pixelMaskObject: GAFPixelMaskDisplayObject = this._pixelMasksDictionary[id];
 			if (maskObject && pixelMaskObject)
 			{
@@ -190,13 +196,9 @@ package com.catalystapps.gaf.display
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 				if (maskInstance)
 				{
-					var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
-					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
-				}
-
-				if (maskObject is GAFScale9Image)
-				{
-					(maskObject as GAFScale9Image).invalidateSize();
+					this.getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
+					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
+					maskObject.invalidateOrientation();
 				}
 
 				////////////////////////////////
@@ -209,12 +211,12 @@ package com.catalystapps.gaf.display
 				var gafFilter: GAFFilter = new GAFFilter();
 				gafFilter.setConfig(cFilter, this._scale);
 
-				maskObject.filter = gafFilter;
+				maskAsDisplayObject.filter = gafFilter;
 
 				////////////////////////////////
 
 				pixelMaskObject.pixelMask = null;
-				this.addChild(maskObject);
+				this.addChild(maskAsDisplayObject);
 			}
 		}
 
@@ -226,24 +228,26 @@ package com.catalystapps.gaf.display
 		 */
 		public function hideMaskByID(id: String): void
 		{
-			var maskObject: DisplayObject = this._displayObjectsDictionary[id];
+			var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[id];
+			var maskAsDisplayObject: DisplayObject = maskObject as DisplayObject;
 			var pixelMaskObject: GAFPixelMaskDisplayObject = this._pixelMasksDictionary[id];
 			if (maskObject && pixelMaskObject)
 			{
-				maskObject.filter = null;
+				maskAsDisplayObject.filter = null;
 				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 				if (maskInstance)
 				{
-					var maskPivotMatrix: Matrix = this.getTransformMatrix(maskObject as IGAFDisplayObject);
-					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
+					this.getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
+					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
+					maskObject.invalidateOrientation();
 				}
 
 				if (maskObject.parent == this)
 				{
-					this.removeChild(maskObject);
+					this.removeChild(maskAsDisplayObject);
 				}
-				pixelMaskObject.pixelMask = maskObject;
+				pixelMaskObject.pixelMask = maskAsDisplayObject;
 			}
 		}
 
@@ -507,6 +511,12 @@ package com.catalystapps.gaf.display
 					this._filterScale = NaN;
 				}
 			}
+		}
+
+		/** @private */
+		public function invalidateOrientation(): void
+		{
+			this._orientationChanged = true;
 		}
 
 		//--------------------------------------------------------------------------
@@ -824,7 +834,6 @@ package com.catalystapps.gaf.display
 			{
 				var maskIndex: int;
 				var mc: GAFMovieClip;
-				var maskPivotMatrix: Matrix;
 				var objectPivotMatrix: Matrix;
 				var displayObject: IGAFDisplayObject;
 				var instance: CAnimationFrameInstance;
@@ -876,7 +885,7 @@ package com.catalystapps.gaf.display
 							maskIndex++;
 
 							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
-
+							displayObject.invalidateOrientation();
 							displayObject.setFilterConfig(null);
 
 							if (maskIndex == 1)
@@ -895,7 +904,9 @@ package com.catalystapps.gaf.display
 							this.renderDebug(mc, instance, this._masked);
 
 							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
+							displayObject.invalidateOrientation();
 							displayObject.setFilterConfig(instance.filter, this._scale);
+
 
 							this.addChild(displayObject as DisplayObject);
 						}
@@ -903,11 +914,6 @@ package com.catalystapps.gaf.display
 						if (mc && mc._started)
 						{
 							mc._play(true);
-						}
-
-						if (displayObject is GAFScale9Image)
-						{
-							(displayObject as GAFScale9Image).invalidateSize();
 						}
 
 						if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
@@ -927,8 +933,9 @@ package com.catalystapps.gaf.display
 							var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.id);
 							if (maskInstance)
 							{
-								maskPivotMatrix = getTransformMatrix(maskObject);
-								maskInstance.applyTransformMatrix(maskObject.transformationMatrix, maskPivotMatrix, this._scale);
+								getTransformMatrix(maskObject, HELPER_MATRIX);
+								maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
+								maskObject.invalidateOrientation();
 							}
 							else
 							{
@@ -1026,22 +1033,13 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function getTransformMatrix(displayObject: IGAFDisplayObject): Matrix
+		private function getTransformMatrix(displayObject: IGAFDisplayObject, matrix: Matrix = null): Matrix
 		{
-			if (displayObject is IGAFImage)
-			{
-				return (displayObject as IGAFImage).assetTexture.pivotMatrix;
-			}
-			else if (displayObject is GAFTextField)
-			{
-				var tmpMatrix: Matrix = (displayObject as GAFTextField).pivotMatrix.clone();
-				tmpMatrix.scale(this._scale, this._scale);
-				return tmpMatrix;
-			}
-			else
-			{
-				return defaultMatrix;
-			}
+			if (!matrix) matrix = new Matrix();
+
+			matrix.copyFrom(displayObject.pivotMatrix);
+
+			return matrix;
 		}
 
 		private function initialize(textureAtlas: CTextureAtlas, gafAsset: GAFAsset): void
@@ -1078,7 +1076,7 @@ package com.catalystapps.gaf.display
 						break;
 					case CAnimationObject.TYPE_TEXTFIELD:
 						var tfObj: CTextFieldObject = this._config.textFields.textFieldObjectsDictionary[animationObjectConfig.regionID];
-						displayObject = new GAFTextField(tfObj);
+						displayObject = new GAFTextField(tfObj, this._scale, this._contentScaleFactor);
 						break;
 					case CAnimationObject.TYPE_TIMELINE:
 						var timeline: GAFTimeline = gafAsset.gaf_internal::getGAFTimelineByID(animationObjectConfig.regionID);
@@ -1206,6 +1204,16 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		[Inline]
+		private function updateTransformMatrix(): void
+		{
+			if (this._orientationChanged)
+			{
+				this.transformationMatrix = this.transformationMatrix;
+				this._orientationChanged = false;
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -1254,24 +1262,6 @@ package com.catalystapps.gaf.display
 			this._disposed = true;
 		}
 
-		/** @private
-		 * Invalidates textfields to correct display size
-		 * @param matrix
-		 */
-		override public function set transformationMatrix(matrix: Matrix): void
-		{
-			super.transformationMatrix = matrix;
-			var i: uint, l: uint;
-			for (i = 0, l = this.numChildren; i < l; i++)
-			{
-				var child: IGAFImage = this.getChildAt(i) as IGAFImage;
-				if (child)
-				{
-					child.invalidateSize();
-				}
-			}
-		}
-
 		/** @private */
 		override public function render(support: RenderSupport, parentAlpha: Number): void
 		{
@@ -1298,6 +1288,60 @@ package com.catalystapps.gaf.display
 					throw error;
 				}
 			}
+		}
+
+		override public function set pivotX(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotX = value;
+		}
+
+		override public function set pivotY(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotY = value;
+		}
+
+		override public function get x(): Number
+		{
+			updateTransformMatrix();
+			return super.x;
+		}
+
+		override public function get y(): Number
+		{
+			updateTransformMatrix();
+			return super.y;
+		}
+
+		override public function get rotation(): Number
+		{
+			updateTransformMatrix();
+			return super.rotation;
+		}
+
+		override public function get scaleX(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleX;
+		}
+
+		override public function get scaleY(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleY;
+		}
+
+		override public function get skewX(): Number
+		{
+			updateTransformMatrix();
+			return super.skewX;
+		}
+
+		override public function get skewY(): Number
+		{
+			updateTransformMatrix();
+			return super.skewY;
 		}
 
 		//--------------------------------------------------------------------------
@@ -1505,24 +1549,6 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		/**
-		 * Depth of display object in parent container
-		 * @private
-		 */
-		public function get zIndex(): uint
-		{
-			return this._zIndex;
-		}
-
-		/**
-		 * Depth of display object in parent container
-		 * @private
-		 */
-		public function set zIndex(value: uint): void
-		{
-			this._zIndex = value;
-		}
-
 		public function get skipFrames(): Boolean
 		{
 			return this._skipFrames;
@@ -1542,6 +1568,21 @@ package com.catalystapps.gaf.display
 			{
 				this._mcVector[i]._skipFrames = value;
 			}
+		}
+
+		/** @private */
+		public function get pivotMatrix(): Matrix
+		{
+			//HELPER_MATRIX.copyFrom(this._pivotMatrix);
+			HELPER_MATRIX.identity();
+
+			if (this._pivotChanged)
+			{
+				HELPER_MATRIX.tx = this.pivotX;
+				HELPER_MATRIX.ty = this.pivotY;
+			}
+
+			return HELPER_MATRIX;
 		}
 	}
 }

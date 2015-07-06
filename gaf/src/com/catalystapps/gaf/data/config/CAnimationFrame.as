@@ -141,16 +141,16 @@ package com.catalystapps.gaf.data.config
 		// --------------------------------------------------------------------------
 		public function get instances(): Vector.<CAnimationFrameInstance>
 		{
-			return _instances;
+			return this._instances;
 		}
 
 		public function get frameNumber(): uint
 		{
-			return _frameNumber;
+			return this._frameNumber;
 		}
 		public function get actions(): Vector.<CFrameAction>
 		{
-			return _actions;
+			return this._actions;
 		}
 	}
 }

@@ -90,7 +90,7 @@ package com.catalystapps.gaf.data.config
 		 */
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		/**
@@ -99,7 +99,7 @@ package com.catalystapps.gaf.data.config
 		 */
 		public function get startFrameNo(): uint
 		{
-			return _startFrameNo;
+			return this._startFrameNo;
 		}
 
 		/**
@@ -108,7 +108,7 @@ package com.catalystapps.gaf.data.config
 		 */
 		public function get endFrameNo(): uint
 		{
-			return _endFrameNo;
+			return this._endFrameNo;
 		}
 
 	}

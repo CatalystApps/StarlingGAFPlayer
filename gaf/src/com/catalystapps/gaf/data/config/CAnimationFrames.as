@@ -67,7 +67,7 @@ package com.catalystapps.gaf.data.config
 
 		public function get frames(): Vector.<CAnimationFrame>
 		{
-			return _frames;
+			return this._frames;
 		}
 
 	}

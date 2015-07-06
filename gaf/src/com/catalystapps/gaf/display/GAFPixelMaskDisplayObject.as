@@ -3,7 +3,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CFilter;
 
 	import flash.display3D.Context3DBlendFactor;
-
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -21,7 +20,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-	public class GAFPixelMaskDisplayObject extends DisplayObjectContainer implements IGAFDisplayObject
+	public class GAFPixelMaskDisplayObject extends DisplayObjectContainer
 	{
 		private static const MASK_MODE: String = "mask";
 
@@ -39,7 +38,6 @@ package com.catalystapps.gaf.display
 
 		protected var _superRenderFlag: Boolean = false;
 
-		private var _zIndex: uint;
 		private var _maskSize: Point;
 		private var _staticMaskSize: Boolean;
 		private var _scaleFactor: Number;
@@ -59,14 +57,14 @@ package com.catalystapps.gaf.display
 					this.onContextCreated, false, 0, true);
 		}
 
-		override public function dispose():void
+		override public function dispose(): void
 		{
 			this.clearRenderTextures();
 			Starling.current.stage3D.removeEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
 			super.dispose();
 		}
 
-		private function onContextCreated(event:Object):void
+		private function onContextCreated(event: Object): void
 		{
 			this.refreshRenderTextures();
 		}
@@ -115,28 +113,28 @@ package com.catalystapps.gaf.display
 			return this._mask;
 		}
 
-		protected function clearRenderTextures() : void
+		protected function clearRenderTextures(): void
 		{
 			// clean up old render textures and images
-			if (this._maskRenderTexture) {
+			if (this._maskRenderTexture)
+			{
 				this._maskRenderTexture.dispose();
 			}
 
-			if (this._renderTexture) {
+			if (this._renderTexture)
+			{
 				this._renderTexture.dispose();
 			}
 
-			if (this._image) {
+			if (this._image)
+			{
 				this._image.dispose();
 			}
 
-			if (this._maskImage) {
+			if (this._maskImage)
+			{
 				this._maskImage.dispose();
 			}
-		}
-
-		public function setFilterConfig(value: CFilter, scale: Number = 1): void
-		{
 		}
 
 		protected function refreshRenderTextures(event: Event = null): void
@@ -147,7 +145,7 @@ package com.catalystapps.gaf.display
 				{
 					this.clearRenderTextures();
 
-					this._renderTexture = new RenderTexture(this._maskSize.x, this. _maskSize.y, false, this._scaleFactor);
+					this._renderTexture = new RenderTexture(this._maskSize.x, this._maskSize.y, false, this._scaleFactor);
 					this._maskRenderTexture = new RenderTexture(this._maskSize.x + PADDING * 2, this._maskSize.y + PADDING * 2, false, this._scaleFactor);
 
 					// create image with the new render texture
@@ -180,8 +178,8 @@ package com.catalystapps.gaf.display
 				}
 
 				if (!this._staticMaskSize
-					//&& (sHelperRect.width > this._maskSize.x || sHelperRect.height > this._maskSize.y)
-					&& (sHelperRect.width != this._maskSize.x || sHelperRect.height != this._maskSize.y))
+							//&& (sHelperRect.width > this._maskSize.x || sHelperRect.height > this._maskSize.y)
+						&& (sHelperRect.width != this._maskSize.x || sHelperRect.height != this._maskSize.y))
 				{
 					this._maskSize.setTo(sHelperRect.width, sHelperRect.height);
 					this.refreshRenderTextures();
@@ -203,12 +201,12 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		protected static var _a:Number;
-		protected static var _b:Number;
-		protected static var _c:Number;
-		protected static var _d:Number;
-		protected static var _tx:Number;
-		protected static var _ty:Number;
+		protected static var _a: Number;
+		protected static var _b: Number;
+		protected static var _c: Number;
+		protected static var _d: Number;
+		protected static var _tx: Number;
+		protected static var _ty: Number;
 
 		protected function drawRenderTextures(object: DisplayObject = null, matrix: Matrix = null, alpha: Number = 1.0): void
 		{
@@ -236,16 +234,6 @@ package com.catalystapps.gaf.display
 			//-----------------------------------------------------------------------------------------------------------------
 
 			this._renderTexture.draw(this._maskImage);
-		}
-
-		public function get zIndex(): uint
-		{
-			return this._zIndex;
-		}
-
-		public function set zIndex(value: uint): void
-		{
-			this._zIndex = value;
 		}
 
 		public function get mustReorder(): Boolean

@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CSound;
 	import starling.core.Starling;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
@@ -33,6 +34,8 @@ package com.catalystapps.gaf.data.converters
 	import flash.utils.getTimer;
 
 	import starling.utils.RectangleUtil;
+
+	use namespace gaf_internal;
 
 	/**
 	 * @private
@@ -376,23 +379,38 @@ package com.catalystapps.gaf.data.converters
 
 			this.readMaskMaxSizes();
 
+			if (isNaN(this._config.defaultScale))
+			{
+				if (this._config.scaleValues.indexOf(this._defaultScale) >= 0)
+				{
+					this._config.defaultScale = this._defaultScale;
+				}
+				else
+				{
+					this._config.defaultScale = this._config.scaleValues[0];
+				}
+			}
+
+			if (isNaN(this._config.defaultContentScaleFactor))
+			{
+				if (this._config.csfValues.indexOf(this._defaultContentScaleFactor) >= 0)
+				{
+					this._config.defaultContentScaleFactor = this._defaultContentScaleFactor;
+				}
+				else
+				{
+					this._config.defaultContentScaleFactor = this._config.csfValues[0];
+				}
+			}
+
 			for each (var textureAtlasScale: CTextureAtlasScale in this._config.allTextureAtlases)
 			{
 				for each (var textureAtlasCSF: CTextureAtlasCSF in textureAtlasScale.allContentScaleFactors)
 				{
-					if (!isNaN(_defaultContentScaleFactor) && MathUtility.equals(_defaultContentScaleFactor, textureAtlasCSF.csf))
+					if (MathUtility.equals(this._config.defaultContentScaleFactor, textureAtlasCSF.csf))
 					{
 						textureAtlasScale.contentScaleFactor = textureAtlasCSF;
 						break;
-					}
-				}
-
-				if (!textureAtlasScale.contentScaleFactor)
-				{
-					textureAtlasScale.contentScaleFactor = textureAtlasScale.allContentScaleFactors[0];
-					if (isNaN(this._config.defaultContentScaleFactor))
-					{
-						this._config.defaultContentScaleFactor = textureAtlasScale.contentScaleFactor.csf;
 					}
 				}
 			}
@@ -403,18 +421,9 @@ package com.catalystapps.gaf.data.converters
 
 				for each (textureAtlasScale in this._config.allTextureAtlases)
 				{
-					if (!isNaN(this._defaultScale) && MathUtility.equals(this._defaultScale, textureAtlasScale.scale))
+					if (MathUtility.equals(this._config.defaultScale, textureAtlasScale.scale))
 					{
 						timelineConfig.textureAtlas = textureAtlasScale;
-					}
-				}
-
-				if (!timelineConfig.textureAtlas && timelineConfig.allTextureAtlases.length)
-				{
-					timelineConfig.textureAtlas = timelineConfig.allTextureAtlases[0];
-					if (isNaN(this._config.defaultScale))
-					{
-						this._config.defaultScale = textureAtlasScale.scale;
 					}
 				}
 
@@ -683,6 +692,11 @@ package com.catalystapps.gaf.data.converters
 			var j: uint;
 
 			var scale: Number = this._bytes.readFloat();
+			if (this._config.scaleValues.indexOf(scale) == -1)
+			{
+				this._config.scaleValues.push(scale);
+			}
+
 			var textureAtlas: CTextureAtlasScale = this.getTextureAtlasScale(scale);
 
 			/////////////////////
@@ -713,6 +727,11 @@ package com.catalystapps.gaf.data.converters
 				{
 					source = this._bytes.readUTF();
 					csf = this._bytes.readFloat();
+
+					if (this._config.csfValues.indexOf(csf) == -1)
+					{
+						this._config.csfValues.push(csf);
+					}
 
 					contentScaleFactor = this.getTextureAtlasCSF(scale, csf);
 					updateTextureAtlasSources(contentScaleFactor, atlasID.toString(), source);

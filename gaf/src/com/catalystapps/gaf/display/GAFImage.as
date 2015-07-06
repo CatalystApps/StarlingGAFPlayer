@@ -3,7 +3,9 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.filter.GAFFilter;
+	import com.catalystapps.gaf.utils.MathUtility;
 
+	import flash.geom.Matrix;
 	import flash.geom.Point;
 
 	import starling.core.Starling;
@@ -26,16 +28,21 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		private static const HELPER_MATRIX: Matrix = new Matrix();
+
 		private var _assetTexture: IGAFTexture;
-		private var _zIndex: uint;
 
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
 		private var _maxSize: Point;
 
+		private var _pivotChanged: Boolean;
+
 		/** @private */
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
+
+		private var _orientationChanged: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -61,8 +68,9 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		/** @private */
-		public function invalidateSize(): void
+		public function invalidateOrientation(): void
 		{
+			this._orientationChanged = true;
 		}
 
 		/** @private */
@@ -217,6 +225,16 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		[Inline]
+		private function updateTransformMatrix(): void
+		{
+			if (this._orientationChanged)
+			{
+				this.transformationMatrix = this.transformationMatrix;
+				this._orientationChanged = false;
+			}
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -228,10 +246,67 @@ package com.catalystapps.gaf.display
 		 */
 		override public function dispose(): void
 		{
-			(this.filter) ? this.filter.dispose() : null;
-			this.filter = null;
+			if (this.filter)
+			{
+				this.filter.dispose();
+				this.filter = null;
+			}
 
 			super.dispose();
+		}
+
+		override public function set pivotX(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotX = value;
+		}
+
+		override public function set pivotY(value: Number): void
+		{
+			this._pivotChanged = true;
+			super.pivotY = value;
+		}
+
+		override public function get x(): Number
+		{
+			updateTransformMatrix();
+			return super.x;
+		}
+
+		override public function get y(): Number
+		{
+			updateTransformMatrix();
+			return super.y;
+		}
+
+		override public function get rotation(): Number
+		{
+			updateTransformMatrix();
+			return super.rotation;
+		}
+
+		override public function get scaleX(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleX;
+		}
+
+		override public function get scaleY(): Number
+		{
+			updateTransformMatrix();
+			return super.scaleY;
+		}
+
+		override public function get skewX(): Number
+		{
+			updateTransformMatrix();
+			return super.skewX;
+		}
+
+		override public function get skewY(): Number
+		{
+			updateTransformMatrix();
+			return super.skewY;
 		}
 
 		//--------------------------------------------------------------------------
@@ -269,15 +344,17 @@ package com.catalystapps.gaf.display
 		}
 
 		/** @private */
-		public function get zIndex(): uint
+		public function get pivotMatrix(): Matrix
 		{
-			return this._zIndex;
-		}
+			HELPER_MATRIX.copyFrom(this._assetTexture.pivotMatrix);
 
-		/** @private */
-		public function set zIndex(value: uint): void
-		{
-			this._zIndex = value;
+			if (this._pivotChanged)
+			{
+				HELPER_MATRIX.tx = this.pivotX;
+				HELPER_MATRIX.ty = this.pivotY;
+			}
+
+			return HELPER_MATRIX;
 		}
 	}
 }

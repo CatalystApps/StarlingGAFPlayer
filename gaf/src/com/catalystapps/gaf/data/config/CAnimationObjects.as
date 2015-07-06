@@ -82,7 +82,7 @@ package com.catalystapps.gaf.data.config
 
 		public function get animationObjectsDictionary(): Object
 		{
-			return _animationObjectsDictionary;
+			return this._animationObjectsDictionary;
 		}
 
 	}

@@ -56,7 +56,7 @@ package com.catalystapps.gaf.data.config
 				this._sequencesEndDictionary[sequence.endFrameNo] = sequence;
 			}
 		}
-		
+
 		public function getSequenceStart(frameNo: uint): CAnimationSequence
 		{
 			return this._sequencesStartDictionary[frameNo];
@@ -94,14 +94,14 @@ package com.catalystapps.gaf.data.config
 
 			return null;
 		}
-		
+
 		public function getSequenceByFrame(frameNo: uint): CAnimationSequence
 		{
-			for (var i: int = 0; i < _sequences.length; i++)
+			for (var i: int = 0; i < this._sequences.length; i++)
 			{
-				if (_sequences[i].isSequenceFrame(frameNo))
+				if (this._sequences[i].isSequenceFrame(frameNo))
 				{
-					return _sequences[i];
+					return this._sequences[i];
 				}
 			}
 
@@ -134,7 +134,7 @@ package com.catalystapps.gaf.data.config
 
 		public function get sequences(): Vector.<CAnimationSequence>
 		{
-			return _sequences;
+			return this._sequences;
 		}
 
 	}

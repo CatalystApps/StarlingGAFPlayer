@@ -189,7 +189,7 @@ package com.catalystapps.gaf.data.config
 
 		public function get filterConfigs(): Vector.<ICFilterData>
 		{
-			return _filterConfigs;
+			return this._filterConfigs;
 		}
 
 	}

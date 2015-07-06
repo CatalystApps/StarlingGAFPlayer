@@ -89,52 +89,52 @@ package com.catalystapps.gaf.data.config
 
 		public function get id(): String
 		{
-			return _id;
+			return this._id;
 		}
 
 		public function set id(value: String): void
 		{
-			_id = value;
+			this._id = value;
 		}
 
 		public function get text(): String
 		{
-			return _text;
+			return this._text;
 		}
 
 		public function set text(value: String): void
 		{
-			_text = value;
+			this._text = value;
 		}
 
 		public function get textFormat(): TextFormat
 		{
-			return _textFormat;
+			return this._textFormat;
 		}
 
 		public function set textFormat(value: TextFormat): void
 		{
-			_textFormat = value;
+			this._textFormat = value;
 		}
 
 		public function get width(): Number
 		{
-			return _width;
+			return this._width;
 		}
 
 		public function set width(value: Number): void
 		{
-			_width = value;
+			this._width = value;
 		}
 
 		public function get height(): Number
 		{
-			return _height;
+			return this._height;
 		}
 
 		public function set height(value: Number): void
 		{
-			_height = value;
+			this._height = value;
 		}
 
 		//--------------------------------------------------------------------------
@@ -145,92 +145,92 @@ package com.catalystapps.gaf.data.config
 
 		public function get embedFonts(): Boolean
 		{
-			return _embedFonts;
+			return this._embedFonts;
 		}
 
 		public function set embedFonts(value: Boolean): void
 		{
-			_embedFonts = value;
+			this._embedFonts = value;
 		}
 
 		public function get multiline(): Boolean
 		{
-			return _multiline;
+			return this._multiline;
 		}
 
 		public function set multiline(value: Boolean): void
 		{
-			_multiline = value;
+			this._multiline = value;
 		}
 
 		public function get wordWrap(): Boolean
 		{
-			return _wordWrap;
+			return this._wordWrap;
 		}
 
 		public function set wordWrap(value: Boolean): void
 		{
-			_wordWrap = value;
+			this._wordWrap = value;
 		}
 
 		public function get restrict(): String
 		{
-			return _restrict;
+			return this._restrict;
 		}
 
 		public function set restrict(value: String): void
 		{
-			_restrict = value;
+			this._restrict = value;
 		}
 
 		public function get editable(): Boolean
 		{
-			return _editable;
+			return this._editable;
 		}
 
 		public function set editable(value: Boolean): void
 		{
-			_editable = value;
+			this._editable = value;
 		}
 
 		public function get selectable(): Boolean
 		{
-			return _selectable;
+			return this._selectable;
 		}
 
 		public function set selectable(value: Boolean): void
 		{
-			_selectable = value;
+			this._selectable = value;
 		}
 
 		public function get displayAsPassword(): Boolean
 		{
-			return _displayAsPassword;
+			return this._displayAsPassword;
 		}
 
 		public function set displayAsPassword(value: Boolean): void
 		{
-			_displayAsPassword = value;
+			this._displayAsPassword = value;
 		}
 
 		public function get maxChars(): int
 		{
-			return _maxChars;
+			return this._maxChars;
 		}
 
 		public function set maxChars(value: int): void
 		{
-			_maxChars = value;
+			this._maxChars = value;
 		}
 
 		public function get pivotPoint(): Point
 		{
-			return _pivotPoint;
+			return this._pivotPoint;
 		}
 
 		public function set pivotPoint(value: Point): void
 		{
-			_pivotPoint = value;
+			this._pivotPoint = value;
 		}
 	}
 }

@@ -1,40 +1,40 @@
 <project name="GAF" basedir="../" default="build">
 
-  <property name="sdk.dir" location="d:\AirSDK"/>
+    <property name="air.sdk.dir" location="d:\AirSDK"/>
+    <property name="flex.sdk.dir" location="d:\FlexSDK"/>
 
-  <property name="deploy.dir" location="bin" />
-  <property name="src.dir" location="src" />
-  <property name="lib.dir" location="lib" />
-  <property name="doc.dir" location="doc" />
+    <property name="deploy.dir" location="bin"/>
+    <property name="src.dir" location="src"/>
+    <property name="lib.dir" location="lib"/>
+    <property name="doc.dir" location="doc"/>
 
-  <taskdef resource="flexTasks.tasks" classpath="${sdk.dir}/ant/lib/flexTasks.jar" />
-  <property name="FLEX_HOME" value="${sdk.dir}" />
+    <taskdef name="compc" classname="com.adobe.flash.compiler.ant.COMPCTask" classpath="${air.sdk.dir}/ant/lib/flexTasks.jar"/>
+    <taskdef name="asdoc" classname="flex.ant.AsDocTask" classpath="${flex.sdk.dir}/ant/lib/flexTasks.jar"/>
 
-  <target name="build">
-    <compc output="${deploy.dir}/gaf.swc" inline="true">
-      <include-sources dir="${src.dir}" includes="*" />
-      <include-libraries file="${lib.dir}/FZip.swc" />
-      <external-library-path file="${lib.dir}/starling.swc" />
-      <external-library-path file="${lib.dir}/feathers.swc" />
-      <external-library-path dir="${sdk.dir}/frameworks/libs/player/" includes="*" />
-    </compc>
-  </target>
+    <target name="build">
+        <property name="FLEX_HOME" value="${air.sdk.dir}"/>
+        <compc output="${deploy.dir}/gaf.swc" inline="true">
+            <load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+            <include-sources dir="${src.dir}" includes="*"/>
+            <include-libraries file="${lib.dir}/FZip.swc"/>
+            <external-library-path file="${lib.dir}/starling.swc"/>
+            <external-library-path file="${lib.dir}/feathers.swc"/>
+            <external-library-path dir="${air.sdk.dir}/frameworks/libs/player/" includes="*"/>
+        </compc>
+    </target>
 
-  <target name="doc" depends="clean">
-    <exec executable="${sdk.dir}/bin/asdoc.exe">
-      <arg value="-doc-sources"/>
-      <arg value="${src.dir}"/>
-      <arg value="-library-path"/>
-      <arg value="${lib.dir}"/>
-      <arg value="-output"/>
-      <arg value="${doc.dir}"/>
-      <arg value="-lenient"/>
-    </exec>
-  </target>
+    <target name="doc" depends="clean">
+        <property name="FLEX_HOME" value="${flex.sdk.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <asdoc output="${doc.dir}" dir="${FLEX_HOME}" lenient="true" failonerror="true">
+            <doc-sources path-element="${src.dir}"/>
+            <library-path dir="${lib.dir}" includes="*"/>
+        </asdoc>
+    </target>
 
-  <target name="clean">
-    <delete includeEmptyDirs="true">
-      <fileset dir="${doc.dir}" includes="**/*"/>
-    </delete>
-  </target>
+    <target name="clean">
+        <delete includeEmptyDirs="true">
+            <fileset dir="${doc.dir}" includes="**/*"/>
+        </delete>
+    </target>
 </project>
