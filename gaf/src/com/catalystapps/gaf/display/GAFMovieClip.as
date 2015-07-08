@@ -422,9 +422,12 @@ package com.catalystapps.gaf.display
 					this.changeCurrentFrame(false);
 				}
 			}
-			for (i = 0; i < this._mcVector.length; i++)
+			if (this._mcVector)
 			{
-				this._mcVector[i].advanceTime(passedTime);
+				for (i = 0; i < this._mcVector.length; i++)
+				{
+					this._mcVector[i].advanceTime(passedTime);
+				}
 			}
 		}
 
@@ -1250,6 +1253,7 @@ package com.catalystapps.gaf.display
 			{
 				Starling.juggler.remove(this);
 			}
+
 			var i: uint, l: uint;
 			for (i = 0, l = this._displayObjectsVector.length; i < l; i++)
 			{

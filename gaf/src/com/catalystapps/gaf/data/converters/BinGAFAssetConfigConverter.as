@@ -254,7 +254,6 @@ package com.catalystapps.gaf.data.converters
 					if (this._isTimeline)
 					{
 						this._isTimeline = false;
-						this.endParsingTimeline(this._currentTimeline);
 					}
 					else
 					{
@@ -368,10 +367,6 @@ package com.catalystapps.gaf.data.converters
 			}
 		}
 
-		private function endParsingTimeline(timelineConfig: GAFTimelineConfig): void
-		{
-		}
-
 		private function endParsing(): void
 		{
 			this._bytes.clear();
@@ -381,14 +376,12 @@ package com.catalystapps.gaf.data.converters
 
 			if (isNaN(this._config.defaultScale))
 			{
-				if (this._config.scaleValues.indexOf(this._defaultScale) >= 0)
+				var itemIndex: int = MathUtility.getItemIndex(this._config.scaleValues, this._defaultScale);
+				if (itemIndex < 0)
 				{
-					this._config.defaultScale = this._defaultScale;
+					itemIndex = 0;
 				}
-				else
-				{
-					this._config.defaultScale = this._config.scaleValues[0];
-				}
+				this._config.defaultScale = this._config.scaleValues[itemIndex];
 			}
 
 			if (isNaN(this._config.defaultContentScaleFactor))

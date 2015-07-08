@@ -18,5 +18,17 @@ package com.catalystapps.gaf.utils
 			}
 			return Math.abs(a - b) < epsilon;
 		}
+
+		public static function getItemIndex(source: Vector.<Number>, target: Number): int
+		{
+			for (var i: int = 0; i < source.length; i++)
+			{
+				if (equals(source[i], target))
+				{
+					return i;
+				}
+			}
+			return -1;
+		}
 	}
 }
