@@ -457,6 +457,7 @@ package com.catalystapps.gaf.display
 		 * Do not call this method if you have another GAFMovieClips that made from the same config
 		 * or even loaded from the same gaf file.
 		 */
+		[Deprecated(replacement="com.catalystapps.gaf.data.GAFBundle.dispose()", since="5.0")]
 		public function disposeWithTextures(): void
 		{
 			this._gafTimeline.unloadFromVideoMemory();
@@ -1239,6 +1240,10 @@ package com.catalystapps.gaf.display
 		 */
 		override public function dispose(): void
 		{
+			if (this._disposed)
+			{
+				return;
+			}
 			this.stop();
 
 			if (this._addToJuggler)
@@ -1267,6 +1272,7 @@ package com.catalystapps.gaf.display
 			this._displayObjectsVector = null;
 			this._pixelMasksVector = null;
 			this._imagesVector = null;
+			this._gafTimeline = null;
 			this._mcVector = null;
 			this._config = null;
 

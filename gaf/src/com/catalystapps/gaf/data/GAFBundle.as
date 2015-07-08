@@ -22,9 +22,10 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
+		private var _name: String;
 		private var _soundData: GAFSoundData;
 		private var _gafAssets: Vector.<GAFAsset>;
-		private var _gafAssetsDictionary: Object; // GAFAssetConfig by SWF name
+		private var _gafAssetsDictionary: Object; // GAFAsset by SWF name
 
 		//--------------------------------------------------------------------------
 		//
@@ -50,15 +51,19 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			GAFSoundManager.getInstance().stopAll();
-			this._soundData.gaf_internal::dispose();
-			this._soundData = null;
-
-			for each (var gafAsset: GAFAsset in this._gafAssets)
+			if (this._gafAssets)
 			{
-				gafAsset.dispose();
+				GAFSoundManager.getInstance().stopAll();
+				this._soundData.gaf_internal::dispose();
+				this._soundData = null;
+	
+				for each (var gafAsset: GAFAsset in this._gafAssets)
+				{
+					gafAsset.dispose();
+				}
+				this._gafAssets = null;
+				this._gafAssetsDictionary = null;
 			}
-			this._gafAssets = null;
 		}
 
 		/**
@@ -239,6 +244,16 @@ package com.catalystapps.gaf.data
 		public function get gafAssets(): Vector.<GAFAsset>
 		{
 			return this._gafAssets;
+		}
+
+		public function get name(): String
+		{
+			return this._name;
+		}
+
+		public function set name(name: String): void
+		{
+			this._name = name;
 		}
 	}
 }

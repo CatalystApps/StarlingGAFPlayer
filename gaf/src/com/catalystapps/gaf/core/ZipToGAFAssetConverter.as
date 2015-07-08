@@ -563,17 +563,15 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function createGAFTimelines(): void
+		private function createGAFTimelines(event: Event = null): void
 		{
+			if (event)
+			{
+				Starling.current.stage3D.removeEventListener(Event.CONTEXT3D_CREATE, createGAFTimelines);
+			}
 			if (!Starling.current.contextValid)
 			{
-				Starling.current.stage3D.addEventListener(Event.CONTEXT3D_CREATE,
-						function (event: Event): void
-						{
-							event.currentTarget.removeEventListener(event.type, arguments.callee);
-							createGAFTimelines();
-						});
-				return;
+				Starling.current.stage3D.addEventListener(Event.CONTEXT3D_CREATE, createGAFTimelines);
 			}
 
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
@@ -600,6 +598,12 @@ package com.catalystapps.gaf.core
 			if (!gafAsset || !gafAsset.timelines.length)
 			{
 				this.zipProcessError(ErrorConstants.TIMELINES_NOT_FOUND);
+				return;
+			}
+
+			if (this.gafAssetsIDs.length == 1)
+			{
+				this._gafBundle.name ||= gafAssetConfig.id;
 			}
 
 			if (this.soundData.gaf_internal::hasSoundsToLoad && !this._ignoreSounds)
