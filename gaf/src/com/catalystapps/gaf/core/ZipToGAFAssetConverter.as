@@ -554,7 +554,7 @@ package com.catalystapps.gaf.core
 				converter.defaultCSF = this._defaultContentScaleFactor;
 				converter.ignoreSounds = this._ignoreSounds;
 				converter.addEventListener(Event.COMPLETE, onConverted);
-				converter.addEventListener(ErrorEvent.ERROR, convertErrorHandler);
+				converter.addEventListener(ErrorEvent.ERROR, onConvertError);
 				converter.convert(this._parseConfigAsync);
 			}
 			else
@@ -696,7 +696,7 @@ package com.catalystapps.gaf.core
 
 		private function zipProcessError(text: String, id: int = 0): void
 		{
-			this.convertErrorHandler(new ErrorEvent(ErrorEvent.ERROR, false, false, text, id));
+			this.onConvertError(new ErrorEvent(ErrorEvent.ERROR, false, false, text, id));
 		}
 
 		//--------------------------------------------------------------------------
@@ -728,7 +728,7 @@ package com.catalystapps.gaf.core
 			this.zipProcessError(ErrorConstants.ERROR_PARSING, 1);
 		}
 
-		private function convertErrorHandler(event: ErrorEvent): void
+		private function onConvertError(event: ErrorEvent): void
 		{
 			if (this.hasEventListener(ErrorEvent.ERROR))
 			{
@@ -747,6 +747,7 @@ package com.catalystapps.gaf.core
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var converter: BinGAFAssetConfigConverter = event.target as BinGAFAssetConfigConverter;
 			converter.removeEventListener(Event.COMPLETE, onConverted);
+			converter.removeEventListener(ErrorEvent.ERROR, onConvertError);
 
 			this.gafAssetConfigs[configID] = converter.config;
 			var sounds: Vector.<CSound> = converter.config.sounds;

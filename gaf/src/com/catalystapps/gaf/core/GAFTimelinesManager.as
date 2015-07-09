@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.display.IGAFTexture;
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.data.GAFTimeline;
@@ -111,6 +112,27 @@ package com.catalystapps.gaf.core
 			}
 
 			return gafMovieClip;
+		}
+
+		/**
+		 * Returns <code>IGAFTexture</code> (custom image) from bundle by <code>swfName</code> and <code>linkage</code>.
+		 * Then it can be used to replace animation parts or create new animation parts.
+		 * @param swfName is the name of SWF file where original Bitmap/Sprite was located (or the name of the *.gaf config file where it is located)
+		 * @param linkage is the linkage name of the Bitmap/Sprite
+		 * @param scale Texture atlas Scale that will be used for <code>IGAFTexture</code> creation. Possible values are values from converted animation config.
+		 * @param csf Texture atlas content scale factor (CSF) that will be used for <code>IGAFTexture</code> creation. Possible values are values from converted animation config.
+		 * @return <code>IGAFTexture</code> (custom image) from bundle.
+		 * @see com.catalystapps.gaf.data.GAFBundle.getCustomRegion();
+		 */
+		public function getCustomRegion(swfName: String, linkage: String, scale: Number = NaN, csf: Number = NaN): IGAFTexture
+		{
+			var gafBundle: GAFBundle = _bundlesBySwfName[swfName];
+			if (gafBundle)
+			{
+				return gafBundle.getCustomRegion(swfName, linkage, scale , csf);
+			}
+
+			return null;
 		}
 
 		public static function removeAndDisposeBundle(name: String): void

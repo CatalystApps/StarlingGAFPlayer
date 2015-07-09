@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.data.converters.ErrorConstants;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CFrameSound;
@@ -330,9 +331,14 @@ package com.catalystapps.gaf.data
 		 * with different scale assign appropriate scale to <code>GAFTimeline</code> and only after that instantiate <code>GAFMovieClip</code>.
 		 * Possible values are values from converted animation config. They are depends from project settings on site converter
 		 */
-		public function set scale(scale: Number): void
+		public function set scale(value: Number): void
 		{
-			if (this._gafAsset.gaf_internal::hasScale(scale))
+			var scale: Number = this._gafAsset.gaf_internal::getValidScale(value);
+			if (isNaN(scale))
+			{
+				throw new Error(ErrorConstants.SCALE_NOT_FOUND);
+			}
+			else
 			{
 				this._gafAsset.scale = scale;
 			}

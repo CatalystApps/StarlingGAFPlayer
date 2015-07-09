@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import flash.events.ErrorEvent;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CSound;
 	import starling.core.Starling;
@@ -376,24 +377,32 @@ package com.catalystapps.gaf.data.converters
 
 			if (isNaN(this._config.defaultScale))
 			{
-				var itemIndex: int = MathUtility.getItemIndex(this._config.scaleValues, this._defaultScale);
-				if (itemIndex < 0)
+				var itemIndex: int;
+				if (!isNaN(this._defaultScale))
 				{
-					itemIndex = 0;
+					itemIndex = MathUtility.getItemIndex(this._config.scaleValues, this._defaultScale);
+					if (itemIndex < 0)
+					{
+						parseError(this._defaultScale + ErrorConstants.SCALE_NOT_FOUND);
+						return;
+					}
 				}
 				this._config.defaultScale = this._config.scaleValues[itemIndex];
 			}
 
 			if (isNaN(this._config.defaultContentScaleFactor))
 			{
-				if (this._config.csfValues.indexOf(this._defaultContentScaleFactor) >= 0)
+				itemIndex = 0;
+				if (!isNaN(this._defaultContentScaleFactor))
 				{
-					this._config.defaultContentScaleFactor = this._defaultContentScaleFactor;
+					itemIndex = MathUtility.getItemIndex(this._config.csfValues, this._defaultContentScaleFactor);
+					if (itemIndex < 0)
+					{
+						parseError(this._defaultContentScaleFactor + ErrorConstants.CSF_NOT_FOUND);
+						return;
+					}
 				}
-				else
-				{
-					this._config.defaultContentScaleFactor = this._config.csfValues[0];
-				}
+				this._config.defaultContentScaleFactor = this._config.csfValues[itemIndex];
 			}
 
 			for each (var textureAtlasScale: CTextureAtlasScale in this._config.allTextureAtlases)
@@ -876,6 +885,18 @@ package com.catalystapps.gaf.data.converters
 			{
 				textureAtlasSource = new CTextureAtlasSource(atlasID, source);
 				textureAtlasSources.push(textureAtlasSource);
+			}
+		}
+
+		private function parseError(message: String): void
+		{
+			if (this.hasEventListener(ErrorEvent.ERROR))
+			{
+				this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, message));
+			}
+			else
+			{
+				throw new Error(message);
 			}
 		}
 

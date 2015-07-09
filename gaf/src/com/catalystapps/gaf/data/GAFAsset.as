@@ -3,6 +3,7 @@
  */
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
@@ -183,15 +184,20 @@ package com.catalystapps.gaf.data
 		}
 
 		/** @private */
-		gaf_internal function hasScale(value: Number): Boolean
+		gaf_internal function getValidScale(value: Number): Number
 		{
-			return this._config.scaleValues.indexOf(value) >= 0;
+			var index: int = MathUtility.getItemIndex(this._config.scaleValues, value);
+			if (index != -1)
+			{
+				return this._config.scaleValues[index];
+			}
+			return NaN;
 		}
 
 		/** @private */
 		gaf_internal function hasCSF(value: Number): Boolean
 		{
-			return this._config.csfValues.indexOf(value) >= 0;
+			return MathUtility.getItemIndex(this._config.csfValues, value) >= 0;
 		}
 
 		//--------------------------------------------------------------------------
