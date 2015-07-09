@@ -197,6 +197,11 @@ package com.catalystapps.gaf.core
 			this._gafBundle = new GAFBundle();
 			this._gafBundle.soundData = this.soundData;
 
+			if (this._id && this._id.length > 0)
+			{
+				this._gafBundle.name = this._id;
+			}
+
 			if (data is ByteArray)
 			{
 				this._zip = new FZip();
