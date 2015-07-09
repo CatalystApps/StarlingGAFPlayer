@@ -246,6 +246,14 @@ package com.catalystapps.gaf.data
 			return this._gafAssets;
 		}
 
+		/**
+		 * The name of the bundle. Used in GAFTimelinesManager to identify specific bundle.
+		 * Should be specified by user using corresponding setter or by passing the name as second parameter in GAFTimelinesManager.addGAFBundle().
+		 * The name can be auto-setted by ZipToGAFAssetConverter in two cases:
+		 * 1) If ZipToGAFAssetConverter.id is not empty ZipToGAFAssetConverter sets the bundle name equal to it's id;
+		 * 2) If ZipToGAFAssetConverter.id is empty, but gaf package (zip or folder) contain only one *.gaf config file,
+		 * ZipToGAFAssetConverter sets the bundle name equal to the name of the *.gaf config file.
+		 */
 		public function get name(): String
 		{
 			return this._name;

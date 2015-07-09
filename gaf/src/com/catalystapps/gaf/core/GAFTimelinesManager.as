@@ -41,9 +41,9 @@ package com.catalystapps.gaf.core
 		/**
 		 * Add all <code>GAFTimeline's</code> from bundle into timelines collection
 		 * @param bundle
-		 * @param name optional
+		 * @param bundleName The name of the bundle. Used in <code>GAFTimelinesManager</code> to identify specific bundle.
 		 */
-		public static function addGAFBundle(bundle: GAFBundle, name: String = null): void
+		public static function addGAFBundle(bundle: GAFBundle, bundleName: String = null): void
 		{
 			if (bundle)
 			{
@@ -58,7 +58,7 @@ package com.catalystapps.gaf.core
 						throw new Error("Trying to add GAF asset that already exist in collection. \"swfName\": " + asset.id);
 					}
 				}
-				bundle.name ||= name;
+				bundle.name = bundleName || bundle.name;
 				if (bundle.name)
 				{
 					if (!_bundlesByName[bundle.name])
@@ -135,14 +135,23 @@ package com.catalystapps.gaf.core
 			return null;
 		}
 
-		public static function removeAndDisposeBundle(name: String): void
+		/**
+		 * Removes specified <code>GAFBundle</code> object from the <code>GAFTimelinesManager</code> and dispose it.
+		 * Use this method to free memory when all content of the specified bundle doesn't need anymore.
+		 * @param bundleName the name of the bundle that was given to it when bundle was added to the <code>GAFTimelinesManager</code>.
+		 */
+		public static function removeAndDisposeBundle(bundleName: String): void
 		{
-			if (name)
+			if (bundleName)
 			{
-				removeAndDispose(name);
+				removeAndDispose(bundleName);
 			}
 		}
 
+		/**
+		 * Removes all GAFBundle objects from the GAFTimelinesManager and dispose them.
+		 * Use this method to free memory when all bundles don't need anymore.
+		 */
 		public static function removeAndDisposeAll(): void
 		{
 			removeAndDispose();

@@ -157,7 +157,10 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 
-		/** @private */
+		/** Creates a new <code>ZipToGAFAssetConverter</code> instance.
+		 * @param id The id of the converter.
+		 * If it is not empty <code>ZipToGAFAssetConverter</code> sets the <code>name</code> of produced bundle equal to this id.
+		 */
 		public function ZipToGAFAssetConverter(id: String = null)
 		{
 			this._id = id;
@@ -919,7 +922,8 @@ package com.catalystapps.gaf.core
 		}
 
 		/**
-		 * Return the id of the converter
+		 * The id of the converter.
+		 * If it is not empty <code>ZipToGAFAssetConverter</code> sets the <code>name</code> of produced bundle equal to this id.
 		 */
 		public function get id(): String
 		{
