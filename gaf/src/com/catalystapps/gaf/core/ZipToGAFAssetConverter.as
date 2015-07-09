@@ -186,9 +186,9 @@ package com.catalystapps.gaf.core
 		 */
 		public function convert(data: *, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
-			if (ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
+			if (!Starling.handleLostContext && ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
 			{
-				throw new Error("Impossible parameters combination! keepImagesInRAM = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
+				throw new Error("Impossible parameters combination! Starling.handleLostContext = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
 			}
 
 			this._defaultScale = defaultScale;
