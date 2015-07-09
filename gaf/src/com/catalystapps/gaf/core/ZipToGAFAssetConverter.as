@@ -74,7 +74,7 @@ package com.catalystapps.gaf.core
 
 		/**
 		 * In process of conversion doesn't create textures (doesn't load in GPU memory).
-		 * Be sure to set up <code>ZipToGAFAssetConverter.keepImagesInRAM = true</code> when using this action, otherwise Error will occur
+		 * Be sure to set up <code>Starling.handleLostContext = true</code> when using this action, otherwise Error will occur
 		 */
 		public static const ACTION_DONT_LOAD_IN_GPU_MEMORY: String = "actionDontLoadInGPUMemory";
 
