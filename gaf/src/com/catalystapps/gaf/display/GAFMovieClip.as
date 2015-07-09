@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.display
 {
+	import starling.events.Event;
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.GAF;
@@ -39,6 +40,9 @@ package com.catalystapps.gaf.display
 
 	/** Dispatched when playhead reached end frame of sequence */
 	[Event(name="typeSequenceEnd", type="starling.events.Event")]
+	
+	/** Dispatched whenever the movie has displayed its last frame. */
+	[Event(name="complete", type="starling.events.Event")]
 
 	/**
 	 * GAFMovieClip represents animation display object that is ready to be used in Starling display list. It has
@@ -685,7 +689,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function checkSequence(): void
+		private function checkPlaybackEvents(): void
 		{
 			var sequence: CAnimationSequence;
 			if (this.hasEventListener(EVENT_TYPE_SEQUENCE_START))
@@ -702,6 +706,13 @@ package com.catalystapps.gaf.display
 				if (sequence)
 				{
 					this.dispatchEventWith(EVENT_TYPE_SEQUENCE_END, false, sequence);
+				}
+			}
+			if (this.hasEventListener(Event.COMPLETE))
+			{
+				if (this._currentFrame == this._finalFrame)
+				{
+					this.dispatchEventWith(Event.COMPLETE);
 				}
 			}
 		}
@@ -965,7 +976,7 @@ package com.catalystapps.gaf.display
 				this.addDebugRegions();
 			}
 
-			this.checkSequence();
+			this.checkPlaybackEvents();
 		}
 
 		private function renderDebug(mc: GAFMovieClip, instance: CAnimationFrameInstance, masked: Boolean): void
@@ -1407,7 +1418,7 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				this.checkSequence();
+				this.checkPlaybackEvents();
 			}
 
 			if (resetInvisibleChildren)
