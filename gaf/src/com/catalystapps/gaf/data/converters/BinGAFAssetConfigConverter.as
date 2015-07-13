@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data.converters
 {
+	import com.catalystapps.gaf.data.GAF;
 	import flash.events.ErrorEvent;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CSound;
@@ -529,7 +530,7 @@ package com.catalystapps.gaf.data.converters
 							alpha = this._bytes.readFloat();
 							if (alpha == 1)
 							{
-								alpha = CAnimationFrameInstance.MAX_ALPHA;
+								alpha = GAF.gaf_internal::maxAlpha;
 							}
 							matrix = new Matrix(this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat(),
 									this._bytes.readFloat(), this._bytes.readFloat(), this._bytes.readFloat());

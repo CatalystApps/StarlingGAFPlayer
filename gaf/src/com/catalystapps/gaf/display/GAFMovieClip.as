@@ -984,7 +984,7 @@ package com.catalystapps.gaf.display
 			if (DebugUtility.RENDERING_DEBUG && mc)
 			{
 				var hasFilter: Boolean = (instance.filter != null) || this._hasFilter;
-				var alphaLessMax: Boolean = instance.alpha < CAnimationFrameInstance.MAX_ALPHA || this._alphaLessMax;
+				var alphaLessMax: Boolean = instance.alpha < GAF.gaf_internal::maxAlpha || this._alphaLessMax;
 
 				var changed: Boolean;
 				if (mc._alphaLessMax != alphaLessMax)
