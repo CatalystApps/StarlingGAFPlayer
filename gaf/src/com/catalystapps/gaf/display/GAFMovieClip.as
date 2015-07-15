@@ -806,7 +806,11 @@ package com.catalystapps.gaf.display
 			{
 				this._currentFrame = frame - 1;
 				this.runActions();
-				this.draw();
+				//actions may interrupt playback and lead to content disposition
+				if (!this._disposed)
+				{
+					this.draw();
+				}
 			}
 		}
 
@@ -1410,6 +1414,12 @@ package com.catalystapps.gaf.display
 			}
 
 			this.runActions();
+
+			//actions may interrupt playback and lead to content disposition
+			if (this._disposed)
+			{
+				return;
+			}
 
 			if (!isSkipping)
 			{
