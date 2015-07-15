@@ -3,7 +3,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.filter.GAFFilter;
-	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -251,6 +250,8 @@ package com.catalystapps.gaf.display
 				this.filter.dispose();
 				this.filter = null;
 			}
+			this._assetTexture = null;
+			this._filterConfig = null;
 
 			super.dispose();
 		}

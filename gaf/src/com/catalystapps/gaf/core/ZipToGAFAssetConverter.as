@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.core
 {
+	import flash.display3D.Context3DTextureFormat;
+	import flash.utils.getDefinitionByName;
 	import deng.fzip.FZip;
 	import deng.fzip.FZipErrorEvent;
 	import deng.fzip.FZipFile;
@@ -97,10 +99,10 @@ package com.catalystapps.gaf.core
 		/**
 		 * Defines the values to use for specifying a texture format.
 		 * If you prefer to use 16 bit-per-pixel textures just set
-		 * <code>GAFGFXData.BGR_PACKED</code> or <code>GAFGFXData.BGRA_PACKED</code>.
+		 * <code>Context3DTextureFormat.BGR_PACKED</code> or <code>Context3DTextureFormat.BGRA_PACKED</code>.
 		 * It will cut texture memory usage in half.
 		 */
-		public var textureFormat: String = GAFGFXData.BGRA;
+		public var textureFormat: String = Context3DTextureFormat.BGRA;
 
 		/**
 		 * Indicates keep or not to keep zip file content as ByteArray for further usage.
@@ -343,20 +345,11 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function loadConfig(): void
-		{
-			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
-			var gafAssetsConfigURLLoader: URLLoader = new URLLoader();
-			gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
-			gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIoError);
-			gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigUrlLoaderComplete);
-			gafAssetsConfigURLLoader.load(new URLRequest(url));
-		}
-
 		private function findAllAtlasURLs(): void
 		{
 			this.atlasSourceURLs = [];
 
+			var url: String;
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 
 			for (var id: String in this.gafAssetConfigs)
@@ -377,7 +370,7 @@ package com.catalystapps.gaf.core
 								{
 									for each (var source: CTextureAtlasSource in csf.sources)
 									{
-										var url: String = folderURL + source.source;
+										url = folderURL + source.source;
 
 										if (source.source != "no_atlas"
 												&& this.atlasSourceURLs.indexOf(url) == -1)
@@ -394,14 +387,7 @@ package com.catalystapps.gaf.core
 
 			if (this.atlasSourceURLs.length)
 			{
-				if (this.textureFormat == GAFGFXData.ATF)
-				{
-					this.loadATF();
-				}
-				else
-				{
-					this.loadPNG();
-				}
+				this.loadNextAtlas();
 			}
 			else
 			{
@@ -409,46 +395,74 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function loadPNG(): void
-		{
-			var request: URLRequest = new URLRequest(this.atlasSourceURLs[this.atlasSourceIndex]);
-
-			var atlasSourceLoader: Loader = new Loader();
-			atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
-			atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
-			atlasSourceLoader.load(request, new LoaderContext());
-		}
-
-		private function loadATF(): void
+		private function loadNextAtlas(): void
 		{
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-			var atfURL: String = url.substring(0, url.lastIndexOf(".png")) + ".atf";
 
+			var FileClass: Class = getDefinitionByName("flash.filesystem::File") as Class;
+			var file: * = new FileClass(url);
+			if (file["exists"])
+			{
+				this.loadPNG(url);
+			}
+			else
+			{
+				url = url.substring(0, url.lastIndexOf(".png"));
+				file = new FileClass(url + ".atf");
+				if (file["exists"])
+				{
+					this.loadATF(file["nativePath"]);
+				}
+				else
+				{
+					this.zipProcessError(ErrorConstants.FILE_NOT_FOUND + url + "'", 4);
+				}
+			}
+		}
+
+		private function loadPNG(url: String): void
+		{
+			var atlasSourceLoader: Loader = new Loader();
+			atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
+			atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadIOError);
+			atlasSourceLoader.load(new URLRequest(url), new LoaderContext());
+		}
+
+		private function loadATF(url: String): void
+		{
 			var atfSourceLoader: URLLoader = new URLLoader();
 			atfSourceLoader.dataFormat = URLLoaderDataFormat.BINARY;
 			atfSourceLoader.addEventListener(Event.COMPLETE, this.onATFLoadComplete);
-			atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onAtlasLoadIOError);
-			atfSourceLoader.load(new URLRequest(atfURL));
+			atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onATFLoadIOError);
+			atfSourceLoader.load(new URLRequest(url));
+		}
+
+		private function loadConfig(): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			var gafAssetsConfigURLLoader: URLLoader = new URLLoader();
+			gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIOError);
+			gafAssetsConfigURLLoader.addEventListener(Event.COMPLETE, this.onConfigLoadComplete);
+			gafAssetsConfigURLLoader.load(new URLRequest(url));
 		}
 
 		private function finalizeParsing(): void
 		{
-			if (this.textureFormat == GAFGFXData.ATF)
+			if (!Starling.handleLostContext)
 			{
-				this.atfData = null;
-			}
-			else
-			{
-				if (!Starling.handleLostContext)
+				this.gfxData.removeImages();
+				for each (var bd: BitmapData in this.pngImgs)
 				{
-					this.gfxData.removeImages();
-					for each (var bd: BitmapData in this.pngImgs)
-					{
-						bd.dispose();
-					}
+					bd.dispose();
 				}
-				this.pngImgs = null;
+				for each (var ba: ByteArray in this.atfData)
+				{
+					ba.clear();
+				}
 			}
+			this.pngImgs = null;
+			this.atfData = null;
 
 			if (this._zip && !ZipToGAFAssetConverter.keepZipInRAM)
 			{
@@ -468,12 +482,6 @@ package com.catalystapps.gaf.core
 			this.sounds = null;
 
 			this.dispatchEvent(new Event(Event.COMPLETE));
-		}
-
-		private function onSoundLoadIOError(event: IOErrorEvent): void
-		{
-			var sound: Sound = event.target as Sound;
-			this.zipProcessError(ErrorConstants.ERROR_LOADING + sound.url, 6);
 		}
 
 		private function getFolderURL(url: String): String
@@ -707,6 +715,12 @@ package com.catalystapps.gaf.core
 			this.onConvertError(new ErrorEvent(ErrorEvent.ERROR, false, false, text, id));
 		}
 
+		private function removeLoaderListeners(target: EventDispatcher, onComplete: Function, onError: Function): void
+		{
+			target.removeEventListener(Event.COMPLETE, onComplete);
+			target.removeEventListener(IOErrorEvent.IO_ERROR, onError);
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -788,16 +802,9 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function onAtlasLoadIOError(event: IOErrorEvent): void
-		{
-			(event.target as EventDispatcher).removeEventListener(event.type, onAtlasLoadIOError);
-
-			this.zipProcessError(ErrorConstants.ERROR_LOADING + this.atlasSourceURLs[this.atlasSourceIndex], 6);
-		}
-
 		private function onPNGLoadComplete(event: Event): void
 		{
-			(event.target as EventDispatcher).removeEventListener(event.type, onPNGLoadComplete);
+			this.removeLoaderListeners(event.target as EventDispatcher, onPNGLoadComplete, onPNGLoadIOError);
 
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
@@ -812,17 +819,17 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				this.loadPNG();
+				this.loadNextAtlas();
 			}
 		}
 
 		private function onATFLoadComplete(event: Event): void
 		{
 			var loader: URLLoader = event.target as URLLoader;
-			loader.removeEventListener(event.type, onATFLoadComplete);
-			loader.removeEventListener(event.type, onConfigIoError);
-
 			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+
+			this.removeLoaderListeners(loader, onATFLoadComplete, onATFLoadIOError);
+
 			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
 			this.atfData[fileName] = loader.data;
@@ -835,27 +842,20 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				this.loadATF();
+				this.loadNextAtlas();
 			}
 		}
 
-		private function onConfigIoError(event: IOErrorEvent): void
+		private function onConfigLoadComplete(event: Event): void
 		{
-			(event.target as URLLoader).removeEventListener(event.type, onATFLoadComplete);
-			(event.target as URLLoader).removeEventListener(event.type, onConfigIoError);
-
-			this.zipProcessError(ErrorConstants.ERROR_LOADING + this.gafAssetsConfigURLs[this.gafAssetsConfigIndex], 5);
-		}
-
-		private function onConfigUrlLoaderComplete(event: Event): void
-		{
-			(event.target as URLLoader).removeEventListener(event.type, onConfigUrlLoaderComplete);
-
+			var loader: URLLoader = event.target as URLLoader;
 			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+
+			this.removeLoaderListeners(loader, onConfigLoadComplete, onConfigIOError);
 
 			this.gafAssetsIDs.push(url);
 
-			this.gafAssetConfigSources[url] = (event.target as URLLoader).data;
+			this.gafAssetConfigSources[url] = loader.data;
 
 			this.gafAssetsConfigIndex++;
 
@@ -869,19 +869,39 @@ package com.catalystapps.gaf.core
 			}
 		}
 
+		private function onPNGLoadIOError(event: IOErrorEvent): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			this.removeLoaderListeners(event.target as EventDispatcher, onPNGLoadComplete, onPNGLoadIOError);
+			this.zipProcessError(ErrorConstants.ERROR_LOADING + url, 6);
+		}
+
+		private function onATFLoadIOError(event: IOErrorEvent): void
+		{
+			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			this.removeLoaderListeners(event.target as URLLoader, onATFLoadComplete, onATFLoadIOError);
+			this.zipProcessError(ErrorConstants.ERROR_LOADING + url, 6);
+		}
+
+		private function onConfigIOError(event: IOErrorEvent): void
+		{
+			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			this.removeLoaderListeners(event.target as URLLoader, onConfigLoadComplete, onConfigIOError);
+			this.zipProcessError(ErrorConstants.ERROR_LOADING + url, 5);
+		}
+
+		private function onSoundLoadIOError(event: IOErrorEvent): void
+		{
+			var sound: Sound = event.target as Sound;
+			this.removeLoaderListeners(event.target as URLLoader, onSoundLoadIOError, onSoundLoadIOError);
+			this.zipProcessError(ErrorConstants.ERROR_LOADING + sound.url, 6);
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
-
-		/**
-		 * Return converted <code>GAFTimeline</code>. If GAF asset file created as Bundle - returns null.
-		 */
-		/*public function get gafAsset(): GAFAsset
-		 {
-		 	return this._gafAsset;
-		 }*/
 
 		/**
 		 * Return converted <code>GAFBundle</code>. If GAF asset file created as single animation - returns null.
