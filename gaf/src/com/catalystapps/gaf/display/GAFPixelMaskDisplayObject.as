@@ -172,11 +172,6 @@ package com.catalystapps.gaf.display
 
 				this._mask.getBounds(null, sHelperRect);
 
-				if (!(this._mask is DisplayObjectContainer))
-				{
-					RectangleUtil.getBounds(sHelperRect, this._mask.transformationMatrix, sHelperRect);
-				}
-
 				if (!this._staticMaskSize
 							//&& (sHelperRect.width > this._maskSize.x || sHelperRect.height > this._maskSize.y)
 						&& (sHelperRect.width != this._maskSize.x || sHelperRect.height != this._maskSize.y))
