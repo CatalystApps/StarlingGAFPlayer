@@ -9,17 +9,48 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.utils.FiltersUtility;
 
 	import feathers.controls.text.TextFieldTextEditor;
+	import feathers.utils.geom.matrixToScaleX;
+	import feathers.utils.geom.matrixToScaleY;
 
+	import flash.display.BitmapData;
+	import flash.display3D.Context3DProfile;
+	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
+
+	import starling.core.Starling;
+	import starling.display.Image;
+	import starling.textures.ConcreteTexture;
+	import starling.textures.Texture;
+	import starling.utils.getNextPowerOfTwo;
 
 	/** @private */
 	public class GAFTextFieldTextEditor extends TextFieldTextEditor
 	{
-		private var _filters: Array;
+		/**
+		 * @private
+		 */
+		private static const HELPER_MATRIX: Matrix = new Matrix();
 
-		public function GAFTextFieldTextEditor()
+		private var _filters: Array;
+		private var _scale: Number;
+		private var _csf: Number;
+
+		private var _snapshotClipRect: Rectangle;
+
+		public function GAFTextFieldTextEditor(scale: Number = 1, csf: Number = 1)
 		{
+			this._scale = scale;
+			this._csf = csf;
 			super();
+
+			try // Feathers revision before bca9b93
+			{
+				this._snapshotClipRect = this["_textFieldClipRect"];
+			}
+			catch (error: Error)
+			{
+				this._snapshotClipRect = this["_textFieldSnapshotClipRect"];
+			}
 		}
 
 		/** @private */
@@ -30,7 +61,7 @@ package com.catalystapps.gaf.display
 			{
 				for each (var filter: ICFilterData in value.filterConfigs)
 				{
-					filters.push(FiltersUtility.getNativeFilter(filter, scale));
+					filters.push(FiltersUtility.getNativeFilter(filter, scale * this._csf));
 				}
 			}
 
@@ -59,42 +90,148 @@ package com.catalystapps.gaf.display
 		/**
 		 * @private
 		 */
-		override protected function refreshSnapshotParameters():void
+		override protected function refreshSnapshotParameters(): void
 		{
-			super.refreshSnapshotParameters();
+			this._textFieldOffsetX = 0;
+			this._textFieldOffsetY = 0;
+			this._snapshotClipRect.x = 0;
+			this._snapshotClipRect.y = 0;
 
-			var snapshotClipRect: Rectangle;
-
-			try // Feathers revision before bca9b93
+			var clipWidth: Number = this.actualWidth * this._scale * this._csf;
+			if (clipWidth < 0)
 			{
-				snapshotClipRect = this["_textFieldClipRect"];
+				clipWidth = 0;
 			}
-			catch (error: Error)
+			var clipHeight: Number = this.actualHeight * this._scale * this._csf;
+			if (clipHeight < 0)
 			{
-				snapshotClipRect = this["_textFieldSnapshotClipRect"];
+				clipHeight = 0;
 			}
+			this._snapshotClipRect.width = clipWidth;
+			this._snapshotClipRect.height = clipHeight;
 
-			snapshotClipRect.copyFrom(DisplayUtility.getBoundsWithFilters(snapshotClipRect, this.textField.filters));
-			this._textFieldOffsetX -= snapshotClipRect.x;
-			this._textFieldOffsetY -= snapshotClipRect.y;
-			snapshotClipRect.x = 0;
-			snapshotClipRect.y = 0;
+			this._snapshotClipRect.copyFrom(DisplayUtility.getBoundsWithFilters(this._snapshotClipRect, this.textField.filters));
+			this._textFieldOffsetX = this._snapshotClipRect.x;
+			this._textFieldOffsetY = this._snapshotClipRect.y;
+			this._snapshotClipRect.x = 0;
+			this._snapshotClipRect.y = 0;
 		}
 
 		/**
 		 * @private
 		 */
-		override protected function positionSnapshot():void
+		override protected function positionSnapshot(): void
 		{
-			super.positionSnapshot();
-
 			if (!this.textSnapshot)
 			{
 				return;
 			}
 
-			this.textSnapshot.x -= this._textFieldOffsetX;
-			this.textSnapshot.y -= this._textFieldOffsetY;
+			this.textSnapshot.x = this._textFieldOffsetX / this._scale / this._csf;
+			this.textSnapshot.y = this._textFieldOffsetY / this._scale / this._csf;
+		}
+
+		/**
+		 * @private
+		 */
+		override protected function checkIfNewSnapshotIsNeeded(): void
+		{
+			var canUseRectangleTexture: Boolean = Starling.current.profile != Context3DProfile.BASELINE_CONSTRAINED;
+			if (canUseRectangleTexture)
+			{
+				this._snapshotWidth = this._snapshotClipRect.width;
+				this._snapshotHeight = this._snapshotClipRect.height;
+			}
+			else
+			{
+				this._snapshotWidth = getNextPowerOfTwo(this._snapshotClipRect.width);
+				this._snapshotHeight = getNextPowerOfTwo(this._snapshotClipRect.height);
+			}
+			var textureRoot: ConcreteTexture = this.textSnapshot ? this.textSnapshot.texture.root : null;
+			this._needsNewTexture = this._needsNewTexture || !this.textSnapshot ||
+					textureRoot.scale != this._scale * this._csf ||
+					this._snapshotWidth != textureRoot.width || this._snapshotHeight != textureRoot.height;
+		}
+
+		/**
+		 * @private
+		 */
+		override protected function texture_onRestore(): void
+		{
+			if (this.textSnapshot && this.textSnapshot.texture &&
+					this.textSnapshot.texture.scale != this._scale * this._csf)
+			{
+				//if we've changed between scale factors, we need to recreate
+				//the texture to match the new scale factor.
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
+			else
+			{
+				this.refreshSnapshot();
+			}
+		}
+
+		/**
+		 * @private
+		 */
+		override protected function refreshSnapshot(): void
+		{
+			if (this._snapshotWidth <= 0 || this._snapshotHeight <= 0)
+			{
+				return;
+			}
+
+			var gutterPositionOffset: Number = 2;
+			if (this._useGutter)
+			{
+				gutterPositionOffset = 0;
+			}
+
+			var textureScaleFactor: Number = this._scale * this._csf;
+
+			HELPER_MATRIX.identity();
+			HELPER_MATRIX.scale(textureScaleFactor, textureScaleFactor);
+
+			HELPER_MATRIX.translate(-this._textFieldOffsetX - gutterPositionOffset, -this._textFieldOffsetY - gutterPositionOffset);
+
+			var bitmapData: BitmapData = new BitmapData(this._snapshotWidth, this._snapshotHeight, true, 0x00ff00ff);
+			bitmapData.draw(this.textField, HELPER_MATRIX, null, null, this._snapshotClipRect);
+			var newTexture: Texture;
+			if (!this.textSnapshot || this._needsNewTexture)
+			{
+				//skip Texture.fromBitmapData() because we don't want
+				//it to create an onRestore function that will be
+				//immediately discarded for garbage collection.
+				newTexture = Texture.empty(bitmapData.width / textureScaleFactor, bitmapData.height / textureScaleFactor,
+						true, false, false, textureScaleFactor);
+				newTexture.root.uploadBitmapData(bitmapData);
+				newTexture.root.onRestore = texture_onRestore;
+			}
+
+			if (!this.textSnapshot)
+			{
+				this.textSnapshot = new Image(newTexture);
+				this.addChild(this.textSnapshot);
+			}
+			else
+			{
+				if (this._needsNewTexture)
+				{
+					this.textSnapshot.texture.dispose();
+					this.textSnapshot.texture = newTexture;
+					this.textSnapshot.readjustSize();
+				}
+				else
+				{
+					//this is faster, if we haven't resized the bitmapdata
+					var existingTexture: Texture = this.textSnapshot.texture;
+					existingTexture.root.uploadBitmapData(bitmapData);
+				}
+			}
+
+			this.textSnapshot.alpha = this._text.length > 0 ? 1 : 0;
+			bitmapData.dispose();
+			this._needsNewTexture = false;
 		}
 	}
 }

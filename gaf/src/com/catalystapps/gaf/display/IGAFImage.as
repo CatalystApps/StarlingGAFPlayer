@@ -11,6 +11,5 @@ package com.catalystapps.gaf.display
 		function get assetTexture(): IGAFTexture;
 		function get smoothing(): String;
 		function set smoothing(value: String): void;
-		function invalidateSize(): void;
 	}
 }

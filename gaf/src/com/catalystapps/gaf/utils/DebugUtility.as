@@ -3,6 +3,8 @@
  */
 package com.catalystapps.gaf.utils
 {
+	import com.catalystapps.gaf.data.GAF;
+	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationFrameInstance;
 
 	/**
@@ -36,7 +38,7 @@ package com.catalystapps.gaf.utils
 			{
 				colors.push(RENDERING_FILTER_COLOR);
 			}
-			if (instance.alpha < CAnimationFrameInstance.MAX_ALPHA || alphaLess1)
+			if (instance.alpha < GAF.gaf_internal::maxAlpha || alphaLess1)
 			{
 				colors.push(RENDERING_ALPHA_COLOR);
 			}

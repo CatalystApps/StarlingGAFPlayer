@@ -1,5 +1,6 @@
 package 
 {
+	import com.catalystapps.gaf.data.GAFBundle;
 	import starling.events.TouchPhase;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
@@ -30,9 +31,10 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafTimeline;
+			var bundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
+			var timeline: GAFTimeline = bundle.getGAFTimeline("text_field_demo", "rootTimeline");
 			this.mc = new GAFMovieClip(timeline);
-			
+
 			this.addChild(mc);
 			this.mc.swapBtn.addEventListener(TouchEvent.TOUCH, onTouch);
 			this.mc.swapBtn.useHandCursor = true;

@@ -48,10 +48,12 @@ package com.catalystapps.gaf.data
 
 		public function dispose(): void
 		{
-			for each(var timeline: GAFTimelineConfig in this._timelines)
-			{
-				timeline.dispose();
-			}
+			this._allTextureAtlases = null;
+			this._stageConfig = null;
+			this._scaleValues = null;
+			this._csfValues = null;
+			this._timelines = null;
+			this._sounds = null;
 		}
 
 		public function get compression(): int

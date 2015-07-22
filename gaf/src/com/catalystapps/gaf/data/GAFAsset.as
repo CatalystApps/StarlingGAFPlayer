@@ -3,6 +3,7 @@
  */
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
@@ -36,6 +37,9 @@ package com.catalystapps.gaf.data
 		private var _timelinesDictionary: Object = {};
 		private var _timelinesByLinkage: Object = {};
 
+		private var _scale: Number;
+		private var _csf: Number;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -45,6 +49,9 @@ package com.catalystapps.gaf.data
 		public function GAFAsset(config: GAFAssetConfig)
 		{
 			this._config = config;
+
+			this._scale = config.defaultScale;
+			this._csf = config.defaultContentScaleFactor;
 
 			this._timelines = new Vector.<GAFTimeline>();
 		}
@@ -67,6 +74,10 @@ package com.catalystapps.gaf.data
 					timeline.dispose();
 				}
 			}
+			this._timelines = null;
+
+			this._config.dispose();
+			this._config = null;
 		}
 
 		/** @private */
@@ -82,7 +93,6 @@ package com.catalystapps.gaf.data
 				{
 					this._timelinesByLinkage[timeline.linkage] = timeline;
 				}
-				timeline.gafAsset = this;
 			}
 			else
 			{
@@ -130,8 +140,8 @@ package com.catalystapps.gaf.data
 
 		gaf_internal function getCustomRegion(linkage: String, scale: Number = NaN, csf: Number = NaN): IGAFTexture
 		{
-			if (isNaN(scale)) scale = this._config.defaultScale;
-			if (isNaN(csf)) csf = this._config.defaultContentScaleFactor;
+			if (isNaN(scale)) scale = this._scale;
+			if (isNaN(csf)) csf = this._csf;
 
 			var gafTexture: IGAFTexture;
 			var atlasScale: CTextureAtlasScale;
@@ -173,6 +183,23 @@ package com.catalystapps.gaf.data
 			return gafTexture;
 		}
 
+		/** @private */
+		gaf_internal function getValidScale(value: Number): Number
+		{
+			var index: int = MathUtility.getItemIndex(this._config.scaleValues, value);
+			if (index != -1)
+			{
+				return this._config.scaleValues[index];
+			}
+			return NaN;
+		}
+
+		/** @private */
+		gaf_internal function hasCSF(value: Number): Boolean
+		{
+			return MathUtility.getItemIndex(this._config.csfValues, value) >= 0;
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -203,6 +230,26 @@ package com.catalystapps.gaf.data
 		public function get id(): String
 		{
 			return this._config.id;
+		}
+
+		public function get scale(): Number
+		{
+			return this._scale;
+		}
+
+		public function set scale(value: Number): void
+		{
+			this._scale = value;
+		}
+
+		public function get csf(): Number
+		{
+			return this._csf;
+		}
+
+		public function set csf(value: Number): void
+		{
+			this._csf = value;
 		}
 	}
 }

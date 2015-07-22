@@ -22,5 +22,11 @@ package com.catalystapps.gaf.data
 
 		/** @private */
 		gaf_internal static var useDeviceFonts: Boolean;
+
+		/** @private */
+		gaf_internal static function get maxAlpha(): Number
+		{
+			return use99alpha ? 0.99 : 1;
+		}
 	}
 }

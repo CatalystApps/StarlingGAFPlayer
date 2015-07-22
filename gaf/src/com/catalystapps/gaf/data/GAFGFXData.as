@@ -4,7 +4,6 @@ package com.catalystapps.gaf.data
 	import flash.utils.ByteArray;
 	import flash.display3D.Context3DTextureFormat;
 	import starling.core.Starling;
-	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import flash.display.BitmapData;
@@ -16,14 +15,18 @@ package com.catalystapps.gaf.data
 
 	/**
 	 * Graphical data storage that used by <code>GAFTimeline</code>. It contain all created textures and all
-	 * saved images as <code>BitmapData</code> (in case when <code>ZipToGAFAssetConverter.keepImagesInRAM = true</code> was set before asset conversion).
+	 * saved images as <code>BitmapData</code> (in case when <code>Starling.handleLostContext = true</code> was set before asset conversion).
 	 * Used as shared graphical data storage between several GAFTimelines if they are used the same texture atlas (bundle created using "Create bundle" option)
 	 */
 	public class GAFGFXData
 	{
+		[Deprecated(since="5.0")]
 		public static const ATF: String = "ATF";
+		[Deprecated(replacement="Context3DTextureFormat.BGRA", since="5.0")]
 		public static const BGRA: String = Context3DTextureFormat.BGRA;
+		[Deprecated(replacement="Context3DTextureFormat.BGR_PACKED", since="5.0")]
 		public static const BGR_PACKED: String = Context3DTextureFormat.BGR_PACKED;
+		[Deprecated(replacement="Context3DTextureFormat.BGRA_PACKED", since="5.0")]
 		public static const BGRA_PACKED: String = Context3DTextureFormat.BGRA_PACKED;
 		//--------------------------------------------------------------------------
 		//
@@ -260,7 +263,7 @@ package com.catalystapps.gaf.data
 		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
 		 * @see #createTexture()
 		 */
-		public function createTextures(scale: Number, csf: Number, format: String = BGRA): Boolean
+		public function createTextures(scale: Number, csf: Number, format: String = Context3DTextureFormat.BGRA): Boolean
 		{
 			var result: Boolean;
 			var images: Object = this.getImages(scale, csf);
@@ -302,7 +305,7 @@ package com.catalystapps.gaf.data
 		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
 		 * @see #createTextures()
 		 */
-		public function createTexture(scale: Number, csf: Number, imageID: String, format: String = BGRA): Boolean
+		public function createTexture(scale: Number, csf: Number, imageID: String, format: String = Context3DTextureFormat.BGRA): Boolean
 		{
 			var image: BitmapData = this.getImage(scale, csf, imageID);
 			if (image)
@@ -436,7 +439,7 @@ package com.catalystapps.gaf.data
 			}
 			if (!dictionary[imageID])
 			{
-				dictionary[imageID] = CTextureAtlas.textureFromImg(img, csf, format);
+				dictionary[imageID] = Texture.fromBitmapData(img, false, false, csf, format);
 			}
 		}
 		
@@ -448,7 +451,7 @@ package com.catalystapps.gaf.data
 			}
 			if (!dictionary[imageID])
 			{
-				dictionary[imageID] = CTextureAtlas.textureFromATF(data, csf);
+				dictionary[imageID] = Texture.fromAtfData(data, csf, false);
 			}
 		}
 			

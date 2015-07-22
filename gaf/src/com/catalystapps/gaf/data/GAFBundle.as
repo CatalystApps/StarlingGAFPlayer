@@ -22,9 +22,10 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
+		private var _name: String;
 		private var _soundData: GAFSoundData;
 		private var _gafAssets: Vector.<GAFAsset>;
-		private var _gafAssetsDictionary: Object; // GAFAssetConfig by SWF name
+		private var _gafAssetsDictionary: Object; // GAFAsset by SWF name
 
 		//--------------------------------------------------------------------------
 		//
@@ -50,12 +51,18 @@ package com.catalystapps.gaf.data
 		 */
 		public function dispose(): void
 		{
-			GAFSoundManager.getInstance().stopAll();
-			this._soundData.gaf_internal::dispose();
-
-			for each (var gafAsset: GAFAsset in this._gafAssets)
+			if (this._gafAssets)
 			{
-				gafAsset.dispose();
+				GAFSoundManager.getInstance().stopAll();
+				this._soundData.gaf_internal::dispose();
+				this._soundData = null;
+	
+				for each (var gafAsset: GAFAsset in this._gafAssets)
+				{
+					gafAsset.dispose();
+				}
+				this._gafAssets = null;
+				this._gafAssetsDictionary = null;
 			}
 		}
 
@@ -103,7 +110,7 @@ package com.catalystapps.gaf.data
 		 * @param linkage is the linkage name of the timeline. If you need to get the Main Timeline from SWF use the "rootTimeline" linkage name.
 		 * @return <code>GAFTimeline</code> from bundle
 		 */
-		public function getGAFTimeline(swfName: String, linkage: String): GAFTimeline
+		public function getGAFTimeline(swfName: String, linkage: String = "rootTimeline"): GAFTimeline
 		{
 			var gafTimeline: GAFTimeline;
 			var gafAsset: GAFAsset = this._gafAssetsDictionary[swfName];
@@ -237,6 +244,24 @@ package com.catalystapps.gaf.data
 		public function get gafAssets(): Vector.<GAFAsset>
 		{
 			return this._gafAssets;
+		}
+
+		/**
+		 * The name of the bundle. Used in GAFTimelinesManager to identify specific bundle.
+		 * Should be specified by user using corresponding setter or by passing the name as second parameter in GAFTimelinesManager.addGAFBundle().
+		 * The name can be auto-setted by ZipToGAFAssetConverter in two cases:
+		 * 1) If ZipToGAFAssetConverter.id is not empty ZipToGAFAssetConverter sets the bundle name equal to it's id;
+		 * 2) If ZipToGAFAssetConverter.id is empty, but gaf package (zip or folder) contain only one *.gaf config file,
+		 * ZipToGAFAssetConverter sets the bundle name equal to the name of the *.gaf config file.
+		 */
+		public function get name(): String
+		{
+			return this._name;
+		}
+
+		public function set name(name: String): void
+		{
+			this._name = name;
 		}
 	}
 }

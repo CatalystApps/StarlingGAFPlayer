@@ -1,5 +1,5 @@
 package
-com.catalystapps{
+{
 	import com.catalystapps.gaf.data.GAFBundle;
 	import starling.core.Starling;
 	import starling.events.Touch;
@@ -22,14 +22,17 @@ com.catalystapps{
 	 */
 	public class MainStarling extends Sprite
 	{
+		/** the name of the SWF which was converted to GAF */
+		private static const SWF_NAME: String = "multi_resolution";
+
 		private var offset: int;
 		private var backSpace : GAFMovieClip;
 		private var leftButton: GAFMovieClip;
 		private var rightButton: GAFMovieClip;
 		private var gafMovieClip: GAFMovieClip;
-		
+
 		private var backAnimated: AnimatedBG;
-		
+
 		/** actual scale of viewport */
 		private var _xScale: Number;
 		private var _yScale: Number;
@@ -38,7 +41,7 @@ com.catalystapps{
 		private var gafTimeline : GAFTimeline;
 		private var urlLoader: URLLoader;
 		private var speed: Number;
-		
+
 		public function MainStarling()
 		{
 			urlLoader = new URLLoader();
@@ -74,41 +77,42 @@ com.catalystapps{
 			var gafScale: Number = _yScale / _scale;
 			var converter: ZipToGAFAssetConverter = event.target as ZipToGAFAssetConverter;
 			var gafBundle: GAFBundle = converter.gafBundle;
-			gafTimeline = converter.gafTimeline;
 			
+			gafTimeline = gafBundle.getGAFTimeline(SWF_NAME, "rootTimeline");
+
 			offset = 50 * gafScale;
 
-			backSpace = new GAFMovieClip(gafBundle.getGAFTimelineByLinkage("back_space"));
+			backSpace = new GAFMovieClip(gafBundle.getGAFTimeline(SWF_NAME, "back_space"));
 			backSpace.scaleX =
 			backSpace.scaleY = gafScale;
 			backSpace.x = (stage.stageWidth - backSpace.width) / 2; //center background
 
-			leftButton = new GAFMovieClip(gafBundle.getGAFTimelineByLinkage("ArrowLeftButton"));
+			leftButton = new GAFMovieClip(gafBundle.getGAFTimeline(SWF_NAME, "ArrowLeftButton"));
 			leftButton.scaleX =
 			leftButton.scaleY = gafScale;
 			leftButton.x = leftButton.width + offset;
 			leftButton.y = (stage.stageHeight - leftButton.height) / 2;
-			
-			rightButton = new GAFMovieClip(gafBundle.getGAFTimelineByLinkage("ArrowRightButton"));
+
+			rightButton = new GAFMovieClip(gafBundle.getGAFTimeline(SWF_NAME, "ArrowRightButton"));
 			rightButton.scaleX =
 			rightButton.scaleY = gafScale;
 			rightButton.x = stage.stageWidth - rightButton.width - offset;
 			rightButton.y = (stage.stageHeight - rightButton.height) / 2;
-			
+
 			gafMovieClip = new GAFMovieClip(gafTimeline);
 			gafMovieClip.scaleX =
 			gafMovieClip.scaleY = gafScale;
 			gafMovieClip.x = (stage.stageWidth - gafMovieClip.width) / 2;
 			gafMovieClip.setSequence("stand_right");
-			
-			backAnimated = new AnimatedBG(gafBundle.getGAFTimelineByLinkage("back_1"), gafScale);
-			
+
+			backAnimated = new AnimatedBG(gafBundle.getGAFTimeline(SWF_NAME, "back_1"), gafScale);
+
 			this.addChild(backSpace);
 			this.addChild(backAnimated);
 			this.addChild(gafMovieClip);
 			this.addChild(rightButton);
 			this.addChild(leftButton);
-			
+
 			this.addEventListener(TouchEvent.TOUCH, onTouch);
 		}
 
@@ -162,7 +166,7 @@ com.catalystapps{
 			_xScale = x;
 			_yScale = y;
 			speed = 10 * _yScale;
-			urlLoader.load(new URLRequest("assets/RedRobot.zip"));
+			urlLoader.load(new URLRequest("assets/multi_resolution.zip"));
 		}
 	}
 }

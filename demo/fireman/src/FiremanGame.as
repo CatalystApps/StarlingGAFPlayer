@@ -1,5 +1,6 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFBundle;
 	import starling.display.Sprite;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
@@ -22,7 +23,7 @@ package
 		{
 			this.loadZip();
 		}
-		
+
 		private function loadZip(): void
 		{
 			var request: URLRequest = new URLRequest("assets/fireman/fireman.zip");
@@ -35,7 +36,7 @@ package
 		private function onLoaded(event: Event): void
 		{
 			var zip: ByteArray = (event.target as URLLoader).data;
-			
+
 			var converter: ZipToGAFAssetConverter = new ZipToGAFAssetConverter();
 			converter.addEventListener(Event.COMPLETE, this.onConverted);
 			converter.addEventListener(ErrorEvent.ERROR, this.onError);
@@ -44,13 +45,14 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafTimeline;
-			var mc: GAFMovieClip = new GAFMovieClip(timeline);
-			
+			var gafBundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
+			var gafTimeline: GAFTimeline = gafBundle.getGAFTimeline("fireman", "rootTimeline");
+			var mc: GAFMovieClip = new GAFMovieClip(gafTimeline);
+
 			this.addChild(mc);
 			mc.play();
 		}
-		
+
 		private function onError(event: ErrorEvent): void
 		{
 			trace(event);

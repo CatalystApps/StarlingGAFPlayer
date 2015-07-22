@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.data.converters.ErrorConstants;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CFrameSound;
@@ -86,6 +87,7 @@ package com.catalystapps.gaf.data
 		public function dispose(): void
 		{
 			this._config.dispose();
+			this._config = null;
 			this._gafAsset = null;
 			this._gafgfxData = null;
 			this._gafSoundData = null;
@@ -93,7 +95,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Load all graphical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
-		 * Works only in case when all graphical data stored in RAM (<code>ZipToGAFAssetConverter.keepImagesInRAM</code> should be set to <code>true</code>
+		 * Works only in case when all graphical data stored in RAM (<code>Starling.handleLostContext</code> should be set to <code>true</code>
 		 * before asset conversion)
 		 *
 		 * @param content content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
@@ -101,7 +103,7 @@ package com.catalystapps.gaf.data
 		 * @param csf in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
 		 * @param format defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "brga"): void
+		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "bgra"): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
@@ -159,7 +161,6 @@ package com.catalystapps.gaf.data
 					}
 					return;
 			}
-
 		}
 
 		/**
@@ -181,39 +182,19 @@ package com.catalystapps.gaf.data
 			switch (content)
 			{
 				case CONTENT_ALL:
-					for each (var scaleConfig: CTextureAtlasScale in this._config.allTextureAtlases)
-					{
-						for each (csfConfig in scaleConfig.allContentScaleFactors)
-						{
-							this._gafgfxData.disposeTextures(scaleConfig.scale, csfConfig.csf);
-							if (csfConfig.atlas)
-							{
-								csfConfig.atlas.dispose();
-							}
-							csfConfig.atlas = null;
-						}
-					}
+					this._gafgfxData.disposeTextures();
+					this._config.dispose();
 					return;
-
 				case CONTENT_DEFAULT:
 					this._gafgfxData.disposeTextures(this.scale, this.contentScaleFactor);
-					if (this._config.textureAtlas.contentScaleFactor.atlas)
-					{
-						this._config.textureAtlas.contentScaleFactor.atlas.dispose();
-						this._config.textureAtlas.contentScaleFactor.atlas = null;
-					}
+					this._config.textureAtlas.contentScaleFactor.dispose();
 					return;
-
 				case CONTENT_SPECIFY:
 					csfConfig = this.getCSFConfig(scale, csf);
 					if (csfConfig)
 					{
 						this._gafgfxData.disposeTextures(scale, csf);
-						if (csfConfig.atlas)
-						{
-							csfConfig.atlas.dispose();
-							csfConfig.atlas = null;
-						}
+						csfConfig.dispose();
 					}
 					return;
 			}
@@ -350,12 +331,23 @@ package com.catalystapps.gaf.data
 		 * with different scale assign appropriate scale to <code>GAFTimeline</code> and only after that instantiate <code>GAFMovieClip</code>.
 		 * Possible values are values from converted animation config. They are depends from project settings on site converter
 		 */
-		public function set scale(scale: Number): void
+		public function set scale(value: Number): void
 		{
+			var scale: Number = this._gafAsset.gaf_internal::getValidScale(value);
+			if (isNaN(scale))
+			{
+				throw new Error(ErrorConstants.SCALE_NOT_FOUND);
+			}
+			else
+			{
+				this._gafAsset.scale = scale;
+			}
+
 			if (!this._config.textureAtlas)
 			{
 				return;
 			}
+
 			var csf: Number = this.contentScaleFactor;
 			var taScale: CTextureAtlasScale = this._config.getTextureAtlasForScale(scale);
 			if (taScale)
@@ -381,11 +373,7 @@ package com.catalystapps.gaf.data
 
 		public function get scale(): Number
 		{
-			if (this._config.textureAtlas)
-			{
-				return this._config.textureAtlas.scale;
-			}
-			return 1;
+			return this._gafAsset.scale;
 		}
 
 		/**
@@ -395,6 +383,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function set contentScaleFactor(csf: Number): void
 		{
+			if (this._gafAsset.gaf_internal::hasCSF(csf))
+			{
+				this._gafAsset.csf = csf;
+			}
+
 			if (!this._config.textureAtlas)
 			{
 				return;
@@ -414,11 +407,7 @@ package com.catalystapps.gaf.data
 
 		public function get contentScaleFactor(): Number
 		{
-			if (this._config.textureAtlas)
-			{
-				return this._config.textureAtlas.contentScaleFactor.csf;
-			}
-			return 1;
+			return this._gafAsset.csf;
 		}
 
 		/**
@@ -441,9 +430,9 @@ package com.catalystapps.gaf.data
 		}
 
 		/** @private */
-		public function set gafAsset(gafBundle: GAFAsset): void
+		public function set gafAsset(asset: GAFAsset): void
 		{
-			this._gafAsset = gafBundle;
+			this._gafAsset = asset;
 		}
 
 		/** @private */
