@@ -144,6 +144,23 @@ package com.catalystapps.gaf.filter
 			changeColor = false;
 		}
 
+		private function updateMarginsAndPasses(): void
+		{
+			if (mBlurX == 0 && mBlurY == 0)
+			{
+				mBlurX = 0.001;
+			}
+
+			numPasses = Math.ceil(mBlurX) + Math.ceil(mBlurY);
+			marginX = (3 + Math.ceil(mBlurX)) / resolution + Math.abs(offsetX);
+			marginY = (3 + Math.ceil(mBlurY)) / resolution + Math.abs(offsetY);
+
+			if ((mBlurX > 0 || mBlurY > 0) && changeColor)
+			{
+				numPasses++;
+			}
+		}
+
 		private function updateBlurFilter(cBlurFilterData: CBlurFilterData): void
 		{
 			mBlurX = cBlurFilterData.blurX * _currentScale;
@@ -177,15 +194,6 @@ package com.catalystapps.gaf.filter
 			mColor[2] = Color.getBlue(color) / 255.0;
 			mColor[3] = alpha;
 			mUniformColor = enable;
-
-			if (mUniformColor)
-			{
-				mode = FragmentFilterMode.BELOW;
-			}
-			else
-			{
-				mode = FragmentFilterMode.REPLACE;
-			}
 		}
 
 		private function updateColorMatrixFilter(cColorMatrixFilterData: CColorMatrixFilterData): void
@@ -212,6 +220,19 @@ package com.catalystapps.gaf.filter
 			updateShaderMatrix();
 		}
 
+		private function updateShaderMatrix(): void
+		{
+			// the shader needs the matrix components in a different order,
+			// and it needs the offsets in the range 0-1.
+
+			VectorUtility.fillMatrix(cShaderMatrix, cUserMatrix[0], cUserMatrix[1], cUserMatrix[2], cUserMatrix[3],
+					cUserMatrix[5], cUserMatrix[6], cUserMatrix[7], cUserMatrix[8],
+					cUserMatrix[10], cUserMatrix[11], cUserMatrix[12], cUserMatrix[13],
+					cUserMatrix[15], cUserMatrix[16], cUserMatrix[17], cUserMatrix[18],
+					cUserMatrix[4], cUserMatrix[9], cUserMatrix[14],
+					cUserMatrix[19]);
+		}
+
 		/** @private */
 		protected override function createPrograms(): void
 		{
@@ -225,12 +246,24 @@ package com.catalystapps.gaf.filter
 		{
 			if (pass == numPasses - 1 && changeColor)
 			{
+				if (mode != FragmentFilterMode.REPLACE)
+				{
+					mode = FragmentFilterMode.REPLACE;
+				}
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, cShaderMatrix);
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 5, MIN_COLOR);
 				context.setProgram(cShaderProgram);
 			}
 			else
 			{
+				if (mUniformColor)
+				{
+					mode = FragmentFilterMode.BELOW;
+				}
+				else
+				{
+					mode = FragmentFilterMode.REPLACE;
+				}
 				updateParameters(pass, texture.nativeWidth, texture.nativeHeight);
 
 				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, mOffsets);
@@ -248,7 +281,7 @@ package com.catalystapps.gaf.filter
 						context.setProgram(mNormalProgram);
 					}
 				}
-				else if (pass == numPasses - 1 && mUniformColor)
+				if (pass == numPasses - 1 && mUniformColor)
 				{
 					context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 1, mColor);
 					context.setProgram(mTintedProgram);
@@ -312,16 +345,16 @@ package com.catalystapps.gaf.filter
 			if (tinted)
 			{
 				fragmentProgramCode +=
-						"add ft5, ft5, ft4                              \n" + // add to output color
-						"mul ft5.xyz, fc1.xyz, ft5.www                  \n" + // set rgb with correct alpha
-						"mul oc, ft5, fc1.wwww                          \n";
-			}  // multiply alpha
+						"add ft5, ft5, ft4                          \n" + // add to output color
+						"mul ft5.xyz, fc1.xyz, ft5.www              \n" + // set rgb with correct alpha
+						"mul oc, ft5, fc1.wwww                      \n";  // multiply alpha
+			}
 
 			else
 			{
 				fragmentProgramCode +=
-						"add  oc, ft5, ft4                              \n";
-			}   // add to output color
+						"add  oc, ft5, ft4                          \n";  // add to output color
+			}
 
 			return target.registerProgramFromSource(programName, vertexProgramCode, fragmentProgramCode);
 		}
@@ -420,36 +453,6 @@ package com.catalystapps.gaf.filter
 				mOffsets[2] = 0;
 				mOffsets[3] = offset2;
 			}
-		}
-
-		private function updateMarginsAndPasses(): void
-		{
-			if (mBlurX == 0 && mBlurY == 0)
-			{
-				mBlurX = 0.001;
-			}
-
-			numPasses = Math.ceil(mBlurX) + Math.ceil(mBlurY);
-			marginX = (3 + Math.ceil(mBlurX)) / resolution + Math.abs(offsetX);
-			marginY = (3 + Math.ceil(mBlurY)) / resolution + Math.abs(offsetY);
-
-			if ((mBlurX > 0 || mBlurY > 0) && changeColor)
-			{
-				numPasses++;
-			}
-		}
-
-		private function updateShaderMatrix(): void
-		{
-			// the shader needs the matrix components in a different order,
-			// and it needs the offsets in the range 0-1.
-
-			VectorUtility.fillMatrix(cShaderMatrix, cUserMatrix[0], cUserMatrix[1], cUserMatrix[2], cUserMatrix[3],
-					cUserMatrix[5], cUserMatrix[6], cUserMatrix[7], cUserMatrix[8],
-					cUserMatrix[10], cUserMatrix[11], cUserMatrix[12], cUserMatrix[13],
-					cUserMatrix[15], cUserMatrix[16], cUserMatrix[17], cUserMatrix[18],
-					cUserMatrix[4], cUserMatrix[9], cUserMatrix[14],
-					cUserMatrix[19]);
 		}
 
 		//--------------------------------------------------------------------------
