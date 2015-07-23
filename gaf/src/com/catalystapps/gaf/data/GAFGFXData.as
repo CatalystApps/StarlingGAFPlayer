@@ -439,7 +439,7 @@ package com.catalystapps.gaf.data
 			}
 			if (!dictionary[imageID])
 			{
-				dictionary[imageID] = Texture.fromBitmapData(img, false, false, csf, format);
+				dictionary[imageID] = Texture.fromBitmapData(img, true, false, csf, format);
 			}
 		}
 		
@@ -451,7 +451,7 @@ package com.catalystapps.gaf.data
 			}
 			if (!dictionary[imageID])
 			{
-				dictionary[imageID] = Texture.fromAtfData(data, csf, false);
+				dictionary[imageID] = Texture.fromAtfData(data, csf, true);
 			}
 		}
 			
