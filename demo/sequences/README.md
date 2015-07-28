@@ -7,14 +7,14 @@ This example is using following libraries:
 - Starling 1.7
 - Feathers 2.1.1
 
-SWF source file was converted into GAF format by Standalone GAF Converter version 5.0
+SWF source file was converted into GAF format by Standalone GAF Converter version 5.1
 
 <hr>
 
 GAF Converter conversion settings:
 
 ☑ Compress *.Gaf <br>
-Conversion source: Main Timeline, Library <br>
+Conversion source: Main Timeline<br>
 Conversion mode: nesting <br>
 
 ☑ Allow region rotation<br>
