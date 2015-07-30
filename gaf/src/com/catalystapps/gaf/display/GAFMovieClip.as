@@ -869,7 +869,7 @@ package com.catalystapps.gaf.display
 
 					displayObject = this._displayObjectsDictionary[instance.id];
 
-					objectPivotMatrix = getTransformMatrix(displayObject);
+					objectPivotMatrix = getTransformMatrix(displayObject, HELPER_MATRIX);
 					mc = displayObject as GAFMovieClip;
 					if (mc)
 					{
