@@ -91,6 +91,7 @@ package com.catalystapps.gaf.display
 			this.text = config.text;
 			this.restrict = config.restrict;
 			this.isEditable = config.editable;
+			this.isEnabled = this.isEditable || config.selectable; // editable text must be selectable anyway
 			this.displayAsPassword = config.displayAsPassword;
 			this.maxChars = config.maxChars;
 			this.verticalAlign = TextInput.VERTICAL_ALIGN_TOP;
