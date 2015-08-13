@@ -1142,19 +1142,19 @@ package com.catalystapps.gaf.display
 			if (displayObject is GAFPixelMaskDisplayObject)
 			{
 				this._pixelMasksDictionary[id] = displayObject;
-				this._pixelMasksVector.push(displayObject as GAFPixelMaskDisplayObject);
+				this._pixelMasksVector[_pixelMasksVector.length] = displayObject;
 			}
 			else
 			{
 				this._displayObjectsDictionary[id] = displayObject;
-				this._displayObjectsVector.push(displayObject);
+				this._displayObjectsVector[_displayObjectsVector.length] = displayObject;
 				if (displayObject is IGAFImage)
 				{
-					this._imagesVector.push(displayObject as IGAFImage);
+					this._imagesVector[_imagesVector.length] = displayObject;
 				}
 				else if (displayObject is GAFMovieClip)
 				{
-					this._mcVector.push(displayObject as GAFMovieClip);
+					this._mcVector[_mcVector.length] = displayObject;
 				}
 			}
 		}
