@@ -123,7 +123,7 @@ package com.catalystapps.gaf.data
 							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf, format);
 
 							textures = this._gafgfxData.getTextures(scaleConfig.scale, csfConfig.csf);
-							if (textures)
+							if (!csfConfig.atlas && textures)
 							{
 								csfConfig.atlas = CTextureAtlas.createFromTextures(textures, csfConfig);
 							}
@@ -139,7 +139,7 @@ package com.catalystapps.gaf.data
 						return;
 					}
 
-					if (this._gafgfxData.createTextures(this.scale, this.contentScaleFactor, format))
+					if (!csfConfig.atlas && this._gafgfxData.createTextures(this.scale, this.contentScaleFactor, format))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale, this.contentScaleFactor), csfConfig);
 					}
@@ -154,8 +154,7 @@ package com.catalystapps.gaf.data
 						return;
 					}
 
-
-					if (this._gafgfxData.createTextures(scale, csf, format))
+					if (!csfConfig.atlas && this._gafgfxData.createTextures(scale, csf, format))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);
 					}
