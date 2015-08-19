@@ -20,6 +20,9 @@ package com.catalystapps.gaf.data
 		 */
 		public static var autoPlaySounds: Boolean = true;
 
+		/**
+		 * Indicates if mipMaps will be created for PNG textures (or enabled for ATF textures).
+		 */
 		public static var useMipMaps: Boolean;
 
 		/** @private */
