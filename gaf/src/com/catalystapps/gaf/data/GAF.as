@@ -20,6 +20,8 @@ package com.catalystapps.gaf.data
 		 */
 		public static var autoPlaySounds: Boolean = true;
 
+		public static var useMipMaps: Boolean;
+
 		/** @private */
 		gaf_internal static var useDeviceFonts: Boolean;
 
