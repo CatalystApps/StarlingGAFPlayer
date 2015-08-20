@@ -1,5 +1,6 @@
 package
 {
+	import starling.events.Event;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import starling.display.Sprite;
 	import starling.utils.AssetManager;
@@ -15,44 +16,46 @@ package
 	 */
 	public class MainStarling extends Sprite
 	{
+		[Embed(source="../bin/assets/fireman.zip", mimeType="application/octet-stream")]
+		private const FiremanZip: Class;
+
+		private static const subtitles: Vector.<String> = new <String>
+		[
+			"- Our game is on fire!",
+			"- GAF Team, there is a job for us!",
+			"- Go and do your best!"
+		];
+
 		private var gafMovieClip: GAFMovieClip;
-		private var assetManager: AssetManager;
 
 		public function MainStarling()
 		{
-			assetManager = new AssetManager();
-			assetManager.enqueue("assets/step.mp3");
-			assetManager.enqueue("assets/RedRobot.zip");
-			assetManager.loadQueue(onProgress);
-		}
-
-		private function onProgress(percent: Number): void
-		{
-			if (percent < 1)
-			{
-				return;
-			}
-
-			var zip: ByteArray = assetManager.getByteArray("RedRobot");
+			var zip: ByteArray = new FiremanZip();
 			var converter: ZipToGAFAssetConverter = new ZipToGAFAssetConverter();
-			converter.addEventListener(Event.COMPLETE, this.onConverted);
-			converter.convert(zip, 1, 1);
+			converter.addEventListener(flash.events.Event.COMPLETE, this.onConverted);
+			converter.convert(zip);
 		}
 
-		private function onConverted(event: Event): void
+		private function onConverted(event: flash.events.Event): void
 		{
 			var bundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
 
-			gafMovieClip = new GAFMovieClip(bundle.getGAFTimeline("RedRobot", "rootTimeline"));
-			gafMovieClip.addEventListener("playSoundSteps", onPlaySound);
-			gafMovieClip.play();
+			gafMovieClip = new GAFMovieClip(bundle.getGAFTimeline("fireman"));
+			gafMovieClip.addEventListener("showSubtitles", onShow);
+			gafMovieClip.addEventListener("hideSubtitles", onHide);
+			gafMovieClip.play(true);
 
 			this.addChild(gafMovieClip);
 		}
 
-		private function onPlaySound(): void
+		private function onHide(event: starling.events.Event): void
 		{
-			assetManager.playSound("step");
+			gafMovieClip.subtitles_txt.text = "";
+		}
+
+		private function onShow(event: starling.events.Event): void
+		{
+			gafMovieClip.subtitles_txt.text = subtitles[int(event.data) - 1];
 		}
 	}
 }
