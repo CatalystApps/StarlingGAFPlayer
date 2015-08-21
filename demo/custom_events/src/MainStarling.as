@@ -3,7 +3,6 @@ package
 	import starling.events.Event;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import starling.display.Sprite;
-	import starling.utils.AssetManager;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
 	import com.catalystapps.gaf.display.GAFMovieClip;
@@ -16,7 +15,7 @@ package
 	 */
 	public class MainStarling extends Sprite
 	{
-		[Embed(source="../bin/assets/fireman.zip", mimeType="application/octet-stream")]
+		[Embed(source="../design/fireman.zip", mimeType="application/octet-stream")]
 		private const FiremanZip: Class;
 
 		private static const subtitles: Vector.<String> = new <String>
