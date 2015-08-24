@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.filter
 {
+	import starling.display.DisplayObject;
+	import starling.core.RenderSupport;
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import com.catalystapps.gaf.data.config.CColorMatrixFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
@@ -57,7 +59,7 @@ package com.catalystapps.gaf.filter
 		private var changeColor: Boolean;
 
 		/** helper object */
-		private var sTmpWeights: Vector.<Number> = new Vector.<Number>(5, true);
+		private static var sTmpWeights: Vector.<Number> = new Vector.<Number>(5, true);
 
 		private var _currentScale: Number = 1;
 		private var mResolution: Number = 1;
@@ -234,17 +236,9 @@ package com.catalystapps.gaf.filter
 		}
 
 		/** @private */
-		protected override function createPrograms(): void
-		{
-			mNormalProgram = createProgram(false);
-			mTintedProgram = createProgram(true);
-			cShaderProgram = createCProgram();
-		}
-
-		/** @private */
 		protected override function activate(pass: int, context: Context3D, texture: Texture): void
 		{
-			if (pass == numPasses - 1 && changeColor)
+			if (pass == numPasses - 1 && changeColor) //color transform filter
 			{
 				if (mode != FragmentFilterMode.REPLACE)
 				{
@@ -254,7 +248,7 @@ package com.catalystapps.gaf.filter
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 5, MIN_COLOR);
 				context.setProgram(cShaderProgram);
 			}
-			else
+			else //blur, drop shadow or glow
 			{
 				if (mUniformColor)
 				{
@@ -291,6 +285,19 @@ package com.catalystapps.gaf.filter
 					context.setProgram(mNormalProgram);
 				}
 			}
+		}
+
+		override public function render(object: DisplayObject, support: RenderSupport, parentAlpha: Number): void
+		{
+			super.render(object, support, parentAlpha);
+		}
+
+		/** @private */
+		protected override function createPrograms(): void
+		{
+			mNormalProgram = createProgram(false);
+			mTintedProgram = createProgram(true);
+			cShaderProgram = createCProgram();
 		}
 
 		private function createProgram(tinted: Boolean): Program3D

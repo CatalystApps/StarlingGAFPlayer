@@ -11,9 +11,6 @@ package
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
 	import flash.events.Event;
-	import flash.net.URLLoader;
-	import flash.net.URLLoaderDataFormat;
-	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 
 	/**
@@ -25,17 +22,12 @@ package
 		private var gafMovieClip: GAFMovieClip;
 		private var currentAsset: String;
 
+		[Embed(source="../design/bundle.zip", mimeType="application/octet-stream")]
+		private const BundleZip: Class;
+
 		public function BundleGame()
 		{
-			var urlLoader: URLLoader = new URLLoader(new URLRequest("assets/bundle.zip"));
-			urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-			urlLoader.addEventListener(Event.COMPLETE, this.onLoaded);
-		}
-
-		private function onLoaded(event: Event): void
-		{
-			var zip: ByteArray = (event.target as URLLoader).data;
-
+			var zip: ByteArray = new BundleZip();
 			var converter: ZipToGAFAssetConverter = new ZipToGAFAssetConverter();
 			converter.addEventListener(Event.COMPLETE, this.onConverted);
 			converter.convert(zip);

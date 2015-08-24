@@ -154,7 +154,6 @@ package com.catalystapps.gaf.data
 						return;
 					}
 
-
 					if (!csfConfig.atlas && this._gafgfxData.createTextures(scale, csf, format))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);

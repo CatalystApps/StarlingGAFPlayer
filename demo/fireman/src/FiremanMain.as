@@ -16,7 +16,7 @@ package
 		{
 			_starling = new Starling(FiremanGame, stage, new Rectangle(0, 0, 800, 480));
 			_starling.showStats = true;
-       		_starling.start();
+			_starling.start();
 		}
 	}
 }

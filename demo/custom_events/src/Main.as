@@ -5,7 +5,7 @@ package
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
 
-	[SWF(backgroundColor="#999999", frameRate="60", width="520", height="400")]
+	[SWF(frameRate="60", width="700", height="400")]
 	public class Main extends Sprite
 	{
 		private var starling: Starling;

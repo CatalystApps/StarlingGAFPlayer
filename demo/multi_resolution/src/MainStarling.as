@@ -12,9 +12,6 @@ package
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
 	import flash.events.Event;
-	import flash.net.URLLoader;
-	import flash.net.URLLoaderDataFormat;
-	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 
 	/**
@@ -39,17 +36,12 @@ package
 		/** game settings scale*/
 		private var _scale: Number;
 		private var gafTimeline : GAFTimeline;
-		private var urlLoader: URLLoader;
 		private var speed: Number;
 
-		public function MainStarling()
-		{
-			urlLoader = new URLLoader();
-			urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-			urlLoader.addEventListener(Event.COMPLETE, this.onLoaded);
-		}
+		[Embed(source="../design/multi_resolution.zip", mimeType="application/octet-stream")]
+		private const MultiResolutionZip: Class;
 
-		private function onLoaded(event: Event): void
+		public function start(): void
 		{
 			var availableScales: Array = [2, 1, 0.5];
 			_scale = availableScales[0];
@@ -66,7 +58,7 @@ package
 					break;
 				}
 			}
-			var zip: ByteArray = urlLoader.data;
+			var zip: ByteArray = new MultiResolutionZip();
 			var converter: ZipToGAFAssetConverter = new ZipToGAFAssetConverter();
 			converter.addEventListener(Event.COMPLETE, this.onConverted);
 			converter.convert(zip, _scale, 1);
@@ -166,7 +158,7 @@ package
 			_xScale = x;
 			_yScale = y;
 			speed = 10 * _yScale;
-			urlLoader.load(new URLRequest("assets/multi_resolution.zip"));
+			start();
 		}
 	}
 }
