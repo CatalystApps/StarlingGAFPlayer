@@ -1,5 +1,6 @@
 package
 {
+	import com.catalystapps.gaf.data.GAFBundle;
 	import feathers.controls.text.BitmapFontTextEditor;
 	import feathers.core.ITextEditor;
 	import feathers.text.BitmapFontTextFormat;
@@ -7,10 +8,8 @@ package
 	import starling.display.Sprite;
 
 	import com.catalystapps.gaf.core.ZipToGAFAssetConverter;
-	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.display.GAFMovieClip;
 
-	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 
@@ -54,19 +53,14 @@ package
 
 		private function onGAFAssetConverted(event: Event): void
 		{
-			var timeline: GAFTimeline = (event.target as ZipToGAFAssetConverter).gafTimeline;
-			var mc: GAFMovieClip = new GAFMovieClip(timeline);
+			var bundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
+			var mc: GAFMovieClip = new GAFMovieClip(bundle.getGAFTimeline("bitmap_font"));
 
 			mc.tf.textEditorProperties = null; // clearing all properties that used by GAFTextFieldTextEditor
 			mc.tf.textEditorFactory = textEditorRendererFactory; // assign BitmapFontTextEditor
 
 			this.addChild(mc);
 			mc.play();
-		}
-
-		private function onError(event: ErrorEvent): void
-		{
-			trace(event);
 		}
 
 		private function textEditorRendererFactory(): ITextEditor
