@@ -40,7 +40,7 @@ package com.catalystapps.gaf.utils
 							blurFilterData.inner,
 							blurFilterData.knockout);
 				}
-				else if (blurFilterData.color) // GlowFilter
+				else if (blurFilterData.color >= 0) // GlowFilter
 				{
 					nativeFilter = new GlowFilter(
 							blurFilterData.color,
