@@ -264,54 +264,63 @@ package com.catalystapps.gaf.display
 			super.dispose();
 		}
 
+		/** @private */
 		override public function set pivotX(value: Number): void
 		{
 			this._pivotChanged = true;
 			super.pivotX = value;
 		}
 
+		/** @private */
 		override public function set pivotY(value: Number): void
 		{
 			this._pivotChanged = true;
 			super.pivotY = value;
 		}
 
+		/** @private */
 		override public function get x(): Number
 		{
 			updateTransformMatrix();
 			return super.x;
 		}
 
+		/** @private */
 		override public function get y(): Number
 		{
 			updateTransformMatrix();
 			return super.y;
 		}
 
+		/** @private */
 		override public function get rotation(): Number
 		{
 			updateTransformMatrix();
 			return super.rotation;
 		}
 
+		/** @private */
 		override public function get scaleX(): Number
 		{
 			updateTransformMatrix();
 			return super.scaleX;
 		}
 
+		/** @private */
 		override public function get scaleY(): Number
 		{
 			updateTransformMatrix();
 			return super.scaleY;
 		}
 
+		/** @private */
 		override public function get skewX(): Number
 		{
 			updateTransformMatrix();
 			return super.skewX;
 		}
 
+		/** @private */
 		override public function get skewY(): Number
 		{
 			updateTransformMatrix();
