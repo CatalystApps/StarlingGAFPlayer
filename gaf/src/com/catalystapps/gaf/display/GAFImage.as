@@ -66,6 +66,9 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/**
+		 * Creates a new instance of GAFImage.
+		 */
 		public function copy(): GAFImage
 		{
 			return new GAFImage(this._assetTexture);

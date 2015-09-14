@@ -144,6 +144,9 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/**
+		 * Creates a new instance of GAFScale9Image.
+		 */
 		public function copy(): GAFScale9Image
 		{
 			return new GAFScale9Image(this._textures, this._textureScale);

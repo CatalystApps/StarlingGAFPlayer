@@ -123,6 +123,9 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/**
+		 * Creates a new instance of GAFTextField.
+		 */
 		public function copy(): GAFTextField
 		{
 			return new GAFTextField(this._config, this._scale, this._csf);

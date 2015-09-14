@@ -527,6 +527,9 @@ package com.catalystapps.gaf.display
 			this._orientationChanged = true;
 		}
 		
+		/**
+		 * Creates a new instance of GAFMovieClip.
+		 */
 		public function copy(): GAFMovieClip
 		{
 			return new GAFMovieClip(this._gafTimeline, this.fps, this._addToJuggler);
