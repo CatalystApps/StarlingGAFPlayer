@@ -144,6 +144,11 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		public function copy(): GAFScale9Image
+		{
+			return new GAFScale9Image(this._textures, this._textureScale);
+		}
+
 		public function set debugColors(value: Vector.<uint>): void
 		{
 			this._debugColors = new Vector.<uint>(4);

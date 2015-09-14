@@ -66,6 +66,11 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		public function copy(): GAFImage
+		{
+			return new GAFImage(this._assetTexture);
+		}
+
 		/** @private */
 		public function invalidateOrientation(): void
 		{

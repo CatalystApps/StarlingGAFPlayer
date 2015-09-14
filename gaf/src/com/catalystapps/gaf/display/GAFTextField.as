@@ -53,6 +53,8 @@ package com.catalystapps.gaf.display
 
 		private var _orientationChanged: Boolean;
 
+		private var _config: CTextFieldObject;
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -111,6 +113,8 @@ package com.catalystapps.gaf.display
 			};
 
 			this.invalidateSize();
+
+			this._config = config;
 		}
 
 		//--------------------------------------------------------------------------
@@ -118,6 +122,11 @@ package com.catalystapps.gaf.display
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		public function copy(): GAFTextField
+		{
+			return new GAFTextField(this._config, this._scale, this._csf);
+		}
 
 		/**
 		 * @private
@@ -267,6 +276,12 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		override public function dispose(): void
+		{
+			super.dispose();
+			this._config = null;
+		}
 
 		override public function set transformationMatrix(matrix: Matrix): void
 		{

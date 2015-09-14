@@ -526,6 +526,11 @@ package com.catalystapps.gaf.display
 		{
 			this._orientationChanged = true;
 		}
+		
+		public function copy(): GAFMovieClip
+		{
+			return new GAFMovieClip(this._gafTimeline, this.fps, this._addToJuggler);
+		}
 
 		//--------------------------------------------------------------------------
 		//
