@@ -124,19 +124,17 @@ package com.catalystapps.gaf.core
 		private var currentConfigIndex: uint;
 		private var configConvertTimeout: Number;
 
-		private var gafAssetConfigSources: Object = {};
-		private var gafAssetConfigs: Object = {};
-		private var gafAssetsIDs: Array = [];
+		private var gafAssetsIDs: Array;
+		private var gafAssetConfigs: Object;
+		private var gafAssetConfigSources: Object;
 
-		private var soundData: GAFSoundData;
-
-		private var sounds: Object = {};
-		private var pngImgs: Object = {};
-		private var atfData: Object = {};
+		private var sounds: Object;
+		private var pngImgs: Object;
+		private var atfData: Object;
 
 		private var gfxData: GAFGFXData;
+		private var soundData: GAFSoundData;
 
-		//private var _gafAsset: GAFAsset;
 		private var _gafBundle: GAFBundle;
 
 		private var _defaultScale: Number;
@@ -166,9 +164,6 @@ package com.catalystapps.gaf.core
 		public function ZipToGAFAssetConverter(id: String = null)
 		{
 			this._id = id;
-
-			this.gfxData = new GAFGFXData();
-			this.soundData = new GAFSoundData();
 		}
 
 		//--------------------------------------------------------------------------
@@ -192,12 +187,10 @@ package com.catalystapps.gaf.core
 			{
 				throw new Error("Impossible parameters combination! Starling.handleLostContext = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
 			}
+			this.reset();
 
 			this._defaultScale = defaultScale;
 			this._defaultContentScaleFactor = defaultContentScaleFactor;
-
-			this._gafBundle = new GAFBundle();
-			this._gafBundle.soundData = this.soundData;
 
 			if (this._id && this._id.length > 0)
 			{
@@ -262,6 +255,33 @@ package com.catalystapps.gaf.core
 		//
 		//--------------------------------------------------------------------------
 
+		private function reset(): void
+		{
+			this._zip = null;
+			this._zipLoader = null;
+			this.currentConfigIndex = 0;
+			this.configConvertTimeout = 0;
+
+			this.sounds = {};
+			this.pngImgs = {};
+			this.atfData = {};
+
+			this.gfxData = new GAFGFXData();
+			this.soundData = new GAFSoundData();
+			this._gafBundle = new GAFBundle();
+			this._gafBundle.soundData = this.soundData;
+
+			this.gafAssetsIDs = [];
+			this.gafAssetConfigs = {};
+			this.gafAssetConfigSources = {};
+
+			this.gafAssetsConfigURLs = [];
+			this.gafAssetsConfigIndex = 0;
+	
+			this.atlasSourceURLs = []
+			this.atlasSourceIndex = 0;
+		}
+		
 		private function parseObject(data: Object): void
 		{
 			this.pngImgs = {};
@@ -558,6 +578,7 @@ package com.catalystapps.gaf.core
 		private function convertConfig(): void
 		{
 			clearTimeout(this.configConvertTimeout);
+			this.configConvertTimeout = NaN;
 
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
 			var configSource: Object = this.gafAssetConfigSources[configID];
