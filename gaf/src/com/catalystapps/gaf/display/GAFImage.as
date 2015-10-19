@@ -5,9 +5,13 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.filter.GAFFilter;
 
 	import flash.geom.Matrix;
+	import flash.geom.Matrix3D;
 	import flash.geom.Point;
+	import flash.geom.Rectangle;
+	import flash.geom.Vector3D;
 
 	import starling.core.Starling;
+	import starling.display.DisplayObject;
 	import starling.display.Image;
 
 	/**
@@ -27,7 +31,10 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		private static const HELPER_POINT: Point = new Point();
+		private static const HELPER_POINT_3D: Vector3D = new Vector3D();
 		private static const HELPER_MATRIX: Matrix = new Matrix();
+		private static const HELPER_MATRIX_3D: Matrix3D = new Matrix3D();
 
 		private var _assetTexture: IGAFTexture;
 
@@ -262,6 +269,45 @@ package com.catalystapps.gaf.display
 			this._filterConfig = null;
 
 			super.dispose();
+		}
+
+		override public function getBounds(targetSpace: DisplayObject, resultRect: Rectangle=null): Rectangle
+		{
+			if (resultRect == null) resultRect = new Rectangle();
+
+			if (targetSpace == this) // optimization
+			{
+				mVertexData.getPosition(3, HELPER_POINT);
+				resultRect.setTo(0.0, 0.0, HELPER_POINT.x, HELPER_POINT.y);
+			}
+			else if (targetSpace == parent && rotation == 0.0 && isEquivalent(skewX, skewY)) // optimization
+			{
+				var scaleX: Number = this.scaleX;
+				var scaleY: Number = this.scaleY;
+				mVertexData.getPosition(3, HELPER_POINT);
+				resultRect.setTo(x - pivotX * scaleX,      y - pivotY * scaleY,
+						HELPER_POINT.x * scaleX, HELPER_POINT.y * scaleY);
+				if (scaleX < 0) { resultRect.width  *= -1; resultRect.x -= resultRect.width;  }
+				if (scaleY < 0) { resultRect.height *= -1; resultRect.y -= resultRect.height; }
+			}
+			else if (is3D && stage)
+			{
+				stage.getCameraPosition(targetSpace, HELPER_POINT_3D);
+				getTransformationMatrix3D(targetSpace, HELPER_MATRIX_3D);
+				mVertexData.getBoundsProjected(HELPER_MATRIX_3D, HELPER_POINT_3D, 0, 4, resultRect);
+			}
+			else
+			{
+				getTransformationMatrix(targetSpace, HELPER_MATRIX);
+				mVertexData.getBounds(HELPER_MATRIX, 0, 4, resultRect);
+			}
+
+			return resultRect;
+		}
+
+		private final function isEquivalent(a: Number, b: Number, epsilon: Number = 0.0001): Boolean
+		{
+			return (a - epsilon < b) && (a + epsilon > b);
 		}
 
 		/** @private */
