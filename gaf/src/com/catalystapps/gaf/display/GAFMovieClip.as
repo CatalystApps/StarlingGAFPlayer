@@ -400,6 +400,7 @@ package com.catalystapps.gaf.display
 			if (this._disposed)
 			{
 				trace("WARNING: GAFMovieClip is disposed but is not removed from the Juggler");
+				return;
 			}
 			else if (this._config.disposed)
 			{
