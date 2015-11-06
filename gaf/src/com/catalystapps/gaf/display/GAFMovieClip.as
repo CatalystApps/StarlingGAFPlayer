@@ -397,6 +397,16 @@ package com.catalystapps.gaf.display
 		 */
 		public function advanceTime(passedTime: Number): void
 		{
+			if (this._disposed)
+			{
+				trace("WARNING: GAFMovieClip is disposed but is not removed from the Juggler");
+			}
+			else if (this._config.disposed)
+			{
+				this.dispose();
+				return;
+			}
+
 			if (this._inPlay && this._frameDuration != Number.POSITIVE_INFINITY)
 			{
 				this._currentTime += passedTime;
@@ -1304,6 +1314,10 @@ package com.catalystapps.gaf.display
 			this._mcVector = null;
 			this._config = null;
 
+			if (this.parent)
+			{
+				this.removeFromParent();
+			}
 			super.dispose();
 
 			this._disposed = true;
@@ -1436,6 +1450,11 @@ package com.catalystapps.gaf.display
 			//actions may interrupt playback and lead to content disposition
 			if (this._disposed)
 			{
+				return;
+			}
+			else if (this._config.disposed)
+			{
+				this.dispose();
 				return;
 			}
 

@@ -53,6 +53,7 @@ package com.catalystapps.gaf.data
 		private var _bounds: Rectangle;
 		private var _pivot: Point;
 		private var _sounds: Dictionary;
+		private var _disposed: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -95,6 +96,8 @@ package com.catalystapps.gaf.data
 			this._bounds = null;
 			this._sounds = null;
 			this._pivot = null;
+			
+			this._disposed = true;
 		}
 
 		public function getTextureAtlasForScale(scale: Number): CTextureAtlasScale
@@ -333,6 +336,10 @@ package com.catalystapps.gaf.data
 		public function set pivot(value: Point): void
 		{
 			this._pivot = value;
+		}
+
+		public function get disposed() : Boolean {
+			return _disposed;
 		}
 	}
 }
