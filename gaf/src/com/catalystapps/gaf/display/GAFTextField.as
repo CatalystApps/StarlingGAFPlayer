@@ -128,7 +128,13 @@ package com.catalystapps.gaf.display
 		 */
 		public function copy(): GAFTextField
 		{
-			return new GAFTextField(this._config, this._scale, this._csf);
+			var clone: GAFTextField = new GAFTextField(this._config, this._scale, this._csf);
+			clone.alpha = this.alpha;
+			clone.visible = this.visible;
+			clone.transformationMatrix = this.transformationMatrix;
+			clone.setFilterConfig(_filterConfig, _filterScale);
+
+			return clone;
 		}
 
 		/**
