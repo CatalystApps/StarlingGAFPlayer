@@ -222,6 +222,10 @@ package com.catalystapps.gaf.display
 				pixelMaskObject.pixelMask = null;
 				this.addChild(maskAsDisplayObject);
 			}
+			else
+			{
+				trace("WARNING: mask object is missing. It might be disposed.");
+			}
 		}
 
 		/**
@@ -252,6 +256,10 @@ package com.catalystapps.gaf.display
 					this.removeChild(maskAsDisplayObject);
 				}
 				pixelMaskObject.pixelMask = maskAsDisplayObject;
+			}
+			else
+			{
+				trace("WARNING: mask object is missing. It might be disposed.");
 			}
 		}
 
@@ -887,108 +895,112 @@ package com.catalystapps.gaf.display
 					instance = instances[i++];
 
 					displayObject = this._displayObjectsDictionary[instance.id];
-
-					objectPivotMatrix = getTransformMatrix(displayObject, HELPER_MATRIX);
-					mc = displayObject as GAFMovieClip;
-					if (mc)
+					if (displayObject)
 					{
-						if (instance.alpha < 0)
+						objectPivotMatrix = getTransformMatrix(displayObject, HELPER_MATRIX);
+						mc = displayObject as GAFMovieClip;
+						if (mc)
 						{
-							mc.reset();
-						}
-						else if (mc._reset && mc._started)
-						{
-							mc._play(true);
-						}
-						mc._hidden = false;
-					}
-
-					if (instance.alpha <= 0)
-					{
-						continue;
-					}
-
-					displayObject.alpha = instance.alpha;
-
-					//if display object is not a mask
-					if (!animationObjectsDictionary[instance.id].mask)
-					{
-						//if display object is under mask
-						if (instance.maskID)
-						{
-							this.renderDebug(mc, instance, true);
-
-							pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
-							pixelMaskObject.addChild(displayObject as DisplayObject);
-							maskIndex++;
-
-							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
-							displayObject.invalidateOrientation();
-							displayObject.setFilterConfig(null);
-
-							if (maskIndex == 1)
+							if (instance.alpha < 0)
 							{
-								this.addChild(pixelMaskObject);
+								mc.reset();
 							}
-						}
-						else //if display object is not masked
-						{
-							if (pixelMaskObject)
+							else if (mc._reset && mc._started)
 							{
-								maskIndex = 0;
-								pixelMaskObject = null;
+								mc._play(true);
 							}
-
-							this.renderDebug(mc, instance, this._masked);
-
-							instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
-							displayObject.invalidateOrientation();
-							displayObject.setFilterConfig(instance.filter, this._scale);
-
-
-							this.addChild(displayObject as DisplayObject);
+							mc._hidden = false;
 						}
 
-						if (mc && mc._started)
+						if (instance.alpha <= 0)
 						{
-							mc._play(true);
+							continue;
 						}
 
-						if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
-						{
-							var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
-									instance, this._alphaLessMax, this._masked, this._hasFilter);
-							(displayObject as IGAFDebug).debugColors = colors;
-						}
-					}
-					else
-					{
-						maskIndex = 0;
+						displayObject.alpha = instance.alpha;
 
-						var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.id];
-						if (maskObject)
+						//if display object is not a mask
+						if (!animationObjectsDictionary[instance.id].mask)
 						{
-							var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.id);
-							if (maskInstance)
+							//if display object is under mask
+							if (instance.maskID)
 							{
-								getTransformMatrix(maskObject, HELPER_MATRIX);
-								maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
-								maskObject.invalidateOrientation();
+								this.renderDebug(mc, instance, true);
+
+								pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
+								if (pixelMaskObject)
+								{
+									pixelMaskObject.addChild(displayObject as DisplayObject);
+									maskIndex++;
+
+									instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
+									displayObject.invalidateOrientation();
+									displayObject.setFilterConfig(null);
+
+									if (maskIndex == 1)
+									{
+										this.addChild(pixelMaskObject);
+									}
+								}
 							}
-							else
+							else //if display object is not masked
 							{
-								throw new Error("Unable to find mask with ID " + instance.id);
+								if (pixelMaskObject)
+								{
+									maskIndex = 0;
+									pixelMaskObject = null;
+								}
+
+								this.renderDebug(mc, instance, this._masked);
+
+								instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
+								displayObject.invalidateOrientation();
+								displayObject.setFilterConfig(instance.filter, this._scale);
+
+								this.addChild(displayObject as DisplayObject);
 							}
 
-							mc = maskObject as GAFMovieClip;
 							if (mc && mc._started)
 							{
 								mc._play(true);
 							}
+
+							if (DebugUtility.RENDERING_DEBUG && displayObject is IGAFDebug)
+							{
+								var colors: Vector.<uint> = DebugUtility.getRenderingDifficultyColor(
+										instance, this._alphaLessMax, this._masked, this._hasFilter);
+								(displayObject as IGAFDebug).debugColors = colors;
+							}
 						}
 						else
 						{
-							throw new Error("Unable to find mask with ID " + instance.id);
+							maskIndex = 0;
+
+							var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.id];
+							if (maskObject)
+							{
+								var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(instance.id);
+								if (maskInstance)
+								{
+									getTransformMatrix(maskObject, HELPER_MATRIX);
+									maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
+									maskObject.invalidateOrientation();
+								}
+								else
+								{
+									throw new Error("Unable to find mask with ID " + instance.id);
+								}
+
+								mc = maskObject as GAFMovieClip;
+								if (mc && mc._started)
+								{
+									mc._play(true);
+								}
+							}
+							/*else
+							{
+								throw new Error("Unable to find mask with ID " + instance.id);
+							}*/
 						}
 					}
 				}
@@ -1176,7 +1188,6 @@ package com.catalystapps.gaf.display
 					this._mcVector[_mcVector.length] = displayObject as GAFMovieClip;
 				}
 			}
-			
 		}
 
 		private function updateBounds(bounds: Rectangle): void
@@ -1258,6 +1269,57 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
+		
+		/** Removes a child at a certain index. The index positions of any display objects above
+         *  the child are decreased by 1. If requested, the child will be disposed right away. */
+		override public function removeChildAt(index:int, dispose:Boolean=false): DisplayObject
+		{
+			var key: String;
+			var child: DisplayObject = this.getChildAt(index);
+			if (child is IGAFDisplayObject)
+			{
+				var id: int = this._mcVector.indexOf(child as GAFMovieClip);
+				if (id >= 0)
+				{
+					this._mcVector.splice(id, 1);
+				}
+				id = this._imagesVector.indexOf(child as IGAFImage);
+				if (id >= 0)
+				{
+					this._imagesVector.splice(id, 1);
+				}
+				id = this._displayObjectsVector.indexOf(child as IGAFDisplayObject);
+				if (id >= 0)
+				{
+					this._displayObjectsVector.splice(id, 1);
+					
+					for (key in this._displayObjectsDictionary)
+					{
+						if (this._displayObjectsDictionary[key] == child)
+						{
+							delete this._displayObjectsDictionary[key];
+							break;
+						}
+					}
+				}
+				id = this._pixelMasksVector.indexOf(child as GAFPixelMaskDisplayObject);
+				if (id >= 0)
+				{
+					this._pixelMasksVector.splice(id, 1);
+					
+					for (key in this._pixelMasksDictionary)
+					{
+						if (this._pixelMasksDictionary[key] == child)
+						{
+							delete this._pixelMasksDictionary[key];
+							break;
+						}
+					}
+				}
+				
+			}
+			return super.removeChildAt(index, dispose);
+		}
 
 		/** Returns a child object with a certain name (non-recursively). */
 		override public function getChildByName(name: String): DisplayObject
