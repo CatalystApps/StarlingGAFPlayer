@@ -19,7 +19,6 @@ package com.catalystapps.gaf.utils
 	 */
 	public class FiltersUtility
 	{
-		[Inline]
 		public static function getNativeFilter(data: ICFilterData, scale: Number = 1): *
 		{
 			var nativeFilter: *;

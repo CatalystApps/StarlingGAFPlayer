@@ -271,7 +271,7 @@ package com.catalystapps.gaf.display
 		}
 
 		[Inline]
-		private function updateTransformMatrix(): void
+		private final function updateTransformMatrix(): void
 		{
 			if (this._orientationChanged)
 			{

@@ -787,6 +787,10 @@ package com.catalystapps.gaf.data.converters
 								this._bytes.readFloat(), this._bytes.readFloat()
 						);
 					}
+					else
+					{
+						scale9Grid = null;
+					}
 				}
 
 				if (tagID == BinGAFAssetConfigConverter.TAG_DEFINE_ATLAS3)

@@ -40,7 +40,7 @@ package com.catalystapps.gaf.display
 
 	/** Dispatched when playhead reached end frame of sequence */
 	[Event(name="typeSequenceEnd", type="starling.events.Event")]
-	
+
 	/** Dispatched whenever the movie has displayed its last frame. */
 	[Event(name="complete", type="starling.events.Event")]
 
@@ -545,7 +545,7 @@ package com.catalystapps.gaf.display
 		{
 			this._orientationChanged = true;
 		}
-		
+
 		/**
 		 * Creates a new instance of GAFMovieClip.
 		 */
@@ -1255,7 +1255,7 @@ package com.catalystapps.gaf.display
 		}
 
 		[Inline]
-		private function updateTransformMatrix(): void
+		private final function updateTransformMatrix(): void
 		{
 			if (this._orientationChanged)
 			{
@@ -1269,7 +1269,7 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/** Removes a child at a certain index. The index positions of any display objects above
          *  the child are decreased by 1. If requested, the child will be disposed right away. */
 		override public function removeChildAt(index:int, dispose:Boolean=false): DisplayObject
@@ -1292,7 +1292,7 @@ package com.catalystapps.gaf.display
 				if (id >= 0)
 				{
 					this._displayObjectsVector.splice(id, 1);
-					
+
 					for (key in this._displayObjectsDictionary)
 					{
 						if (this._displayObjectsDictionary[key] == child)
@@ -1306,7 +1306,7 @@ package com.catalystapps.gaf.display
 				if (id >= 0)
 				{
 					this._pixelMasksVector.splice(id, 1);
-					
+
 					for (key in this._pixelMasksDictionary)
 					{
 						if (this._pixelMasksDictionary[key] == child)
@@ -1316,7 +1316,7 @@ package com.catalystapps.gaf.display
 						}
 					}
 				}
-				
+
 			}
 			return super.removeChildAt(index, dispose);
 		}
