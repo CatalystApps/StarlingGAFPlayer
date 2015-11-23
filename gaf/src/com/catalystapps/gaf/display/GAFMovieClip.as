@@ -1274,50 +1274,53 @@ package com.catalystapps.gaf.display
          *  the child are decreased by 1. If requested, the child will be disposed right away. */
 		override public function removeChildAt(index:int, dispose:Boolean=false): DisplayObject
 		{
-			var key: String;
-			var child: DisplayObject = this.getChildAt(index);
-			if (child is IGAFDisplayObject)
+			if (dispose)
 			{
-				var id: int = this._mcVector.indexOf(child as GAFMovieClip);
-				if (id >= 0)
+				var key: String;
+				var child: DisplayObject = this.getChildAt(index);
+				if (child is IGAFDisplayObject)
 				{
-					this._mcVector.splice(id, 1);
-				}
-				id = this._imagesVector.indexOf(child as IGAFImage);
-				if (id >= 0)
-				{
-					this._imagesVector.splice(id, 1);
-				}
-				id = this._displayObjectsVector.indexOf(child as IGAFDisplayObject);
-				if (id >= 0)
-				{
-					this._displayObjectsVector.splice(id, 1);
-
-					for (key in this._displayObjectsDictionary)
+					var id: int = this._mcVector.indexOf(child as GAFMovieClip);
+					if (id >= 0)
 					{
-						if (this._displayObjectsDictionary[key] == child)
+						this._mcVector.splice(id, 1);
+					}
+					id = this._imagesVector.indexOf(child as IGAFImage);
+					if (id >= 0)
+					{
+						this._imagesVector.splice(id, 1);
+					}
+					id = this._displayObjectsVector.indexOf(child as IGAFDisplayObject);
+					if (id >= 0)
+					{
+						this._displayObjectsVector.splice(id, 1);
+
+						for (key in this._displayObjectsDictionary)
 						{
-							delete this._displayObjectsDictionary[key];
-							break;
+							if (this._displayObjectsDictionary[key] == child)
+							{
+								delete this._displayObjectsDictionary[key];
+								break;
+							}
+						}
+					}
+					id = this._pixelMasksVector.indexOf(child as GAFPixelMaskDisplayObject);
+					if (id >= 0)
+					{
+						this._pixelMasksVector.splice(id, 1);
+
+						for (key in this._pixelMasksDictionary)
+						{
+							if (this._pixelMasksDictionary[key] == child)
+							{
+								delete this._pixelMasksDictionary[key];
+								break;
+							}
 						}
 					}
 				}
-				id = this._pixelMasksVector.indexOf(child as GAFPixelMaskDisplayObject);
-				if (id >= 0)
-				{
-					this._pixelMasksVector.splice(id, 1);
-
-					for (key in this._pixelMasksDictionary)
-					{
-						if (this._pixelMasksDictionary[key] == child)
-						{
-							delete this._pixelMasksDictionary[key];
-							break;
-						}
-					}
-				}
-
 			}
+
 			return super.removeChildAt(index, dispose);
 		}
 
