@@ -15,6 +15,7 @@ package com.catalystapps.gaf.display
 	import starling.display.Image;
 	import starling.events.Event;
 	import starling.textures.RenderTexture;
+	import starling.textures.Texture;
 	import starling.utils.RectangleUtil;
 
 	/**
@@ -167,6 +168,10 @@ package com.catalystapps.gaf.display
 			}
 			else if (this._mask)
 			{
+				var previousStencilRefValue: uint = support.stencilReferenceValue;
+				if (previousStencilRefValue)
+					support.stencilReferenceValue = 0;
+
 				_tx = this._mask.transformationMatrix.tx;
 				_ty = this._mask.transformationMatrix.ty;
 
@@ -189,6 +194,10 @@ package com.catalystapps.gaf.display
 				this._mask.transformationMatrix.ty = _ty;
 
 				this._renderTexture.drawBundled(this.drawRenderTextures);
+
+				if (previousStencilRefValue)
+					support.stencilReferenceValue = previousStencilRefValue;
+
 				support.pushMatrix();
 				support.transformMatrix(this._image);
 				this._image.render(support, parentAlpha);
