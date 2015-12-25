@@ -26,6 +26,9 @@ package com.catalystapps.gaf.data
 		public static var useMipMaps: Boolean;
 
 		/** @private */
+		public static var restoreTexturesFromFile: Boolean;
+
+		/** @private */
 		gaf_internal static var useDeviceFonts: Boolean;
 
 		/** @private */

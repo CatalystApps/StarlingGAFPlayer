@@ -1,5 +1,6 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.data.GAF;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.utils.getDefinitionByName;
 	import deng.fzip.FZip;
@@ -199,6 +200,10 @@ package com.catalystapps.gaf.core
 
 			if (data is ByteArray)
 			{
+				if (GAF.restoreTexturesFromFile)
+				{
+					throw new Error("Restore textures from zip file is not supported.");
+				}
 				this._zip = new FZip();
 				this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
 				this._zip.loadBytes(data);
@@ -365,7 +370,7 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function findAllAtlasURLs(): void
+		private function findAllAtlasURLs(folderURL: String): void
 		{
 			this.atlasSourceURLs = [];
 
@@ -378,8 +383,6 @@ package com.catalystapps.gaf.core
 
 				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
-					var folderURL: String = this.getFolderURL(id);
-
 					for each(var scale: CTextureAtlasScale in config.allTextureAtlases)
 					{
 						if (isNaN(this._defaultScale) || MathUtility.equals(scale.scale, this._defaultScale))
@@ -396,6 +399,7 @@ package com.catalystapps.gaf.core
 												&& this.atlasSourceURLs.indexOf(url) == -1)
 										{
 											this.atlasSourceURLs.push(url);
+											this.gfxData.addAtlasURL(scale.scale, csf.csf, source.id, url);
 										}
 									}
 								}
@@ -427,11 +431,11 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				url = url.substring(0, url.lastIndexOf(".png"));
-				file = new FileClass(url + ".atf");
+				url = url.substring(0, url.lastIndexOf(".png")) + ".atf";
+				file = new FileClass(url);
 				if (file["exists"])
 				{
-					this.loadATF(file["nativePath"]);
+					this.loadATF(url);
 				}
 				else
 				{
@@ -469,18 +473,11 @@ package com.catalystapps.gaf.core
 
 		private function finalizeParsing(): void
 		{
-			if (!Starling.handleLostContext)
+			if (GAF.restoreTexturesFromFile || !Starling.handleLostContext)
 			{
 				this.gfxData.removeImages();
-				for each (var bd: BitmapData in this.pngImgs)
-				{
-					bd.dispose();
-				}
-				for each (var ba: ByteArray in this.atfData)
-				{
-					ba.clear();
-				}
 			}
+			this.sounds = null;
 			this.pngImgs = null;
 			this.atfData = null;
 
@@ -499,12 +496,11 @@ package com.catalystapps.gaf.core
 				this._zip.close();
 				this._zip = null;
 			}
-			this.sounds = null;
 
 			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
-		private function getFolderURL(url: String): String
+		private static function getFolderURL(url: String): String
 		{
 			var cutURL: String = url.split("?")[0];
 
@@ -788,6 +784,7 @@ package com.catalystapps.gaf.core
 			use namespace gaf_internal;
 
 			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
+			var folderURL: String = getFolderURL(configID);
 			var converter: BinGAFAssetConfigConverter = event.target as BinGAFAssetConfigConverter;
 			converter.removeEventListener(Event.COMPLETE, onConverted);
 			converter.removeEventListener(ErrorEvent.ERROR, onConvertError);
@@ -798,8 +795,7 @@ package com.catalystapps.gaf.core
 			{
 				for (var i: int = 0; i < sounds.length; i++)
 				{
-					var assetID: String = this.getFolderURL(configID);
-					sounds[i].source = assetID + sounds[i].source;
+					sounds[i].source = folderURL + sounds[i].source;
 					this.soundData.addSound(sounds[i], converter.config.id, this.sounds[sounds[i].source]);
 				}
 			}
@@ -810,7 +806,7 @@ package com.catalystapps.gaf.core
 			{
 				if (this.gafAssetsConfigURLs && gafAssetsConfigURLs.length)
 				{
-					this.findAllAtlasURLs();
+					this.findAllAtlasURLs(folderURL);
 				}
 				else
 				{
