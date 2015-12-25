@@ -1,17 +1,26 @@
-package com.catalystapps.gaf.data
-{
-	import com.catalystapps.gaf.utils.MathUtility;
-	import flash.utils.ByteArray;
-	import flash.display3D.Context3DTextureFormat;
+package com.catalystapps.gaf.data {
+	import flash.utils.Dictionary;
+	import flash.display.Bitmap;
+	import flash.display.LoaderInfo;
 	import starling.core.Starling;
+	import starling.textures.Texture;
+
 	import com.catalystapps.gaf.utils.DebugUtility;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.display.BitmapData;
+	import flash.display.Loader;
+	import flash.display3D.Context3DTextureFormat;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.filters.ColorMatrixFilter;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-
-	import starling.textures.Texture;
+	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
+	import flash.net.URLRequest;
+	import flash.system.LoaderContext;
+	import flash.utils.ByteArray;
 
 	/**
 	 * Graphical data storage that used by <code>GAFTimeline</code>. It contain all created textures and all
@@ -39,10 +48,12 @@ package com.catalystapps.gaf.data
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
 		private var _texturesDictionary: Object = {};
 		private var _imagesDictionary: Object = {};
+		private var _urlsDictionary: Object = {};
 		private var _atfDictionary: Object = {};
+
+		private var _callbacksByLoader: Dictionary;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -53,6 +64,10 @@ package com.catalystapps.gaf.data
 		/** @private */
 		public function GAFGFXData()
 		{
+			if (GAF.restoreTexturesFromFile)
+			{
+				this._callbacksByLoader = new Dictionary(true);
+			}
 		}
 		
 		//--------------------------------------------------------------------------
@@ -60,6 +75,14 @@ package com.catalystapps.gaf.data
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
+		
+		/** @private */
+		public function addAtlasURL(scale: Number, csf: Number, imageID: String, url: String): void
+		{
+			this._urlsDictionary[scale] ||= {};
+			this._urlsDictionary[scale][csf] ||= {};
+			this._urlsDictionary[scale][csf][imageID] ||= url;
+		}
 		
 		/** 
 		 * Add image to storage. Unique key for image is combination scale + csf + imageID
@@ -76,17 +99,12 @@ package com.catalystapps.gaf.data
 		 */
 		public function getImage(scale: Number, csf: Number, imageID: String): BitmapData
 		{
-			if(this._imagesDictionary)
+			if (this._imagesDictionary
+			&&  this._imagesDictionary[scale]
+			&&  this._imagesDictionary[scale][csf])
 			{
-				if(this._imagesDictionary[scale])
-				{
-					if(this._imagesDictionary[scale][csf])
-					{
-						return this._imagesDictionary[scale][csf][imageID];
-					}
-				}
+				return this._imagesDictionary[scale][csf][imageID];
 			}
-			
 			return null;
 		}
 		
@@ -95,14 +113,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function getImages(scale: Number, csf: Number): Object
 		{
-			if(this._imagesDictionary)
+			if (this._imagesDictionary
+			&&  this._imagesDictionary[scale])
 			{
-				if(this._imagesDictionary[scale])
-				{
-					return this._imagesDictionary[scale][csf];
-				}
+				return this._imagesDictionary[scale][csf];
 			}
-			
 			return null;
 		}
 		
@@ -111,52 +126,13 @@ package com.catalystapps.gaf.data
 		 */
 		public function removeImages(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
 		{
-			// Dispose only if starling does not handle lost context
-			if (!Starling.handleLostContext)
-			{
-				for (var tmpScale: String in _imagesDictionary)
-				{
-					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
-					{
-						for (var tmpCsf: String in _imagesDictionary[tmpScale])
-						{
-							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCsf)))
-							{
-								for (var tmpImageID: String in _imagesDictionary[tmpScale][tmpCsf])
-								{
-									if (!imageID || imageID == tmpImageID)
-									{
-										var tmpBitmapData: BitmapData = _imagesDictionary[tmpScale][tmpCsf][tmpImageID];
-										tmpBitmapData.dispose();
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+			this.remove(this._imagesDictionary, scale, csf, imageID);
+			this.remove(this._atfDictionary, scale, csf, imageID);
 
 			if (isNaN(scale))
 			{
 				this._imagesDictionary = null;
-			}
-			else
-			{
-				if (isNaN(csf))
-				{
-					delete this._imagesDictionary[scale];
-				}
-				else
-				{
-					if (imageID)
-					{
-						delete this._imagesDictionary[scale][csf][imageID];
-					}
-					else
-					{
-						delete this._imagesDictionary[scale][csf];
-					}
-				}
+				this._atfDictionary = null;
 			}
 		}
 		
@@ -175,15 +151,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function getATFData(scale: Number, csf: Number, atfID: String): ByteArray
 		{
-			if(this._atfDictionary)
+			if (this._atfDictionary
+			&&  this._atfDictionary[scale]
+			&&  this._atfDictionary[scale][csf])
 			{
-				if(this._atfDictionary[scale])
-				{
-					if(this._atfDictionary[scale][csf])
-					{
-						return this._atfDictionary[scale][csf][atfID];
-					}
-				}
+				return this._atfDictionary[scale][csf][atfID];
 			}
 			return null;
 		}
@@ -193,14 +165,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function getATFs(scale: Number, csf: Number): Object
 		{
-			if(this._atfDictionary)
+			if (this._atfDictionary
+			&&  this._atfDictionary[scale])
 			{
-				if(this._atfDictionary[scale])
-				{
-					return this._atfDictionary[scale][csf];
-				}
+				return this._atfDictionary[scale][csf];
 			}
-			
 			return null;
 		}
 		
@@ -209,53 +178,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function removeATFs(scale: Number = NaN, csf: Number = NaN, atfID: String = null): void
 		{
-			// Dispose only if starling does not handle lost context
-			if (!Starling.handleLostContext)
-			{
-				for (var tmpScale: String in _atfDictionary)
-				{
-					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
-					{
-						for (var tmpCSF: String in _atfDictionary[tmpScale])
-						{
-							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCSF)))
-							{
-								for (var tmpATFid: String in _atfDictionary[tmpScale][tmpCSF])
-								{
-									if (!atfID || atfID == tmpATFid)
-									{
-										var tmpByteArray: ByteArray = _atfDictionary[tmpScale][tmpCSF][tmpATFid];
-										tmpByteArray.clear();
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			if (isNaN(scale))
-			{
-				this._atfDictionary = null;
-			}
-			else
-			{
-				if (isNaN(csf))
-				{
-					delete this._atfDictionary[scale];
-				}
-				else
-				{
-					if (atfID)
-					{
-						delete this._atfDictionary[scale][csf][atfID];
-					}
-					else
-					{
-						delete this._atfDictionary[scale][csf];
-					}
-				}
-			}
+			this.removeImages(scale, csf, atfID);
 		}
 		
 		/** 
@@ -276,7 +199,7 @@ package com.catalystapps.gaf.data
 				{
 					if (images[imageAtlasID])
 					{
-						addTexture(this._texturesDictionary[scale][csf], csf, images[imageAtlasID], imageAtlasID, format);
+						addTexture(scale, csf, images[imageAtlasID], imageAtlasID, format);
 					}
 				}
 				result = true;
@@ -290,10 +213,7 @@ package com.catalystapps.gaf.data
 				
 				for(var atfAtlasID: String in atfs)
 				{
-					if (atfs[atfAtlasID])
-					{
-						addATFTexture(this._texturesDictionary[scale][csf], csf, atfs[atfAtlasID], atfAtlasID);
-					}
+					addATFTexture(scale, csf, atfAtlasID);
 				}
 				result = true;
 			}
@@ -312,8 +232,8 @@ package com.catalystapps.gaf.data
 			{
 				this._texturesDictionary[scale] ||= {};
 				this._texturesDictionary[scale][csf] ||= {};
-				
-				addTexture(this._texturesDictionary[scale][csf], csf, image, imageID, format);
+
+				addTexture(scale, csf, image, imageID, format);
 				
 				return true;
 			}
@@ -324,11 +244,13 @@ package com.catalystapps.gaf.data
 				{
 					this._texturesDictionary[scale] ||= {};
 					this._texturesDictionary[scale][csf] ||= {};
-				
-					addATFTexture(this._texturesDictionary[scale][csf], csf, atfData, imageID);
+
+					addATFTexture(scale, csf, imageID);
+
+					return true;
 				}
 			}
-			
+
 			return false;
 		}
 		
@@ -337,18 +259,12 @@ package com.catalystapps.gaf.data
 		 */
 		public function getTexture(scale: Number, csf: Number, imageID: String): Texture
 		{
-			if(this._texturesDictionary)
+			if(this._texturesDictionary
+			&& this._texturesDictionary[scale]
+			&& this._texturesDictionary[scale][csf]
+			&& this._texturesDictionary[scale][csf][imageID])
 			{
-				if(this._texturesDictionary[scale])
-				{
-					if(this._texturesDictionary[scale][csf])
-					{
-						if(this._texturesDictionary[scale][csf][imageID])
-						{
-							return this._texturesDictionary[scale][csf][imageID];
-						}
-					}
-				}
+				return this._texturesDictionary[scale][csf][imageID];
 			}
 			
 			// in case when there is no texture created
@@ -366,14 +282,11 @@ package com.catalystapps.gaf.data
 		 */
 		public function getTextures(scale: Number, csf: Number): Object
 		{
-			if(this._texturesDictionary)
+			if (this._texturesDictionary
+			&&  this._texturesDictionary[scale])
 			{
-				if(this._texturesDictionary[scale])
-				{
-					return this._texturesDictionary[scale][csf];
-				}
+				return this._texturesDictionary[scale][csf];
 			}
-			
 			return null;
 		}
 		
@@ -382,44 +295,39 @@ package com.catalystapps.gaf.data
 		 */
 		public function disposeTextures(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
 		{
-			if(isNaN(scale))
+			if (isNaN(scale))
 			{
-				for(var scaleToDispose: String in this._texturesDictionary)
+				for (var scaleToDispose: String in this._texturesDictionary)
 				{
 					this.disposeTextures(Number(scaleToDispose));
 				}
-				
 				this._texturesDictionary = null;
 			}
 			else
 			{
-				if(isNaN(csf))
+				if (isNaN(csf))
 				{
-					for(var csfToDispose: String in this._texturesDictionary[scale])
+					for (var csfToDispose: String in this._texturesDictionary[scale])
 					{
 						this.disposeTextures(scale, Number(csfToDispose));
 					}
-					
 					delete this._texturesDictionary[scale];
 				}
 				else
 				{
-					if(imageID)
+					if (!imageID)
 					{
-						(this._texturesDictionary[scale][csf][imageID] as Texture).dispose();
-						
-						delete this._texturesDictionary[scale][csf][imageID];
+						for (var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
+						{
+							this.disposeTextures(scale, csf, atlasIDToDispose);
+						}
+						delete this._texturesDictionary[scale][csf];
 					}
 					else
 					{
-						if (this._texturesDictionary[scale] && this._texturesDictionary[scale][csf])
-						{
-							for(var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
-							{
-								this.disposeTextures(scale, csf, atlasIDToDispose);
-							}
-							delete this._texturesDictionary[scale][csf];
-						}
+						(this._texturesDictionary[scale][csf][imageID] as Texture).dispose();
+
+						delete this._texturesDictionary[scale][csf][imageID];
 					}
 				}
 			}
@@ -431,28 +339,70 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 		
-		private function addTexture(dictionary: Object, csf: Number, img: BitmapData, imageID: String, format: String): void
+		private function addTexture(scale: Number, csf: Number, img: BitmapData, imageID: String, format: String): void
 		{
 			if (DebugUtility.RENDERING_DEBUG)
 			{
 				img = setGrayScale(img.clone());
 			}
-			if (!dictionary[imageID])
+			var texture: Texture = this._texturesDictionary[scale][csf][imageID];
+			if (!texture)
 			{
-				dictionary[imageID] = Texture.fromBitmapData(img, GAF.useMipMaps, false, csf, format);
+				texture = Texture.fromBitmapData(img, GAF.useMipMaps, false, csf, format);
+
+				if (GAF.restoreTexturesFromFile)
+				{
+					texture.root.onRestore = function():void
+					{
+						loadBitmapData(texture.root.uploadBitmapData, _urlsDictionary[scale][csf][imageID]);
+					};
+				}
+				this._texturesDictionary[scale][csf][imageID] = texture;
 			}
 		}
-		
-		private function addATFTexture(dictionary: Object, csf: Number, data: ByteArray, imageID: String): void
+
+		private function addATFTexture(scale: Number, csf: Number, imageID: String): void
 		{
-			if (DebugUtility.RENDERING_DEBUG)
+			var texture: Texture = this._texturesDictionary[scale][csf][imageID];
+			if (!texture)
 			{
-//				img = setGrayScale(img.clone());
+				var url: String = this._urlsDictionary[scale][csf][imageID];
+				url = url.substring(0, url.lastIndexOf(".png")) + ".atf";
+				
+
+				texture = Texture.fromAtfData(this._atfDictionary[scale][csf][imageID], csf, GAF.useMipMaps);
+
+				if (GAF.restoreTexturesFromFile)
+				{
+					texture.root.onRestore = function():void
+					{
+						loadATF(texture.root.uploadAtfData, url);
+					};
+				}
+				this._urlsDictionary[scale][csf][imageID] = url;
+				this._texturesDictionary[scale][csf][imageID] = texture;
 			}
-			if (!dictionary[imageID])
-			{
-				dictionary[imageID] = Texture.fromAtfData(data, csf, GAF.useMipMaps);
-			}
+		}
+
+		private function loadBitmapData(callback: Function, url: String): void
+		{
+			var atlasSourceLoader: Loader = new Loader();
+			atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onPNGLoadComplete);
+			atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadError);
+			atlasSourceLoader.load(new URLRequest(url), new LoaderContext());
+
+			this._callbacksByLoader[atlasSourceLoader.contentLoaderInfo] = callback;
+		}
+
+		private function loadATF(callback: Function, url: String): void
+		{
+			var atfSourceLoader: URLLoader = new URLLoader();
+			atfSourceLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			atfSourceLoader.addEventListener(Event.COMPLETE, onATFLoadComplete);
+			atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onATFLoadError);
+			atfSourceLoader.load(new URLRequest(url));
+
+			this._callbacksByLoader[atfSourceLoader] = callback;
 		}
 			
 		private function setGrayScale(image: BitmapData): BitmapData
@@ -468,6 +418,50 @@ package com.catalystapps.gaf.data
 
 			return image;
 		}
+
+		private function remove(dictionary: Object, scale: Number, csf: Number, atlasID: String): void
+		{
+			var clearMethod: String = dictionary == this._imagesDictionary ? "dispose" : "clear";
+			// Dispose only if starling does not handle lost context
+			if (GAF.restoreTexturesFromFile || !Starling.handleLostContext)
+			{
+				for (var tmpScale: String in dictionary)
+				{
+					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
+					{
+						for (var tmpCSF: String in dictionary[tmpScale])
+						{
+							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCSF)))
+							{
+								for (var tmpAtlasID: String in dictionary[tmpScale][tmpCSF])
+								{
+									if (!atlasID || atlasID == tmpAtlasID)
+									{
+										dictionary[tmpScale][tmpCSF][tmpAtlasID][clearMethod]();
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (isNaN(csf))
+			{
+				delete dictionary[scale];
+			}
+			else
+			{
+				if (atlasID)
+				{
+					delete dictionary[scale][csf][atlasID];
+				}
+				else
+				{
+					delete dictionary[scale][csf];
+				}
+			}
+		}
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -478,8 +472,44 @@ package com.catalystapps.gaf.data
 		//
 		//  EVENT HANDLERS
 		//
-		//--------------------------------------------------------------------------
+		// --------------------------------------------------------------------------
+		private function onPNGLoadComplete(event: Event): void
+		{
+			var info: LoaderInfo = event.target as LoaderInfo;
+			info.removeEventListener(Event.COMPLETE, onPNGLoadComplete);
+			var callback: Function = _callbacksByLoader[info];
+			callback(Bitmap(info.content).bitmapData);
+			delete _callbacksByLoader[info];
+		}
 		
+		private function onATFLoadComplete(event: Event): void
+		{
+			var loader: URLLoader = event.target as URLLoader;
+			loader.removeEventListener(Event.COMPLETE, onATFLoadComplete);
+			var callback: Function = _callbacksByLoader[loader];
+			callback(loader.data as ByteArray);
+			delete _callbacksByLoader[loader];
+		}
+		
+		private function onPNGLoadError(event: Event): void
+		{
+			var info: LoaderInfo = event.target as LoaderInfo;
+			info.removeEventListener(Event.COMPLETE, onPNGLoadComplete);
+			info.removeEventListener(IOErrorEvent.IO_ERROR, onPNGLoadError);
+			delete _callbacksByLoader[info];
+			
+			throw new Error("Can't restore lost context from a PNG file. Can't load file: ", info.url);
+		}
+		
+		private function onATFLoadError(event: Event): void
+		{
+			var loader: URLLoader = event.target as URLLoader;
+			loader.removeEventListener(Event.COMPLETE, onATFLoadComplete);
+			loader.removeEventListener(IOErrorEvent.IO_ERROR, onATFLoadError);
+			delete _callbacksByLoader[loader];
+			
+			throw new Error("Can't restore lost context from an ATF file");
+		}
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
