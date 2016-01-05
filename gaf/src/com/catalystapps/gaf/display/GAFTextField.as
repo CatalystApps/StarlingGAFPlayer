@@ -234,7 +234,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
-		private function applyFilter()
+		private function applyFilter(): void
 		{
 			if (this.textEditor)
 			{
