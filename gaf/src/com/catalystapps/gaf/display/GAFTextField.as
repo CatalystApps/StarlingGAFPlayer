@@ -7,6 +7,7 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
+	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import feathers.controls.TextInput;
@@ -104,12 +105,7 @@ package com.catalystapps.gaf.display
 			this.textEditorProperties.wordWrap = config.wordWrap;
 			this.textEditorFactory = function (): ITextEditor
 			{
-				var textEditor: GAFTextFieldTextEditor = new GAFTextFieldTextEditor(_scale, _csf);
-				if (this._filterConfig && !isNaN(this._filterScale))
-				{
-					textEditor.setFilterConfig(this._filterConfig, this._filterScale);
-				}
-				return textEditor;
+				return new GAFTextFieldTextEditor(_scale, _csf);
 			};
 
 			this.invalidateSize();
@@ -132,6 +128,7 @@ package com.catalystapps.gaf.display
 			clone.alpha = this.alpha;
 			clone.visible = this.visible;
 			clone.transformationMatrix = this.transformationMatrix;
+			clone.textEditorFactory = this.textEditorFactory;
 			clone.setFilterConfig(_filterConfig, _filterScale);
 
 			return clone;
@@ -227,10 +224,7 @@ package com.catalystapps.gaf.display
 					this._filterScale = NaN;
 				}
 
-				if (this.textEditor && this.textEditor is GAFTextFieldTextEditor)
-				{
-					(this.textEditor as GAFTextFieldTextEditor).setFilterConfig(value, scale);
-				}
+				this.applyFilter();
 			}
 		}
 
@@ -239,6 +233,45 @@ package com.catalystapps.gaf.display
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		private function applyFilter()
+		{
+			if (this.textEditor)
+			{
+				if (this.textEditor is GAFTextFieldTextEditor)
+				{
+					(this.textEditor as GAFTextFieldTextEditor).setFilterConfig(this._filterConfig, this._filterScale);
+				}
+				else if (this._filterConfig && !isNaN(this._filterScale))
+				{
+					var gafFilter: GAFFilter;
+					if (this.filter)
+					{
+						if (this.filter is GAFFilter)
+						{
+							gafFilter = this.filter as GAFFilter;
+						}
+						else
+						{
+							this.filter.dispose();
+							gafFilter = new GAFFilter();
+						}
+					}
+					else
+					{
+						gafFilter = new GAFFilter();
+					}
+
+					gafFilter.setConfig(this._filterConfig, this._filterScale);
+					this.filter = gafFilter;
+				}
+				else if (this.filter)
+				{
+					this.filter.dispose();
+					this.filter = null;
+				}
+			}
+		}
 
 		gaf_internal function __debugHighlight(): void
 		{
@@ -285,6 +318,13 @@ package com.catalystapps.gaf.display
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		override protected function createTextEditor():void
+		{
+			super.createTextEditor();
+
+			this.applyFilter();
+		}
 
 		override public function dispose(): void
 		{
