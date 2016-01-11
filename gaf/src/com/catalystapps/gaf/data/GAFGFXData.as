@@ -422,23 +422,20 @@ package com.catalystapps.gaf.data {
 		private function remove(dictionary: Object, scale: Number, csf: Number, atlasID: String): void
 		{
 			var clearMethod: String = dictionary == this._imagesDictionary ? "dispose" : "clear";
-			// Dispose only if starling does not handle lost context
-			if (GAF.restoreTexturesFromFile || !Starling.handleLostContext)
+
+			for (var tmpScale: String in dictionary)
 			{
-				for (var tmpScale: String in dictionary)
+				if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
 				{
-					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
+					for (var tmpCSF: String in dictionary[tmpScale])
 					{
-						for (var tmpCSF: String in dictionary[tmpScale])
+						if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCSF)))
 						{
-							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCSF)))
+							for (var tmpAtlasID: String in dictionary[tmpScale][tmpCSF])
 							{
-								for (var tmpAtlasID: String in dictionary[tmpScale][tmpCSF])
+								if (!atlasID || atlasID == tmpAtlasID)
 								{
-									if (!atlasID || atlasID == tmpAtlasID)
-									{
-										dictionary[tmpScale][tmpCSF][tmpAtlasID][clearMethod]();
-									}
+									dictionary[tmpScale][tmpCSF][tmpAtlasID][clearMethod]();
 								}
 							}
 						}
@@ -477,6 +474,7 @@ package com.catalystapps.gaf.data {
 		{
 			var info: LoaderInfo = event.target as LoaderInfo;
 			info.removeEventListener(Event.COMPLETE, onPNGLoadComplete);
+			info.removeEventListener(IOErrorEvent.IO_ERROR, onPNGLoadError);
 			var callback: Function = _callbacksByLoader[info];
 			callback(Bitmap(info.content).bitmapData);
 			delete _callbacksByLoader[info];
@@ -486,6 +484,7 @@ package com.catalystapps.gaf.data {
 		{
 			var loader: URLLoader = event.target as URLLoader;
 			loader.removeEventListener(Event.COMPLETE, onATFLoadComplete);
+			loader.removeEventListener(IOErrorEvent.IO_ERROR, onATFLoadError);
 			var callback: Function = _callbacksByLoader[loader];
 			callback(loader.data as ByteArray);
 			delete _callbacksByLoader[loader];

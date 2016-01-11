@@ -202,7 +202,7 @@ package com.catalystapps.gaf.core
 			{
 				if (GAF.restoreTexturesFromFile)
 				{
-					throw new Error("Restore textures from zip file is not supported.");
+					trace("WARNING: Restore textures from zip file is not supported. Texture sources will remain in memory.");
 				}
 				this._zip = new FZip();
 				this._zip.addEventListener(FZipErrorEvent.PARSE_ERROR, this.onParseError);
@@ -473,7 +473,7 @@ package com.catalystapps.gaf.core
 
 		private function finalizeParsing(): void
 		{
-			if (GAF.restoreTexturesFromFile || !Starling.handleLostContext)
+			if (GAF.restoreTexturesFromFile && !this._zip || !Starling.handleLostContext)
 			{
 				this.gfxData.removeImages();
 			}
