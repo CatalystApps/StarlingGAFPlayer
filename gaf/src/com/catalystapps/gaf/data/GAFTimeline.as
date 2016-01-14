@@ -101,9 +101,8 @@ package com.catalystapps.gaf.data
 		 * @param content content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
 		 * @param scale in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
 		 * @param csf in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values
-		 * @param format defines the values to use for specifying a texture format. Supported formats: <code>BGRA, BGR_PACKED, BGRA_PACKED</code>
 		 */
-		public function loadInVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN, format: String = "bgra"): void
+		public function loadInVideoMemory(content: String = "contentDefault", scale: Number = NaN, csf: Number = NaN): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{
@@ -120,7 +119,7 @@ package com.catalystapps.gaf.data
 					{
 						for each (csfConfig in scaleConfig.allContentScaleFactors)
 						{
-							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf, format);
+							this._gafgfxData.createTextures(scaleConfig.scale, csfConfig.csf);
 
 							textures = this._gafgfxData.getTextures(scaleConfig.scale, csfConfig.csf);
 							if (!csfConfig.atlas && textures)
@@ -139,7 +138,7 @@ package com.catalystapps.gaf.data
 						return;
 					}
 
-					if (!csfConfig.atlas && this._gafgfxData.createTextures(this.scale, this.contentScaleFactor, format))
+					if (!csfConfig.atlas && this._gafgfxData.createTextures(this.scale, this.contentScaleFactor))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(this.scale, this.contentScaleFactor), csfConfig);
 					}
@@ -154,7 +153,7 @@ package com.catalystapps.gaf.data
 						return;
 					}
 
-					if (!csfConfig.atlas && this._gafgfxData.createTextures(scale, csf, format))
+					if (!csfConfig.atlas && this._gafgfxData.createTextures(scale, csf))
 					{
 						csfConfig.atlas = CTextureAtlas.createFromTextures(this._gafgfxData.getTextures(scale, csf), csfConfig);
 					}
@@ -169,7 +168,7 @@ package com.catalystapps.gaf.data
 		 * @param scale in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 * @param csf in case when specified content is CONTENT_SPECIFY scale and csf should be set in required values
 		 */
-		public function unloadFromVideoMemory(content: String = CONTENT_DEFAULT, scale: Number = NaN, csf: Number = NaN): void
+		public function unloadFromVideoMemory(content: String = "contentDefault", scale: Number = NaN, csf: Number = NaN): void
 		{
 			if (!this._config.textureAtlas || !this._config.textureAtlas.contentScaleFactor.elements)
 			{

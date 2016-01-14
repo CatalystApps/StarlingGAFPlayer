@@ -1,5 +1,7 @@
 package com.catalystapps.gaf.data
 {
+	import com.catalystapps.gaf.data.tagfx.ITAGFX;
+	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
 	import com.catalystapps.gaf.utils.MathUtility;
 	import flash.utils.ByteArray;
 	import flash.display3D.Context3DTextureFormat;
@@ -33,381 +35,200 @@ package com.catalystapps.gaf.data
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
 		//
 		//--------------------------------------------------------------------------
-		
+
 		private var _texturesDictionary: Object = {};
-		private var _imagesDictionary: Object = {};
-		private var _atfDictionary: Object = {};
-		
+		private var _taGFXDictionary: Object = {};
+
 		//--------------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
 		//
 		//--------------------------------------------------------------------------
-		
+
 		/** @private */
 		public function GAFGFXData()
 		{
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//--------------------------------------------------------------------------
-		
-		/** 
-		 * Add image to storage. Unique key for image is combination scale + csf + imageID
-		 */
-		public function addImage(scale: Number, csf: Number, imageID: String, image: BitmapData): void
+
+		/** @private */
+		public function addTAGFX(scale: Number, csf: Number, imageID: String, taGFX: ITAGFX): void
 		{
-			this._imagesDictionary[scale] ||= {};
-			this._imagesDictionary[scale][csf] ||= {};
-			this._imagesDictionary[scale][csf][imageID] ||= image;
+			this._taGFXDictionary[scale] ||= {};
+			this._taGFXDictionary[scale][csf] ||= {};
+			this._taGFXDictionary[scale][csf][imageID] ||= taGFX;
 		}
-		
-		/**
-		 * Returns image as BitmapData by unique key consist of scale + csf + imageID
-		 */
-		public function getImage(scale: Number, csf: Number, imageID: String): BitmapData
+
+		/** @private */
+		public function getTAGFXs(scale: Number, csf: Number): Object
 		{
-			if(this._imagesDictionary)
+			if (this._taGFXDictionary)
 			{
-				if(this._imagesDictionary[scale])
+				if (this._taGFXDictionary[scale])
 				{
-					if(this._imagesDictionary[scale][csf])
-					{
-						return this._imagesDictionary[scale][csf][imageID];
-					}
+					return this._taGFXDictionary[scale][csf];
 				}
 			}
-			
+
 			return null;
 		}
-		
-		/**
-		 * Returns images for specified scale and csf in Object as combination key-value where key - is imageID and value - is image as BitmapData
-		 */
-		public function getImages(scale: Number, csf: Number): Object
+
+		/** @private */
+		public function getTAGFX(scale: Number, csf: Number, imageID: String): ITAGFX
 		{
-			if(this._imagesDictionary)
+			if (this._taGFXDictionary)
 			{
-				if(this._imagesDictionary[scale])
+				if (this._taGFXDictionary[scale])
 				{
-					return this._imagesDictionary[scale][csf];
-				}
-			}
-			
-			return null;
-		}
-		
-		/**
-		 * Removes specified image or images for specified combination scale and csf. If nothing was specified - removes all images
-		 */
-		public function removeImages(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
-		{
-			// Dispose only if starling does not handle lost context
-			if (!Starling.handleLostContext)
-			{
-				for (var tmpScale: String in _imagesDictionary)
-				{
-					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
+					if (this._taGFXDictionary[scale][csf])
 					{
-						for (var tmpCsf: String in _imagesDictionary[tmpScale])
-						{
-							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCsf)))
-							{
-								for (var tmpImageID: String in _imagesDictionary[tmpScale][tmpCsf])
-								{
-									if (!imageID || imageID == tmpImageID)
-									{
-										var tmpBitmapData: BitmapData = _imagesDictionary[tmpScale][tmpCsf][tmpImageID];
-										tmpBitmapData.dispose();
-									}
-								}
-							}
-						}
+						return this._taGFXDictionary[scale][csf][imageID];
 					}
 				}
 			}
 
-			if (isNaN(scale))
-			{
-				this._imagesDictionary = null;
-			}
-			else
-			{
-				if (isNaN(csf))
-				{
-					delete this._imagesDictionary[scale];
-				}
-				else
-				{
-					if (imageID)
-					{
-						delete this._imagesDictionary[scale][csf][imageID];
-					}
-					else
-					{
-						delete this._imagesDictionary[scale][csf];
-					}
-				}
-			}
-		}
-		
-		/** 
-		 * Add ATF data to storage. Unique key for ATF is combination scale + csf + atfID
-		 */
-		public function addATFData(scale: Number, csf: Number, atfID: String, data: ByteArray): void
-		{
-			this._atfDictionary[scale] ||= {};
-			this._atfDictionary[scale][csf] ||= {};
-			this._atfDictionary[scale][csf][atfID] ||= data;
+			return null;
 		}
 
 		/**
-		 * Returns ATF data as ByteArray by unique key consist of scale + csf + atfID
-		 */
-		public function getATFData(scale: Number, csf: Number, atfID: String): ByteArray
-		{
-			if(this._atfDictionary)
-			{
-				if(this._atfDictionary[scale])
-				{
-					if(this._atfDictionary[scale][csf])
-					{
-						return this._atfDictionary[scale][csf][atfID];
-					}
-				}
-			}
-			return null;
-		}
-		
-		/**
-		 * Returns ATFs for specified scale and csf in Object as combination key-value where key - is atfID and value - is ATF file content as ByteArray
-		 */
-		public function getATFs(scale: Number, csf: Number): Object
-		{
-			if(this._atfDictionary)
-			{
-				if(this._atfDictionary[scale])
-				{
-					return this._atfDictionary[scale][csf];
-				}
-			}
-			
-			return null;
-		}
-		
-		/**
-		 * Removes specified ATF or ATFs for specified combination scale and csf. If nothing was specified - removes all ATFs
-		 */
-		public function removeATFs(scale: Number = NaN, csf: Number = NaN, atfID: String = null): void
-		{
-			// Dispose only if starling does not handle lost context
-			if (!Starling.handleLostContext)
-			{
-				for (var tmpScale: String in _atfDictionary)
-				{
-					if (isNaN(scale) || MathUtility.equals(scale, Number(tmpScale)))
-					{
-						for (var tmpCSF: String in _atfDictionary[tmpScale])
-						{
-							if (isNaN(csf) || MathUtility.equals(csf, Number(tmpCSF)))
-							{
-								for (var tmpATFid: String in _atfDictionary[tmpScale][tmpCSF])
-								{
-									if (!atfID || atfID == tmpATFid)
-									{
-										var tmpByteArray: ByteArray = _atfDictionary[tmpScale][tmpCSF][tmpATFid];
-										tmpByteArray.clear();
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			if (isNaN(scale))
-			{
-				this._atfDictionary = null;
-			}
-			else
-			{
-				if (isNaN(csf))
-				{
-					delete this._atfDictionary[scale];
-				}
-				else
-				{
-					if (atfID)
-					{
-						delete this._atfDictionary[scale][csf][atfID];
-					}
-					else
-					{
-						delete this._atfDictionary[scale][csf];
-					}
-				}
-			}
-		}
-		
-		/** 
 		 * Creates textures from all images for specified scale and csf.
-		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
+		 * @param scale
+		 * @param csf
+		 * @return {Boolean}
 		 * @see #createTexture()
 		 */
-		public function createTextures(scale: Number, csf: Number, format: String = Context3DTextureFormat.BGRA): Boolean
+		public function createTextures(scale: Number, csf: Number): Boolean
 		{
-			var result: Boolean;
-			var images: Object = this.getImages(scale, csf);
-			if (images)
+			var taGFXs: Object = this.getTAGFXs(scale, csf);
+			if (taGFXs)
 			{
 				this._texturesDictionary[scale] ||= {};
 				this._texturesDictionary[scale][csf] ||= {};
-				
-				for(var imageAtlasID: String in images)
+
+				for (var imageAtlasID: String in taGFXs)
 				{
-					if (images[imageAtlasID])
+					if (taGFXs[imageAtlasID])
 					{
-						addTexture(this._texturesDictionary[scale][csf], csf, images[imageAtlasID], imageAtlasID, format);
+						addTexture(this._texturesDictionary[scale][csf], taGFXs[imageAtlasID], imageAtlasID);
 					}
 				}
-				result = true;
-			}
-			
-			var atfs: Object = this.getATFs(scale, csf);
-			if (atfs)
-			{
-				this._texturesDictionary[scale] ||= {};
-				this._texturesDictionary[scale][csf] ||= {};
-				
-				for(var atfAtlasID: String in atfs)
-				{
-					if (atfs[atfAtlasID])
-					{
-						addATFTexture(this._texturesDictionary[scale][csf], csf, atfs[atfAtlasID], atfAtlasID);
-					}
-				}
-				result = true;
-			}
-			return result;
-		}
-		
-		/** 
-		 * Creates texture from specified image.
-		 * @param format defines the values to use for specifying a texture format. Supported formats: BGRA, BGR_PACKED, BGRA_PACKED
-		 * @see #createTextures()
-		 */
-		public function createTexture(scale: Number, csf: Number, imageID: String, format: String = Context3DTextureFormat.BGRA): Boolean
-		{
-			var image: BitmapData = this.getImage(scale, csf, imageID);
-			if (image)
-			{
-				this._texturesDictionary[scale] ||= {};
-				this._texturesDictionary[scale][csf] ||= {};
-				
-				addTexture(this._texturesDictionary[scale][csf], csf, image, imageID, format);
-				
 				return true;
 			}
-			else
-			{
-				var atfData: ByteArray = this.getATFData(scale, csf, imageID);
-				if (atfData)
-				{
-					this._texturesDictionary[scale] ||= {};
-					this._texturesDictionary[scale][csf] ||= {};
-				
-					addATFTexture(this._texturesDictionary[scale][csf], csf, atfData, imageID);
-				}
-			}
-			
+
 			return false;
 		}
-		
+
+		/**
+		 * Creates texture from specified image.
+		 * @param scale
+		 * @param csf
+		 * @param imageID
+		 * @return {Boolean}
+		 * @see #createTextures()
+		 */
+		public function createTexture(scale: Number, csf: Number, imageID: String): Boolean
+		{
+			var taGFX: ITAGFX = this.getTAGFX(scale, csf, imageID);
+			if (taGFX)
+			{
+				this._texturesDictionary[scale] ||= {};
+				this._texturesDictionary[scale][csf] ||= {};
+
+				addTexture(this._texturesDictionary[scale][csf], taGFX, imageID);
+
+				return true;
+			}
+
+			return false;
+		}
+
 		/**
 		 * Returns texture by unique key consist of scale + csf + imageID
 		 */
 		public function getTexture(scale: Number, csf: Number, imageID: String): Texture
 		{
-			if(this._texturesDictionary)
+			if (this._texturesDictionary)
 			{
-				if(this._texturesDictionary[scale])
+				if (this._texturesDictionary[scale])
 				{
-					if(this._texturesDictionary[scale][csf])
+					if (this._texturesDictionary[scale][csf])
 					{
-						if(this._texturesDictionary[scale][csf][imageID])
+						if (this._texturesDictionary[scale][csf][imageID])
 						{
 							return this._texturesDictionary[scale][csf][imageID];
 						}
 					}
 				}
 			}
-			
+
 			// in case when there is no texture created
 			// create texture and check if it successfully created
-			if(this.createTexture(scale, csf, imageID))
+			if (this.createTexture(scale, csf, imageID))
 			{
 				return this._texturesDictionary[scale][csf][imageID];
 			}
-			
+
 			return null;
 		}
-		
+
 		/**
 		 * Returns textures for specified scale and csf in Object as combination key-value where key - is imageID and value - is Texture
 		 */
 		public function getTextures(scale: Number, csf: Number): Object
 		{
-			if(this._texturesDictionary)
+			if (this._texturesDictionary)
 			{
-				if(this._texturesDictionary[scale])
+				if (this._texturesDictionary[scale])
 				{
 					return this._texturesDictionary[scale][csf];
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		/**
 		 * Dispose specified texture or textures for specified combination scale and csf. If nothing was specified - dispose all texturea
 		 */
 		public function disposeTextures(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
 		{
-			if(isNaN(scale))
+			if (isNaN(scale))
 			{
-				for(var scaleToDispose: String in this._texturesDictionary)
+				for (var scaleToDispose: String in this._texturesDictionary)
 				{
 					this.disposeTextures(Number(scaleToDispose));
 				}
-				
+
 				this._texturesDictionary = null;
 			}
 			else
 			{
-				if(isNaN(csf))
+				if (isNaN(csf))
 				{
-					for(var csfToDispose: String in this._texturesDictionary[scale])
+					for (var csfToDispose: String in this._texturesDictionary[scale])
 					{
 						this.disposeTextures(scale, Number(csfToDispose));
 					}
-					
+
 					delete this._texturesDictionary[scale];
 				}
 				else
 				{
-					if(imageID)
+					if (imageID)
 					{
 						(this._texturesDictionary[scale][csf][imageID] as Texture).dispose();
-						
+
 						delete this._texturesDictionary[scale][csf][imageID];
 					}
 					else
@@ -424,37 +245,26 @@ package com.catalystapps.gaf.data
 				}
 			}
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
-		private function addTexture(dictionary: Object, csf: Number, img: BitmapData, imageID: String, format: String): void
+
+		private function addTexture(dictionary: Object, tagfx: ITAGFX, imageID: String): void
 		{
-			if (DebugUtility.RENDERING_DEBUG)
+			if (DebugUtility.RENDERING_DEBUG && tagfx.sourceType == TAGFXBase.SOURCE_TYPE_BITMAP_DATA)
 			{
-				img = setGrayScale(img.clone());
+				var bitmapData: BitmapData = setGrayScale(tagfx.source.clone());
+				dictionary[imageID] = Texture.fromBitmapData(bitmapData, GAF.useMipMaps, false, tagfx.textureScale, tagfx.textureFormat);
 			}
-			if (!dictionary[imageID])
+			else if (!dictionary[imageID])
 			{
-				dictionary[imageID] = Texture.fromBitmapData(img, GAF.useMipMaps, false, csf, format);
+				dictionary[imageID] = tagfx.texture;
 			}
 		}
-		
-		private function addATFTexture(dictionary: Object, csf: Number, data: ByteArray, imageID: String): void
-		{
-			if (DebugUtility.RENDERING_DEBUG)
-			{
-//				img = setGrayScale(img.clone());
-			}
-			if (!dictionary[imageID])
-			{
-				dictionary[imageID] = Texture.fromAtfData(data, csf, GAF.useMipMaps);
-			}
-		}
-			
+
 		private function setGrayScale(image: BitmapData): BitmapData
 		{
 			var matrix: Array = [
@@ -473,13 +283,13 @@ package com.catalystapps.gaf.data
 		// OVERRIDDEN METHODS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS

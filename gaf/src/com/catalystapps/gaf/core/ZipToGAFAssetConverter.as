@@ -1,6 +1,18 @@
 package com.catalystapps.gaf.core
 {
+	import com.catalystapps.gaf.data.tagfx.GAFATFData;
+	import com.catalystapps.gaf.data.tagfx.ITAGFX;
+	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourceATFBA;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourceATFURL;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourceBitmapData;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourcePNGURL;
+	import com.catalystapps.gaf.utils.FileUtils;
+
+	import flash.display.Bitmap;
+
 	import flash.display3D.Context3DTextureFormat;
+	import flash.geom.Point;
 	import flash.utils.getDefinitionByName;
 	import deng.fzip.FZip;
 	import deng.fzip.FZipErrorEvent;
@@ -25,7 +37,6 @@ package com.catalystapps.gaf.core
 	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.display.BitmapData;
-	import flash.display.Loader;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -34,7 +45,6 @@ package com.catalystapps.gaf.core
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
-	import flash.system.LoaderContext;
 	import flash.utils.ByteArray;
 	import flash.utils.clearTimeout;
 	import flash.utils.getQualifiedClassName;
@@ -121,19 +131,18 @@ package com.catalystapps.gaf.core
 		private var _zip: FZip;
 		private var _zipLoader: FZipLibrary;
 
-		private var currentConfigIndex: uint;
-		private var configConvertTimeout: Number;
+		private var _currentConfigIndex: uint;
+		private var _configConvertTimeout: Number;
 
-		private var gafAssetsIDs: Array;
-		private var gafAssetConfigs: Object;
-		private var gafAssetConfigSources: Object;
+		private var _gafAssetsIDs: Array;
+		private var _gafAssetConfigs: Object;
+		private var _gafAssetConfigSources: Object;
 
-		private var sounds: Object;
-		private var pngImgs: Object;
-		private var atfData: Object;
+		private var _sounds: Object;
+		private var _taGFXs: Object;
 
-		private var gfxData: GAFGFXData;
-		private var soundData: GAFSoundData;
+		private var _gfxData: GAFGFXData;
+		private var _soundData: GAFSoundData;
 
 		private var _gafBundle: GAFBundle;
 
@@ -145,11 +154,11 @@ package com.catalystapps.gaf.core
 
 		///////////////////////////////////
 
-		private var gafAssetsConfigURLs: Array;
-		private var gafAssetsConfigIndex: uint;
+		private var _gafAssetsConfigURLs: Array;
+		private var _gafAssetsConfigIndex: uint;
 
-		private var atlasSourceURLs: Array;
-		private var atlasSourceIndex: uint;
+		private var _atlasSourceURLs: Array;
+		private var _atlasSourceIndex: uint;
 
 		//--------------------------------------------------------------------------
 		//
@@ -216,11 +225,11 @@ package com.catalystapps.gaf.core
 			}
 			else if (data is Array || getQualifiedClassName(data) == "flash.filesystem::File")
 			{
-				this.gafAssetsConfigURLs = [];
+				this._gafAssetsConfigURLs = [];
 
 				if (data is Array)
 				{
-					for each(var file: * in data)
+					for each (var file: * in data)
 					{
 						this.processFile(file);
 					}
@@ -230,7 +239,7 @@ package com.catalystapps.gaf.core
 					this.processFile(data);
 				}
 
-				if (this.gafAssetsConfigURLs.length)
+				if (this._gafAssetsConfigURLs.length)
 				{
 					this.loadConfig();
 				}
@@ -259,43 +268,42 @@ package com.catalystapps.gaf.core
 		{
 			this._zip = null;
 			this._zipLoader = null;
-			this.currentConfigIndex = 0;
-			this.configConvertTimeout = 0;
+			this._currentConfigIndex = 0;
+			this._configConvertTimeout = 0;
 
-			this.sounds = {};
-			this.pngImgs = {};
-			this.atfData = {};
+			this._sounds = {};
+			this._taGFXs = {};
 
-			this.gfxData = new GAFGFXData();
-			this.soundData = new GAFSoundData();
+			this._gfxData = new GAFGFXData();
+			this._soundData = new GAFSoundData();
 			this._gafBundle = new GAFBundle();
-			this._gafBundle.soundData = this.soundData;
+			this._gafBundle.soundData = this._soundData;
 
-			this.gafAssetsIDs = [];
-			this.gafAssetConfigs = {};
-			this.gafAssetConfigSources = {};
+			this._gafAssetsIDs = [];
+			this._gafAssetConfigs = {};
+			this._gafAssetConfigSources = {};
 
-			this.gafAssetsConfigURLs = [];
-			this.gafAssetsConfigIndex = 0;
-	
-			this.atlasSourceURLs = []
-			this.atlasSourceIndex = 0;
+			this._gafAssetsConfigURLs = [];
+			this._gafAssetsConfigIndex = 0;
+
+			this._atlasSourceURLs = [];
+			this._atlasSourceIndex = 0;
 		}
-		
+
 		private function parseObject(data: Object): void
 		{
-			this.pngImgs = {};
+			this._taGFXs = {};
 
 			for each (var configObj: Object in data.configs)
 			{
-				this.gafAssetsIDs.push(configObj.name);
+				this._gafAssetsIDs.push(configObj.name);
 
 				var ba: ByteArray = configObj.config as ByteArray;
 				ba.position = 0;
 
 				if (configObj.type == "gaf")
 				{
-					this.gafAssetConfigSources[configObj.name] = ba;
+					this._gafAssetConfigSources[configObj.name] = ba;
 				}
 				else
 				{
@@ -303,9 +311,10 @@ package com.catalystapps.gaf.core
 				}
 			}
 
-			for each(var atlasObj: Object in data.atlases)
+			for each (var atlasObj: Object in data.atlases)
 			{
-				this.pngImgs[atlasObj.name] = atlasObj.bitmapData;
+				var taGFX: TAGFXBase = new TAGFXSourceBitmapData(atlasObj.bitmapData, this.textureFormat);
+				this._taGFXs[atlasObj.name] = taGFX;
 			}
 
 			///////////////////////////////////
@@ -335,11 +344,11 @@ package com.catalystapps.gaf.core
 							{
 								url = file["url"];
 
-								if (this.isGAFConfig(url))
+								if (isGAFConfig(url))
 								{
-									this.gafAssetsConfigURLs.push(url);
+									this._gafAssetsConfigURLs.push(url);
 								}
-								else if (this.isJSONConfig(url))
+								else if (isJSONConfig(url))
 								{
 									this.zipProcessError(ErrorConstants.UNSUPPORTED_JSON);
 									return;
@@ -351,14 +360,13 @@ package com.catalystapps.gaf.core
 					{
 						url = data["url"];
 
-						if (this.isGAFConfig(url))
+						if (isGAFConfig(url))
 						{
-							this.gafAssetsConfigURLs.push(url);
+							this._gafAssetsConfigURLs.push(url);
 						}
-						else if (this.isJSONConfig(url))
+						else if (isJSONConfig(url))
 						{
 							this.zipProcessError(ErrorConstants.UNSUPPORTED_JSON);
-							return;
 						}
 					}
 				}
@@ -367,20 +375,20 @@ package com.catalystapps.gaf.core
 
 		private function findAllAtlasURLs(): void
 		{
-			this.atlasSourceURLs = [];
+			this._atlasSourceURLs = [];
 
 			var url: String;
 			var gafTimelineConfigs: Vector.<GAFTimelineConfig>;
 
-			for (var id: String in this.gafAssetConfigs)
+			for (var id: String in this._gafAssetConfigs)
 			{
-				gafTimelineConfigs = this.gafAssetConfigs[id].timelines;
+				gafTimelineConfigs = this._gafAssetConfigs[id].timelines;
 
 				for each (var config: GAFTimelineConfig in gafTimelineConfigs)
 				{
-					var folderURL: String = this.getFolderURL(id);
+					var folderURL: String = getFolderURL(id);
 
-					for each(var scale: CTextureAtlasScale in config.allTextureAtlases)
+					for each (var scale: CTextureAtlasScale in config.allTextureAtlases)
 					{
 						if (isNaN(this._defaultScale) || MathUtility.equals(scale.scale, this._defaultScale))
 						{
@@ -393,9 +401,9 @@ package com.catalystapps.gaf.core
 										url = folderURL + source.source;
 
 										if (source.source != "no_atlas"
-												&& this.atlasSourceURLs.indexOf(url) == -1)
+												&& this._atlasSourceURLs.indexOf(url) == -1)
 										{
-											this.atlasSourceURLs.push(url);
+											this._atlasSourceURLs.push(url);
 										}
 									}
 								}
@@ -405,7 +413,7 @@ package com.catalystapps.gaf.core
 				}
 			}
 
-			if (this.atlasSourceURLs.length)
+			if (this._atlasSourceURLs.length)
 			{
 				this.loadNextAtlas();
 			}
@@ -417,49 +425,52 @@ package com.catalystapps.gaf.core
 
 		private function loadNextAtlas(): void
 		{
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
+			var url: String = this._atlasSourceURLs[this._atlasSourceIndex];
+			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
 
+			var textureSize: Point;
+			var taGFX: TAGFXBase;
 			var FileClass: Class = getDefinitionByName("flash.filesystem::File") as Class;
 			var file: * = new FileClass(url);
 			if (file["exists"])
 			{
-				this.loadPNG(url);
+				textureSize = FileUtils.getPNGSize(file);
+				taGFX = new TAGFXSourcePNGURL(url, textureSize, this.textureFormat);
+
+				this._taGFXs[fileName] = taGFX;
 			}
 			else
 			{
-				url = url.substring(0, url.lastIndexOf(".png"));
-				file = new FileClass(url + ".atf");
+				url = url.substring(0, url.lastIndexOf(".png")) + ".atf";
+				file = new FileClass(url);
 				if (file["exists"])
 				{
-					this.loadATF(file["nativePath"]);
+					var atfData: GAFATFData = FileUtils.getATFData(file);
+					taGFX = new TAGFXSourceATFURL(url, atfData);
+
+					this._taGFXs[fileName] = taGFX;
 				}
 				else
 				{
 					this.zipProcessError(ErrorConstants.FILE_NOT_FOUND + url + "'", 4);
 				}
 			}
-		}
 
-		private function loadPNG(url: String): void
-		{
-			var atlasSourceLoader: Loader = new Loader();
-			atlasSourceLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, this.onPNGLoadComplete);
-			atlasSourceLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.onPNGLoadIOError);
-			atlasSourceLoader.load(new URLRequest(url), new LoaderContext());
-		}
+			this._atlasSourceIndex++;
 
-		private function loadATF(url: String): void
-		{
-			var atfSourceLoader: URLLoader = new URLLoader();
-			atfSourceLoader.dataFormat = URLLoaderDataFormat.BINARY;
-			atfSourceLoader.addEventListener(Event.COMPLETE, this.onATFLoadComplete);
-			atfSourceLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onATFLoadIOError);
-			atfSourceLoader.load(new URLRequest(url));
+			if (this._atlasSourceIndex >= this._atlasSourceURLs.length)
+			{
+				this.createGAFTimelines();
+			}
+			else
+			{
+				this.loadNextAtlas();
+			}
 		}
 
 		private function loadConfig(): void
 		{
-			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			var url: String = this._gafAssetsConfigURLs[this._gafAssetsConfigIndex];
 			var gafAssetsConfigURLLoader: URLLoader = new URLLoader();
 			gafAssetsConfigURLLoader.dataFormat = URLLoaderDataFormat.BINARY;
 			gafAssetsConfigURLLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onConfigIOError);
@@ -471,18 +482,27 @@ package com.catalystapps.gaf.core
 		{
 			if (!Starling.handleLostContext)
 			{
-				this.gfxData.removeImages();
-				for each (var bd: BitmapData in this.pngImgs)
+				for each (var taGFX: ITAGFX in this._taGFXs)
 				{
-					bd.dispose();
-				}
-				for each (var ba: ByteArray in this.atfData)
-				{
-					ba.clear();
+					switch (taGFX.sourceType)
+					{
+						case TAGFXBase.SOURCE_TYPE_BITMAP_DATA:
+							(taGFX.source as BitmapData).dispose();
+							break;
+						case TAGFXBase.SOURCE_TYPE_ATF_BA:
+						case TAGFXBase.SOURCE_TYPE_PNG_BA:
+							(taGFX.source as ByteArray).clear();
+							break;
+						case TAGFXBase.SOURCE_TYPE_BITMAP:
+							(taGFX.source as Bitmap).bitmapData.dispose();
+							break;
+					}
 				}
 			}
-			this.pngImgs = null;
-			this.atfData = null;
+
+			this._taGFXs = null;
+
+			this._sounds = null;
 
 			if (this._zip && !ZipToGAFAssetConverter.keepZipInRAM)
 			{
@@ -499,12 +519,11 @@ package com.catalystapps.gaf.core
 				this._zip.close();
 				this._zip = null;
 			}
-			this.sounds = null;
 
 			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
-		private function getFolderURL(url: String): String
+		private static function getFolderURL(url: String): String
 		{
 			var cutURL: String = url.split("?")[0];
 
@@ -513,12 +532,12 @@ package com.catalystapps.gaf.core
 			return cutURL.slice(0, lastIndex + 1);
 		}
 
-		private function isJSONConfig(url: String): Boolean
+		private static function isJSONConfig(url: String): Boolean
 		{
 			return (url.split("?")[0].split(".").pop().toLowerCase() == "json");
 		}
 
-		private function isGAFConfig(url: String): Boolean
+		private static function isGAFConfig(url: String): Boolean
 		{
 			return (url.split("?")[0].split(".").pop().toLowerCase() == "gaf");
 		}
@@ -531,12 +550,12 @@ package com.catalystapps.gaf.core
 
 			var fileName: String;
 			var bmp: BitmapData;
+			var taGFX: TAGFXBase;
 
-			this.pngImgs = {};
-			this.atfData = {};
+			this._taGFXs = {};
 
-			this.gafAssetConfigSources = {};
-			this.gafAssetsIDs = [];
+			this._gafAssetConfigSources = {};
+			this._gafAssetsIDs = [];
 
 			for (var i: uint = 0; i < length; i++)
 			{
@@ -548,16 +567,17 @@ package com.catalystapps.gaf.core
 					case ".png":
 						fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
 						bmp = this._zipLoader.getBitmapData(zipFile.filename);
-
-						this.pngImgs[fileName] = bmp;
+						taGFX = new TAGFXSourceBitmapData(bmp, this.textureFormat);
+						this._taGFXs[fileName] = taGFX;
 						break;
 					case ".atf":
 						fileName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.toLowerCase().lastIndexOf(".atf")) + ".png";
-						this.atfData[fileName] = zipFile.content;
+						taGFX = new TAGFXSourceATFBA(zipFile.content);
+						this._taGFXs[fileName] = taGFX;
 						break;
 					case ".gaf":
-						this.gafAssetsIDs.push(fileName);
-						this.gafAssetConfigSources[fileName] = zipFile.content;
+						this._gafAssetsIDs.push(fileName);
+						this._gafAssetConfigSources[fileName] = zipFile.content;
 						break;
 					case ".json":
 						this.zipProcessError(ErrorConstants.UNSUPPORTED_JSON);
@@ -566,7 +586,7 @@ package com.catalystapps.gaf.core
 					case ".wav":
 						if (!this._ignoreSounds)
 						{
-							this.sounds[fileName] = zipFile.content;
+							this._sounds[fileName] = zipFile.content;
 						}
 						break;
 				}
@@ -577,12 +597,12 @@ package com.catalystapps.gaf.core
 
 		private function convertConfig(): void
 		{
-			clearTimeout(this.configConvertTimeout);
-			this.configConvertTimeout = NaN;
+			clearTimeout(this._configConvertTimeout);
+			this._configConvertTimeout = NaN;
 
-			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
-			var configSource: Object = this.gafAssetConfigSources[configID];
-			var gafAssetID: String = this.getAssetId(this.gafAssetsIDs[this.currentConfigIndex]);
+			var configID: String = this._gafAssetsIDs[this._currentConfigIndex];
+			var configSource: Object = this._gafAssetConfigSources[configID];
+			var gafAssetID: String = this.getAssetId(this._gafAssetsIDs[this._currentConfigIndex]);
 
 			if (configSource is ByteArray)
 			{
@@ -617,10 +637,10 @@ package com.catalystapps.gaf.core
 			var gafAsset: GAFAsset;
 			var i: uint;
 
-			for (i = 0; i < this.gafAssetsIDs.length; i++)
+			for (i = 0; i < this._gafAssetsIDs.length; i++)
 			{
-				gafAssetConfigID = this.gafAssetsIDs[i];
-				gafAssetConfig = this.gafAssetConfigs[gafAssetConfigID];
+				gafAssetConfigID = this._gafAssetsIDs[i];
+				gafAssetConfig = this._gafAssetConfigs[gafAssetConfigID];
 				gafTimelineConfigs = gafAssetConfig.timelines;
 
 				gafAsset = new GAFAsset(gafAssetConfig);
@@ -638,14 +658,14 @@ package com.catalystapps.gaf.core
 				return;
 			}
 
-			if (this.gafAssetsIDs.length == 1)
+			if (this._gafAssetsIDs.length == 1)
 			{
 				this._gafBundle.name ||= gafAssetConfig.id;
 			}
 
-			if (this.soundData.gaf_internal::hasSoundsToLoad && !this._ignoreSounds)
+			if (this._soundData.gaf_internal::hasSoundsToLoad && !this._ignoreSounds)
 			{
-				this.soundData.gaf_internal::loadSounds(this.finalizeParsing, this.onSoundLoadIOError);
+				this._soundData.gaf_internal::loadSounds(this.finalizeParsing, this.onSoundLoadIOError);
 			}
 			else
 			{
@@ -669,15 +689,11 @@ package com.catalystapps.gaf.core
 								{
 									continue;
 								}
-								if (this.pngImgs[taSource.source])
+								if (this._taGFXs[taSource.source])
 								{
-									this.gfxData.addImage(cScale.scale, cCSF.csf, taSource.id,
-											this.pngImgs[taSource.source]);
-								}
-								else if (this.atfData[taSource.source])
-								{
-									this.gfxData.addATFData(cScale.scale, cCSF.csf, taSource.id,
-											this.atfData[taSource.source]);
+									var taGFX: TAGFXBase = this._taGFXs[taSource.source];
+									taGFX.textureScale = cCSF.csf;
+									this._gfxData.addTAGFX(cScale.scale, cCSF.csf, taSource.id, taGFX);
 								}
 								else
 								{
@@ -690,18 +706,18 @@ package com.catalystapps.gaf.core
 			}
 
 			var timeline: GAFTimeline = new GAFTimeline(config);
-			timeline.gafgfxData = this.gfxData;
-			timeline.gafSoundData = this.soundData;
+			timeline.gafgfxData = this._gfxData;
+			timeline.gafSoundData = this._soundData;
 			timeline.gafAsset = asset;
 
 			switch (ZipToGAFAssetConverter.actionWithAtlases)
 			{
 				case ZipToGAFAssetConverter.ACTION_LOAD_ALL_IN_GPU_MEMORY:
-					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL, NaN, NaN, this.textureFormat);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_ALL);
 					break;
 
 				case ZipToGAFAssetConverter.ACTION_LOAD_IN_GPU_MEMORY_ONLY_DEFAULT:
-					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT, NaN, NaN, this.textureFormat);
+					timeline.loadInVideoMemory(GAFTimeline.CONTENT_DEFAULT);
 					break;
 			}
 
@@ -787,28 +803,28 @@ package com.catalystapps.gaf.core
 		{
 			use namespace gaf_internal;
 
-			var configID: String = this.gafAssetsIDs[this.currentConfigIndex];
+			var configID: String = this._gafAssetsIDs[this._currentConfigIndex];
+			var folderURL: String = getFolderURL(configID);
 			var converter: BinGAFAssetConfigConverter = event.target as BinGAFAssetConfigConverter;
 			converter.removeEventListener(Event.COMPLETE, onConverted);
 			converter.removeEventListener(ErrorEvent.ERROR, onConvertError);
 
-			this.gafAssetConfigs[configID] = converter.config;
+			this._gafAssetConfigs[configID] = converter.config;
 			var sounds: Vector.<CSound> = converter.config.sounds;
 			if (sounds && !this._ignoreSounds)
 			{
 				for (var i: int = 0; i < sounds.length; i++)
 				{
-					var assetID: String = this.getFolderURL(configID);
-					sounds[i].source = assetID + sounds[i].source;
-					this.soundData.addSound(sounds[i], converter.config.id, this.sounds[sounds[i].source]);
+					sounds[i].source = folderURL + sounds[i].source;
+					this._soundData.addSound(sounds[i], converter.config.id, this._sounds[sounds[i].source]);
 				}
 			}
 
-			this.currentConfigIndex++;
+			this._currentConfigIndex++;
 
-			if (this.currentConfigIndex >= this.gafAssetsIDs.length)
+			if (this._currentConfigIndex >= this._gafAssetsIDs.length)
 			{
-				if (this.gafAssetsConfigURLs && gafAssetsConfigURLs.length)
+				if (this._gafAssetsConfigURLs && _gafAssetsConfigURLs.length)
 				{
 					this.findAllAtlasURLs();
 				}
@@ -819,68 +835,24 @@ package com.catalystapps.gaf.core
 			}
 			else
 			{
-				this.configConvertTimeout = setTimeout(this.convertConfig, 40);
-			}
-		}
-
-		private function onPNGLoadComplete(event: Event): void
-		{
-			this.removeLoaderListeners(event.target as EventDispatcher, onPNGLoadComplete, onPNGLoadIOError);
-
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
-
-			this.pngImgs[fileName] = event.target.loader.content.bitmapData;
-
-			this.atlasSourceIndex++;
-
-			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
-			{
-				this.createGAFTimelines();
-			}
-			else
-			{
-				this.loadNextAtlas();
-			}
-		}
-
-		private function onATFLoadComplete(event: Event): void
-		{
-			var loader: URLLoader = event.target as URLLoader;
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-
-			this.removeLoaderListeners(loader, onATFLoadComplete, onATFLoadIOError);
-
-			var fileName: String = url.substring(url.lastIndexOf("/") + 1);
-
-			this.atfData[fileName] = loader.data;
-
-			this.atlasSourceIndex++;
-
-			if (this.atlasSourceIndex >= this.atlasSourceURLs.length)
-			{
-				this.createGAFTimelines();
-			}
-			else
-			{
-				this.loadNextAtlas();
+				this._configConvertTimeout = setTimeout(this.convertConfig, 40);
 			}
 		}
 
 		private function onConfigLoadComplete(event: Event): void
 		{
 			var loader: URLLoader = event.target as URLLoader;
-			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			var url: String = this._gafAssetsConfigURLs[this._gafAssetsConfigIndex];
 
 			this.removeLoaderListeners(loader, onConfigLoadComplete, onConfigIOError);
 
-			this.gafAssetsIDs.push(url);
+			this._gafAssetsIDs.push(url);
 
-			this.gafAssetConfigSources[url] = loader.data;
+			this._gafAssetConfigSources[url] = loader.data;
 
-			this.gafAssetsConfigIndex++;
+			this._gafAssetsConfigIndex++;
 
-			if (this.gafAssetsConfigIndex >= this.gafAssetsConfigURLs.length)
+			if (this._gafAssetsConfigIndex >= this._gafAssetsConfigURLs.length)
 			{
 				this.convertConfig();
 			}
@@ -890,23 +862,9 @@ package com.catalystapps.gaf.core
 			}
 		}
 
-		private function onPNGLoadIOError(event: IOErrorEvent): void
-		{
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-			this.removeLoaderListeners(event.target as EventDispatcher, onPNGLoadComplete, onPNGLoadIOError);
-			this.zipProcessError(ErrorConstants.ERROR_LOADING + url, 6);
-		}
-
-		private function onATFLoadIOError(event: IOErrorEvent): void
-		{
-			var url: String = this.atlasSourceURLs[this.atlasSourceIndex];
-			this.removeLoaderListeners(event.target as URLLoader, onATFLoadComplete, onATFLoadIOError);
-			this.zipProcessError(ErrorConstants.ERROR_LOADING + url, 6);
-		}
-
 		private function onConfigIOError(event: IOErrorEvent): void
 		{
-			var url: String = this.gafAssetsConfigURLs[this.gafAssetsConfigIndex];
+			var url: String = this._gafAssetsConfigURLs[this._gafAssetsConfigIndex];
 			this.removeLoaderListeners(event.target as URLLoader, onConfigLoadComplete, onConfigIOError);
 			this.zipProcessError(ErrorConstants.ERROR_LOADING + url, 5);
 		}
