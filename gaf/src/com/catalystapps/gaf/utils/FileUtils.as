@@ -8,6 +8,7 @@ package com.catalystapps.gaf.utils
 	import flash.display3D.Context3DTextureFormat;
 
 	import flash.geom.Point;
+	import flash.utils.ByteArray;
 	import flash.utils.IDataInput;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
@@ -40,6 +41,29 @@ package com.catalystapps.gaf.utils
 			}
 
 			fileStream.close();
+
+			return size;
+		}
+
+		/**
+		 * Determines texture atlas size in pixels from file.
+		 * @param file Texture atlas file.
+		 */
+		public static function getPNGBASize(png: ByteArray): Point
+		{
+			if (!png)
+				throw new ArgumentError("Argument \"png\" must be not null.");
+
+			var oldPos: uint = png.position;
+
+			var size: Point;
+			if (isPNGData(png))
+			{
+				png.position = 16;
+				size = new Point(png.readUnsignedInt(), png.readUnsignedInt());
+			}
+
+			png.position = oldPos;
 
 			return size;
 		}

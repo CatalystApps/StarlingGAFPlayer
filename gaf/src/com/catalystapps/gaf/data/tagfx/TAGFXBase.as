@@ -41,6 +41,7 @@ package com.catalystapps.gaf.data.tagfx
 		protected var _textureScale: Number = -1;
 		protected var _textureFormat: String;
 		protected var _source: *;
+		protected var _clearSourceAfterTextureCreated: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -130,6 +131,16 @@ package com.catalystapps.gaf.data.tagfx
 		public function get source(): *
 		{
 			return _source;
+		}
+
+		public function get clearSourceAfterTextureCreated(): *
+		{
+			return this._clearSourceAfterTextureCreated;
+		}
+
+		public function set clearSourceAfterTextureCreated(value): void
+		{
+			this._clearSourceAfterTextureCreated = value;
 		}
 
 		//--------------------------------------------------------------------------

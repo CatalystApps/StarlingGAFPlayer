@@ -65,10 +65,12 @@ package com.catalystapps.gaf.data.tagfx
 		{
 			if (!this._texture)
 			{
-				_texture = Texture.fromBitmapData(this._source, GAF.useMipMaps, false, this._textureScale, this._textureFormat);
+				this._texture = Texture.fromBitmapData(this._source, GAF.useMipMaps, false, this._textureScale, this._textureFormat);
+				if (this._clearSourceAfterTextureCreated)
+					(this._source as BitmapData).dispose();
 			}
 
-			return _texture;
+			return this._texture;
 		}
 
 		//--------------------------------------------------------------------------

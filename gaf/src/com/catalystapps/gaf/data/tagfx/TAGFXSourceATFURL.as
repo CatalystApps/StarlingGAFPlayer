@@ -100,19 +100,19 @@ package com.catalystapps.gaf.data.tagfx
 		{
 			if (!this._texture)
 			{
-				_texture = Texture.empty(this._textureSize.x, this._textureSize.y,
+				this._texture = Texture.empty(this._textureSize.x, this._textureSize.y,
 						false, GAF.useMipMaps && this._numTextures > 1, false,
 						this._textureScale, this._textureFormat, false);
 
-				_texture.root.onRestore = function(): void
+				this._texture.root.onRestore = function(): void
 				{
 					loadATFData(_source);
 				};
 
-				loadATFData(_source);
+				loadATFData(this._source);
 			}
 
-			return _texture;
+			return this._texture;
 		}
 
 		//--------------------------------------------------------------------------
@@ -126,8 +126,12 @@ package com.catalystapps.gaf.data.tagfx
 			this._atfIsLoading = false;
 
 			var loader: ATFLoader = event.currentTarget as ATFLoader;
-			this._texture.root.uploadAtfData(loader.data as ByteArray);
-			(loader.data as ByteArray).clear();
+			var sourceBA: ByteArray = loader.data as ByteArray;
+			this._texture.root.uploadAtfData(sourceBA, 0,
+					function(texture: Texture): void
+					{
+						sourceBA.clear();
+					});
 		}
 
 		private function onATFLoadIOError(event: IOErrorEvent): void

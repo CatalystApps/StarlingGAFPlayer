@@ -64,10 +64,14 @@ package com.catalystapps.gaf.data.tagfx
 		{
 			if (!this._texture)
 			{
-				_texture = Texture.fromAtfData(this._source, this._textureScale, GAF.useMipMaps);
+				this._texture = Texture.fromAtfData(this._source, this._textureScale, GAF.useMipMaps, this.onTextureCreated);
+				this._texture.root.onRestore = function(): void
+				{
+					_texture.root.uploadAtfData(_source, 0, onTextureCreated);
+				};
 			}
 
-			return _texture;
+			return this._texture;
 		}
 
 		//--------------------------------------------------------------------------
@@ -75,6 +79,12 @@ package com.catalystapps.gaf.data.tagfx
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
+
+		private function onTextureCreated(texture: Texture): void
+		{
+			if (this._clearSourceAfterTextureCreated)
+				(this._source as ByteArray).clear();
+		}
 
 		//--------------------------------------------------------------------------
 		//

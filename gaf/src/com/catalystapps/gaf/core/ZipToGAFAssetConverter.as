@@ -1,26 +1,5 @@
 package com.catalystapps.gaf.core
 {
-	import com.catalystapps.gaf.data.tagfx.GAFATFData;
-	import com.catalystapps.gaf.data.tagfx.ITAGFX;
-	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
-	import com.catalystapps.gaf.data.tagfx.TAGFXSourceATFBA;
-	import com.catalystapps.gaf.data.tagfx.TAGFXSourceATFURL;
-	import com.catalystapps.gaf.data.tagfx.TAGFXSourceBitmapData;
-	import com.catalystapps.gaf.data.tagfx.TAGFXSourcePNGURL;
-	import com.catalystapps.gaf.utils.FileUtils;
-
-	import flash.display.Bitmap;
-
-	import flash.display3D.Context3DTextureFormat;
-	import flash.geom.Point;
-	import flash.utils.getDefinitionByName;
-	import deng.fzip.FZip;
-	import deng.fzip.FZipErrorEvent;
-	import deng.fzip.FZipFile;
-	import deng.fzip.FZipLibrary;
-
-	import starling.core.Starling;
-
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFBundle;
@@ -33,22 +12,39 @@ package com.catalystapps.gaf.core
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 	import com.catalystapps.gaf.data.converters.BinGAFAssetConfigConverter;
 	import com.catalystapps.gaf.data.converters.ErrorConstants;
+	import com.catalystapps.gaf.data.tagfx.GAFATFData;
+	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourceATFBA;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourceATFURL;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourceBitmapData;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourcePNGBA;
+	import com.catalystapps.gaf.data.tagfx.TAGFXSourcePNGURL;
 	import com.catalystapps.gaf.sound.GAFSoundData;
+	import com.catalystapps.gaf.utils.FileUtils;
 	import com.catalystapps.gaf.utils.MathUtility;
 
-	import flash.display.BitmapData;
+	import deng.fzip.FZip;
+	import deng.fzip.FZipErrorEvent;
+	import deng.fzip.FZipFile;
+	import deng.fzip.FZipLibrary;
+
+	import flash.display3D.Context3DTextureFormat;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
+	import flash.geom.Point;
 	import flash.media.Sound;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.clearTimeout;
+	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
+
+	import starling.core.Starling;
 
 	/** Dispatched when convertation completed */
 	[Event(name="complete", type="flash.events.Event")]
@@ -196,6 +192,7 @@ package com.catalystapps.gaf.core
 			{
 				throw new Error("Impossible parameters combination! Starling.handleLostContext = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
 			}
+
 			this.reset();
 
 			this._defaultScale = defaultScale;
@@ -480,28 +477,7 @@ package com.catalystapps.gaf.core
 
 		private function finalizeParsing(): void
 		{
-			if (!Starling.handleLostContext)
-			{
-				for each (var taGFX: ITAGFX in this._taGFXs)
-				{
-					switch (taGFX.sourceType)
-					{
-						case TAGFXBase.SOURCE_TYPE_BITMAP_DATA:
-							(taGFX.source as BitmapData).dispose();
-							break;
-						case TAGFXBase.SOURCE_TYPE_ATF_BA:
-						case TAGFXBase.SOURCE_TYPE_PNG_BA:
-							(taGFX.source as ByteArray).clear();
-							break;
-						case TAGFXBase.SOURCE_TYPE_BITMAP:
-							(taGFX.source as Bitmap).bitmapData.dispose();
-							break;
-					}
-				}
-			}
-
 			this._taGFXs = null;
-
 			this._sounds = null;
 
 			if (this._zip && !ZipToGAFAssetConverter.keepZipInRAM)
@@ -511,7 +487,8 @@ package com.catalystapps.gaf.core
 				for (var i: uint = 0; i < count; i++)
 				{
 					file = this._zip.getFileAt(i);
-					if (file.filename.toLowerCase().indexOf(".atf") == -1)
+					if (file.filename.toLowerCase().indexOf(".atf") == -1
+							&& file.filename.toLowerCase().indexOf(".png") == -1)
 					{
 						file.content.clear();
 					}
@@ -549,7 +526,6 @@ package com.catalystapps.gaf.core
 			var zipFile: FZipFile;
 
 			var fileName: String;
-			var bmp: BitmapData;
 			var taGFX: TAGFXBase;
 
 			this._taGFXs = {};
@@ -566,8 +542,9 @@ package com.catalystapps.gaf.core
 				{
 					case ".png":
 						fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-						bmp = this._zipLoader.getBitmapData(zipFile.filename);
-						taGFX = new TAGFXSourceBitmapData(bmp, this.textureFormat);
+						var pngBA: ByteArray = zipFile.content;
+						var pngSize: Point = FileUtils.getPNGBASize(pngBA);
+						taGFX = new TAGFXSourcePNGBA(pngBA, pngSize, this.textureFormat);
 						this._taGFXs[fileName] = taGFX;
 						break;
 					case ".atf":
@@ -636,6 +613,14 @@ package com.catalystapps.gaf.core
 			var gafAssetConfig: GAFAssetConfig;
 			var gafAsset: GAFAsset;
 			var i: uint;
+
+			if (!Starling.handleLostContext)
+			{
+				for each (var taGFX: TAGFXBase in this._taGFXs)
+				{
+					taGFX.clearSourceAfterTextureCreated = true;
+				}
+			}
 
 			for (i = 0; i < this._gafAssetsIDs.length; i++)
 			{

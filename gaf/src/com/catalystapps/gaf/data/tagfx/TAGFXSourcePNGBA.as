@@ -1,9 +1,10 @@
 /**
- * Created by Nazar on 12.01.2016.
+ * Created by Nazar on 15.01.2016.
  */
 package com.catalystapps.gaf.data.tagfx
 {
-	import com.catalystapps.gaf.data.*;
+	import com.catalystapps.gaf.data.GAF;
+
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Loader;
@@ -13,15 +14,12 @@ package com.catalystapps.gaf.data.tagfx
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.geom.Point;
-	import flash.net.URLRequest;
 	import flash.system.LoaderContext;
+	import flash.utils.ByteArray;
 
 	import starling.textures.Texture;
 
-	/**
-	 * @private
-	 */
-	public class TAGFXSourcePNGURL extends TAGFXBase
+	public class TAGFXSourcePNGBA extends TAGFXBase
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -44,10 +42,8 @@ package com.catalystapps.gaf.data.tagfx
 		//
 		//--------------------------------------------------------------------------
 
-		public function TAGFXSourcePNGURL(source: String, textureSize: Point, format: String = "bgra")
+		public function TAGFXSourcePNGBA(source: ByteArray, textureSize: Point, format: String = "bgra")
 		{
-			super();
-
 			this._source = source;
 			this._textureSize = textureSize;
 			this._textureFormat = format;
@@ -78,7 +74,7 @@ package com.catalystapps.gaf.data.tagfx
 				try { this._pngLoader.close(); } catch (e: Error) {}
 			}
 
-			this._pngLoader.load(new URLRequest(url), new LoaderContext());
+			this._pngLoader.loadBytes(this._source, new LoaderContext());
 			this._pngIsLoading = true;
 		}
 
@@ -90,7 +86,7 @@ package com.catalystapps.gaf.data.tagfx
 
 		override public function get sourceType(): String
 		{
-			return SOURCE_TYPE_PNG_URL;
+			return SOURCE_TYPE_PNG_BA;
 		}
 
 		override public function get texture(): Texture
@@ -126,30 +122,30 @@ package com.catalystapps.gaf.data.tagfx
 
 			this._pngLoader.unload();
 			bmpd.dispose();
+
+			if (this._clearSourceAfterTextureCreated)
+				(this._source as ByteArray).clear();
 		}
 
 		private function onPNGLoadError(event: IOErrorEvent): void
 		{
 			this._pngIsLoading = false;
 
-			var info: LoaderInfo = event.currentTarget as LoaderInfo;
-			throw new Error("Can't restore lost context from a PNG file. Can't load file: " + info.url, event.errorID);
+			throw new Error("Can't restore lost context from a PNG ByteArray.", event.errorID);
 		}
 
 		private function onPNGLoadAsyncError(event: AsyncErrorEvent): void
 		{
 			this._pngIsLoading = false;
 
-			var info: LoaderInfo = event.currentTarget as LoaderInfo;
-			throw new Error("Can't restore lost context from a PNG file. Can't load file: " + info.url, event.errorID);
+			throw new Error("Can't restore lost context from a PNG ByteArray.", event.errorID);
 		}
 
 		private function onPNGLoadSecurityError(event: SecurityErrorEvent): void
 		{
 			this._pngIsLoading = false;
 
-			var info: LoaderInfo = event.currentTarget as LoaderInfo;
-			throw new Error("Can't restore lost context from a PNG file. Can't load file: " + info.url, event.errorID);
+			throw new Error("Can't restore lost context from a PNG ByteArray.", event.errorID);
 		}
 
 		//--------------------------------------------------------------------------
