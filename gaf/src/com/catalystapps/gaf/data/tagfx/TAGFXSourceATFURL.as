@@ -100,7 +100,8 @@ package com.catalystapps.gaf.data.tagfx
 		{
 			if (!this._texture)
 			{
-				this._texture = Texture.empty(this._textureSize.x, this._textureSize.y,
+				this._texture = Texture.empty(
+						this._textureSize.x / this._textureScale, this._textureSize.y / this._textureScale,
 						false, GAF.useMipMaps && this._numTextures > 1, false,
 						this._textureScale, this._textureFormat, false);
 

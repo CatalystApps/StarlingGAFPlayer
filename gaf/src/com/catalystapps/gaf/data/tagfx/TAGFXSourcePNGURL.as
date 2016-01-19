@@ -97,8 +97,9 @@ package com.catalystapps.gaf.data.tagfx
 		{
 			if (!this._texture)
 			{
-				this._texture = Texture.empty(this._textureSize.x, this._textureSize.y, true, GAF.useMipMaps, false,
-						this._textureScale, this._textureFormat, false);
+				this._texture = Texture.empty(
+						this._textureSize.x / this._textureScale, this._textureSize.y / this._textureScale,
+						true, GAF.useMipMaps, false, this._textureScale, this._textureFormat, false);
 				this._texture.root.onRestore = function(): void
 				{
 					loadBitmapData(_source);
