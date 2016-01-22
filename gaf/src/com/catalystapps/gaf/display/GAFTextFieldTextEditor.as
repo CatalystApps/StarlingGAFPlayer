@@ -16,6 +16,7 @@ package com.catalystapps.gaf.display
 	import flash.display3D.Context3DProfile;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
+	import flash.text.TextFormat;
 
 	import starling.core.Starling;
 	import starling.display.Image;
@@ -232,6 +233,16 @@ package com.catalystapps.gaf.display
 			this.textSnapshot.alpha = this._text.length > 0 ? 1 : 0;
 			bitmapData.dispose();
 			this._needsNewTexture = false;
+		}
+
+		override public function set textFormat(value: TextFormat): void
+		{
+			this._textFormat = value;
+			//since the text format has changed, the comparison will return
+			//false whether we use the real previous format or null. might as
+			//well remove the reference to an object we don't need anymore.
+			this._previousTextFormat = null;
+			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
 	}
 }
