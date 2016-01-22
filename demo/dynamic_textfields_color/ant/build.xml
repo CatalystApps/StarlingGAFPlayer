@@ -1,0 +1,30 @@
+<project name="Dynamic textfields" basedir="../" default="build">
+
+	<property name="FLEX_HOME" location="d:/AirSDK"/>
+
+	<property name="deploy.dir" location="bin"/>
+	<property name="src.dir" location="src"/>
+	<property name="lib.dir" location="../../gaf/lib"/>
+	<property name="gaf.lib.dir" location="../../gaf/bin"/>
+
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+
+	<target name="build">
+		<mxmlc file="${src.dir}/DynamicTextfieldsMain.as" output="${deploy.dir}/dynamic_textfields.swf" use-network="false">
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+			<source-path path-element="${FLEX_HOME}/frameworks"/>
+
+			<!-- path to demo source here -->
+			<source-path path-element="${src.dir}"/>
+
+			<!-- path to other libraries used -->
+			<compiler.library-path dir="${lib.dir}" append="true">
+				<include name="starling.swc"/>
+				<include name="feathers.swc"/>
+			</compiler.library-path>
+			<compiler.library-path dir="${gaf.lib.dir}" append="true">
+				<include name="gaf.swc"/>
+			</compiler.library-path>
+		</mxmlc>
+	</target>
+</project>
