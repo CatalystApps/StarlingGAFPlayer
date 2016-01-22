@@ -1,7 +1,5 @@
 package
 {
-	import com.catalystapps.gaf.core.gaf_internal;
-	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.GAFBundle;
 	import com.catalystapps.gaf.display.GAFTextField;
 
@@ -19,11 +17,14 @@ package
 	import flash.events.Event;
 
 	/**
-	 * @author Ivan Avdeenko
+	 * @author Nazar Levitsky
 	 */
 	public class DynamicTextfieldsGame extends Sprite
 	{
 		private var mc: GAFMovieClip;
+
+		[Embed(source="../design/cooper-black.ttf", fontName="Cooper Black", embedAsCFF="false")]
+		private var EmbeddedFont: Class;
 
 		[Embed(source="../design/text_field_demo.zip", mimeType="application/octet-stream")]
 		private var zip: Class;
@@ -37,7 +38,6 @@ package
 
 		private function onConverted(event: Event): void
 		{
-			GAF.gaf_internal::useDeviceFonts = true;
 			var bundle: GAFBundle = (event.target as ZipToGAFAssetConverter).gafBundle;
 			var timeline: GAFTimeline = bundle.getGAFTimeline("text_field_demo", "rootTimeline");
 			this.mc = new GAFMovieClip(timeline);
