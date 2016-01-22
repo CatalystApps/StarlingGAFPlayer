@@ -16,6 +16,7 @@ package com.catalystapps.gaf.display
 
 	import flash.geom.Matrix;
 	import flash.geom.Point;
+	import flash.text.TextFormat;
 
 	import starling.display.Image;
 	import starling.textures.Texture;
@@ -99,7 +100,7 @@ package com.catalystapps.gaf.display
 			this.maxChars = config.maxChars;
 			this.verticalAlign = TextInput.VERTICAL_ALIGN_TOP;
 
-			this.textEditorProperties.textFormat = config.textFormat;
+			this.textEditorProperties.textFormat = cloneTextFormat(config.textFormat);
 			this.textEditorProperties.embedFonts = GAF.gaf_internal::useDeviceFonts ? false : config.embedFonts;
 			this.textEditorProperties.multiline = config.multiline;
 			this.textEditorProperties.wordWrap = config.wordWrap;
@@ -436,5 +437,28 @@ package com.catalystapps.gaf.display
 		//  STATIC METHODS
 		//
 		//--------------------------------------------------------------------------
+
+		private function cloneTextFormat(textFormat: TextFormat): TextFormat
+		{
+			if (!textFormat) throw new ArgumentError("Argument \"textFormat\" must be not null.");
+
+			var result: TextFormat = new TextFormat(
+					textFormat.font,
+					textFormat.size,
+					textFormat.color,
+					textFormat.bold,
+					textFormat.italic,
+					textFormat.underline,
+					textFormat.url,
+					textFormat.target,
+					textFormat.align,
+					textFormat.leftMargin,
+					textFormat.rightMargin,
+					textFormat.indent,
+					textFormat.leading
+			);
+
+			return result;
+		}
 	}
 }
