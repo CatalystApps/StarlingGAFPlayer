@@ -19,6 +19,9 @@ package com.catalystapps.gaf.data.tagfx
 
 	import starling.textures.Texture;
 
+	/**
+	 * @private
+	 */
 	public class TAGFXSourcePNGBA extends TAGFXBase
 	{
 		//--------------------------------------------------------------------------

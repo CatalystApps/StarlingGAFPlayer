@@ -22,8 +22,11 @@ package com.catalystapps.gaf.display
 	import starling.textures.Texture;
 
 	/**
-	 * @private
+	 * GAFTextField is a text entry control that extends functionality of the <code>feathers.controls.TextInput</code>
+	 * for the GAF library needs.
+	 * All dynamic text fields (including input text fields) in GAF library are instances of the GAFTextField.
 	 */
+
 	public class GAFTextField extends TextInput implements IGAFDebug, IMaxSize, IGAFDisplayObject
 	{
 		//--------------------------------------------------------------------------
@@ -52,6 +55,7 @@ package com.catalystapps.gaf.display
 		private var _scale: Number;
 		private var _csf: Number;
 
+		/** @private */
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		private var _orientationChanged: Boolean;
@@ -65,8 +69,11 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		/**
+		 * @private
 		 * GAFTextField represents text field that is part of the <code>GAFMovieClip</code>
 		 * @param config
+		 * @param scale
+		 * @param csf
 		 */
 		public function GAFTextField(config: CTextFieldObject, scale: Number = 1, csf: Number = 1)
 		{
@@ -236,6 +243,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/** @private */
 		private function applyFilter(): void
 		{
 			if (this.textEditor)
@@ -275,6 +283,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		/** @private */
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
@@ -285,6 +294,7 @@ package com.catalystapps.gaf.display
 			this.alpha = 1;
 		}
 
+		/** @private */
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
@@ -295,6 +305,7 @@ package com.catalystapps.gaf.display
 			this.alpha = .05;
 		}
 
+		/** @private */
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;
@@ -305,6 +316,7 @@ package com.catalystapps.gaf.display
 			}
 		}
 
+		/** @private */
 		[Inline]
 		private final function updateTransformMatrix(): void
 		{
@@ -321,6 +333,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/** @private */
 		override protected function createTextEditor():void
 		{
 			super.createTextEditor();
@@ -328,12 +341,14 @@ package com.catalystapps.gaf.display
 			this.applyFilter();
 		}
 
+		/** @private */
 		override public function dispose(): void
 		{
 			super.dispose();
 			this._config = null;
 		}
 
+		/** @private */
 		override public function set transformationMatrix(matrix: Matrix): void
 		{
 			super.transformationMatrix = matrix;
@@ -341,54 +356,63 @@ package com.catalystapps.gaf.display
 			this.invalidateSize();
 		}
 
+		/** @private */
 		override public function set pivotX(value: Number): void
 		{
 			this._pivotChanged = true;
 			super.pivotX = value;
 		}
 
+		/** @private */
 		override public function set pivotY(value: Number): void
 		{
 			this._pivotChanged = true;
 			super.pivotY = value;
 		}
 
+		/** @private */
 		override public function get x(): Number
 		{
 			updateTransformMatrix();
 			return super.x;
 		}
 
+		/** @private */
 		override public function get y(): Number
 		{
 			updateTransformMatrix();
 			return super.y;
 		}
 
+		/** @private */
 		override public function get rotation(): Number
 		{
 			updateTransformMatrix();
 			return super.rotation;
 		}
 
+		/** @private */
 		override public function get scaleX(): Number
 		{
 			updateTransformMatrix();
 			return super.scaleX;
 		}
 
+		/** @private */
 		override public function get scaleY(): Number
 		{
 			updateTransformMatrix();
 			return super.scaleY;
 		}
 
+		/** @private */
 		override public function get skewX(): Number
 		{
 			updateTransformMatrix();
 			return super.skewX;
 		}
 
+		/** @private */
 		override public function get skewY(): Number
 		{
 			updateTransformMatrix();
@@ -463,6 +487,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		/** @private */
 		private function cloneTextFormat(textFormat: TextFormat): TextFormat
 		{
 			if (!textFormat) throw new ArgumentError("Argument \"textFormat\" must be not null.");
