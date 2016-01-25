@@ -38,6 +38,7 @@ package com.catalystapps.gaf.display
 		//
 		//--------------------------------------------------------------------------
 
+		private static const HELPER_POINT: Point = new Point();
 		private static const HELPER_MATRIX: Matrix = new Matrix();
 
 		private var _pivotMatrix: Matrix;
@@ -430,6 +431,30 @@ package com.catalystapps.gaf.display
 		public function set maxSize(value: Point): void
 		{
 			this._maxSize = value;
+		}
+
+		/**
+		 * The width of the text in pixels.
+		 * @return {Number}
+		 */
+		public function get textWidth(): Number
+		{
+			this.validate();
+			this.textEditor.measureText(HELPER_POINT);
+
+			return HELPER_POINT.x;
+		}
+
+		/**
+		 * The height of the text in pixels.
+		 * @return {Number}
+		 */
+		public function get textHeight(): Number
+		{
+			this.validate();
+			this.textEditor.measureText(HELPER_POINT);
+
+			return HELPER_POINT.y;
 		}
 
 		//--------------------------------------------------------------------------

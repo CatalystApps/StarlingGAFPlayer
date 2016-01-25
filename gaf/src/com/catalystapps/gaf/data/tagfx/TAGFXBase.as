@@ -138,7 +138,7 @@ package com.catalystapps.gaf.data.tagfx
 			return this._clearSourceAfterTextureCreated;
 		}
 
-		public function set clearSourceAfterTextureCreated(value): void
+		public function set clearSourceAfterTextureCreated(value: Boolean): void
 		{
 			this._clearSourceAfterTextureCreated = value;
 		}
