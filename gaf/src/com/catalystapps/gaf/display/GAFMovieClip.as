@@ -1299,6 +1299,15 @@ package com.catalystapps.gaf.display
 						{
 							if (this._displayObjectsDictionary[key] == child)
 							{
+								if (this._config.namedParts != null)
+								{
+									var instanceName: String = this._config.namedParts[key];
+									if (instanceName && this.hasOwnProperty(instanceName))
+									{
+										delete this[instanceName];
+									}
+								}
+
 								delete this._displayObjectsDictionary[key];
 								break;
 							}
@@ -1313,6 +1322,15 @@ package com.catalystapps.gaf.display
 						{
 							if (this._pixelMasksDictionary[key] == child)
 							{
+								if (this._config.namedParts != null)
+								{
+									var instanceName: String = this._config.namedParts[key];
+									if (instanceName && this.hasOwnProperty(instanceName))
+									{
+										delete this[instanceName];
+									}
+								}
+
 								delete this._pixelMasksDictionary[key];
 								break;
 							}
