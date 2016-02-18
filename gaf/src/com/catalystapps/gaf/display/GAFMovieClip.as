@@ -200,7 +200,7 @@ package com.catalystapps.gaf.display
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 				if (maskInstance)
 				{
-					this.getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
+					getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
 					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
 					maskObject.invalidateOrientation();
 				}
@@ -246,7 +246,7 @@ package com.catalystapps.gaf.display
 				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
 				if (maskInstance)
 				{
-					this.getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
+					getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
 					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
 					maskObject.invalidateOrientation();
 				}
@@ -774,8 +774,8 @@ package com.catalystapps.gaf.display
 							this.gotoAndPlay(action.params[0]);
 							break;
 						case CFrameAction.DISPATCH_EVENT:
-							var type: String = action.params[0];
-							if (this.hasEventListener(type))
+							var actionType: String = action.params[0];
+							if (this.hasEventListener(actionType))
 							{
 								switch (action.params.length)
 								{
@@ -787,9 +787,9 @@ package com.catalystapps.gaf.display
 										var bubbles: Boolean = Boolean(action.params[1]);
 										break;
 								}
-								this.dispatchEventWith(type, bubbles, data);
+								this.dispatchEventWith(actionType, bubbles, data);
 							}
-							if (type == CSound.GAF_PLAY_SOUND
+							if (actionType == CSound.GAF_PLAY_SOUND
 							&& GAF.autoPlaySounds)
 							{
 								this._gafTimeline.startSound(this.currentFrame);
@@ -878,7 +878,7 @@ package com.catalystapps.gaf.display
 			var frames: Vector.<CAnimationFrame> = this._config.animationConfigFrames.frames;
 			if (frames.length > this._currentFrame)
 			{
-				var maskIndex: int;
+				var maskIndex: int = 0;
 				var mc: GAFMovieClip;
 				var objectPivotMatrix: Matrix;
 				var displayObject: IGAFDisplayObject;
@@ -1083,15 +1083,6 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		private function getTransformMatrix(displayObject: IGAFDisplayObject, matrix: Matrix = null): Matrix
-		{
-			if (!matrix) matrix = new Matrix();
-
-			matrix.copyFrom(displayObject.pivotMatrix);
-
-			return matrix;
-		}
-
 		private function initialize(textureAtlas: CTextureAtlas, gafAsset: GAFAsset): void
 		{
 			this._displayObjectsDictionary = {};
@@ -1277,6 +1268,7 @@ package com.catalystapps.gaf.display
 			if (dispose)
 			{
 				var key: String;
+				var instanceName: String;
 				var child: DisplayObject = this.getChildAt(index);
 				if (child is IGAFDisplayObject)
 				{
@@ -1301,7 +1293,7 @@ package com.catalystapps.gaf.display
 							{
 								if (this._config.namedParts != null)
 								{
-									var instanceName: String = this._config.namedParts[key];
+									instanceName = this._config.namedParts[key];
 									if (instanceName && this.hasOwnProperty(instanceName))
 									{
 										delete this[instanceName];
@@ -1324,7 +1316,7 @@ package com.catalystapps.gaf.display
 							{
 								if (this._config.namedParts != null)
 								{
-									var instanceName: String = this._config.namedParts[key];
+									instanceName = this._config.namedParts[key];
 									if (instanceName && this.hasOwnProperty(instanceName))
 									{
 										delete this[instanceName];
@@ -1748,6 +1740,22 @@ package com.catalystapps.gaf.display
 			}
 
 			return HELPER_MATRIX;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  STATIC METHODS
+		//
+		//--------------------------------------------------------------------------
+
+		[Inline]
+		private static function getTransformMatrix(displayObject: IGAFDisplayObject, matrix: Matrix = null): Matrix
+		{
+			if (!matrix) matrix = new Matrix();
+
+			matrix.copyFrom(displayObject.pivotMatrix);
+
+			return matrix;
 		}
 	}
 }
