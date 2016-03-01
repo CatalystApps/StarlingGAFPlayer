@@ -497,7 +497,14 @@ package com.catalystapps.gaf.core
 				this._zip = null;
 			}
 
-			this.dispatchEvent(new Event(Event.COMPLETE));
+			if (this._gfxData.isTexturesReady)
+				this.dispatchEvent(new Event(Event.COMPLETE));
+			else
+				this._gfxData.addEventListener(GAFGFXData.EVENT_TYPE_TEXTURES_READY,
+						function (event: Event): void
+						{
+							dispatchEvent(new Event(Event.COMPLETE));
+						});
 		}
 
 		private static function getFolderURL(url: String): String

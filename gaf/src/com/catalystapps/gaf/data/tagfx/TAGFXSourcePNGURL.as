@@ -102,6 +102,7 @@ package com.catalystapps.gaf.data.tagfx
 						true, GAF.useMipMaps, false, this._textureScale, this._textureFormat, false);
 				this._texture.root.onRestore = function(): void
 				{
+					_isReady = false;
 					loadBitmapData(_source);
 				};
 
@@ -127,6 +128,8 @@ package com.catalystapps.gaf.data.tagfx
 
 			this._pngLoader.unload();
 			bmpd.dispose();
+
+			this.onTextureReady(this._texture);
 		}
 
 		private function onPNGLoadError(event: IOErrorEvent): void

@@ -3,6 +3,7 @@
  */
 package com.catalystapps.gaf.data.tagfx
 {
+	import flash.events.IEventDispatcher;
 	import flash.geom.Point;
 
 	import starling.textures.Texture;
@@ -10,7 +11,7 @@ package com.catalystapps.gaf.data.tagfx
 	/**
 	 * @private
 	 */
-	public interface ITAGFX
+	public interface ITAGFX extends IEventDispatcher
 	{
 		function get texture(): Texture;
 		function get textureSize(): Point;
@@ -18,5 +19,6 @@ package com.catalystapps.gaf.data.tagfx
 		function get textureFormat(): String;
 		function get sourceType(): String;
 		function get source(): *;
+		function get ready(): Boolean;
 	}
 }

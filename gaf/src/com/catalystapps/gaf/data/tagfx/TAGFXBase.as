@@ -3,6 +3,8 @@
  */
 package com.catalystapps.gaf.data.tagfx
 {
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
 	import flash.utils.getQualifiedClassName;
@@ -13,15 +15,22 @@ package com.catalystapps.gaf.data.tagfx
 	import starling.textures.Texture;
 
 	/**
+	 * Dispatched when he texture is decoded. It can only be used when the callback has been executed.
+	 */
+	[Event(name="textureReady", type="flash.events.Event")]
+
+	/**
 	 * @private
 	 */
-	public class TAGFXBase implements ITAGFX
+	public class TAGFXBase extends EventDispatcher implements ITAGFX
 	{
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
+
+		public static const EVENT_TYPE_TEXTURE_READY: String = "textureReady";
 
 		public static const SOURCE_TYPE_BITMAP_DATA: String = "sourceTypeBitmapData";
 		public static const SOURCE_TYPE_BITMAP: String = "sourceTypeBitmap";
@@ -42,6 +51,7 @@ package com.catalystapps.gaf.data.tagfx
 		protected var _textureFormat: String;
 		protected var _source: *;
 		protected var _clearSourceAfterTextureCreated: Boolean;
+		protected var _isReady: Boolean;
 
 		//--------------------------------------------------------------------------
 		//
@@ -81,6 +91,12 @@ package com.catalystapps.gaf.data.tagfx
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
+
+		protected function onTextureReady(texture: Texture): void
+		{
+			this._isReady = true;
+			this.dispatchEvent(new Event(EVENT_TYPE_TEXTURE_READY));
+		}
 
 		//--------------------------------------------------------------------------
 		//
@@ -141,6 +157,11 @@ package com.catalystapps.gaf.data.tagfx
 		public function set clearSourceAfterTextureCreated(value: Boolean): void
 		{
 			this._clearSourceAfterTextureCreated = value;
+		}
+
+		public function get ready(): Boolean
+		{
+			return this._isReady;
 		}
 
 		//--------------------------------------------------------------------------

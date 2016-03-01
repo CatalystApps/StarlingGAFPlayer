@@ -68,6 +68,15 @@ package com.catalystapps.gaf.data.tagfx
 				this._texture = Texture.fromBitmapData(this._source, GAF.useMipMaps, false, this._textureScale, this._textureFormat);
 				if (this._clearSourceAfterTextureCreated)
 					(this._source as BitmapData).dispose();
+
+				this._texture.root.onRestore = function(): void
+				{
+					_isReady = false;
+					_texture.root.uploadBitmapData(_source);
+					onTextureReady(_texture);
+				};
+
+				this.onTextureReady(this._texture);
 			}
 
 			return this._texture;

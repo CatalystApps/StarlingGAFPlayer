@@ -107,6 +107,7 @@ package com.catalystapps.gaf.data.tagfx
 
 				this._texture.root.onRestore = function(): void
 				{
+					_isReady = false;
 					loadATFData(_source);
 				};
 
@@ -132,6 +133,7 @@ package com.catalystapps.gaf.data.tagfx
 					function(texture: Texture): void
 					{
 						sourceBA.clear();
+						onTextureReady(texture);
 					});
 		}
 

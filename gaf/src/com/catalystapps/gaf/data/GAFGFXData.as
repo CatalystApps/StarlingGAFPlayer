@@ -2,26 +2,33 @@ package com.catalystapps.gaf.data
 {
 	import com.catalystapps.gaf.data.tagfx.ITAGFX;
 	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
-	import com.catalystapps.gaf.utils.MathUtility;
-	import flash.utils.ByteArray;
-	import flash.display3D.Context3DTextureFormat;
-	import starling.core.Starling;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import flash.display.BitmapData;
+	import flash.display3D.Context3DTextureFormat;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.filters.ColorMatrixFilter;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.utils.Dictionary;
 
 	import starling.textures.Texture;
+
+	/**
+	 * Dispatched when he texture is decoded. It can only be used when the callback has been executed.
+	 */
+	[Event(name="texturesReady", type="flash.events.Event")]
 
 	/**
 	 * Graphical data storage that used by <code>GAFTimeline</code>. It contain all created textures and all
 	 * saved images as <code>BitmapData</code> (in case when <code>Starling.handleLostContext = true</code> was set before asset conversion).
 	 * Used as shared graphical data storage between several GAFTimelines if they are used the same texture atlas (bundle created using "Create bundle" option)
 	 */
-	public class GAFGFXData
+	public class GAFGFXData extends EventDispatcher
 	{
+		public static const EVENT_TYPE_TEXTURES_READY: String = "texturesReady";
+
 		[Deprecated(since="5.0")]
 		public static const ATF: String = "ATF";
 		[Deprecated(replacement="Context3DTextureFormat.BGRA", since="5.0")]
@@ -44,6 +51,8 @@ package com.catalystapps.gaf.data
 
 		private var _texturesDictionary: Object = {};
 		private var _taGFXDictionary: Object = {};
+
+		private var _textureLoadersSet: Dictionary = new Dictionary();
 
 		//--------------------------------------------------------------------------
 		//
@@ -235,7 +244,7 @@ package com.catalystapps.gaf.data
 					{
 						if (this._texturesDictionary[scale] && this._texturesDictionary[scale][csf])
 						{
-							for(var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
+							for (var atlasIDToDispose: String in this._texturesDictionary[scale][csf])
 							{
 								this.disposeTextures(scale, csf, atlasIDToDispose);
 							}
@@ -254,13 +263,24 @@ package com.catalystapps.gaf.data
 
 		private function addTexture(dictionary: Object, tagfx: ITAGFX, imageID: String): void
 		{
-			if (DebugUtility.RENDERING_DEBUG && tagfx.sourceType == TAGFXBase.SOURCE_TYPE_BITMAP_DATA)
+			if (DebugUtility.RENDERING_DEBUG)
 			{
-				var bitmapData: BitmapData = setGrayScale(tagfx.source.clone());
+				var bitmapData: BitmapData;
+				if (tagfx.sourceType == TAGFXBase.SOURCE_TYPE_BITMAP_DATA)
+				{
+					bitmapData = setGrayScale(tagfx.source.clone());
+				}
+
 				dictionary[imageID] = Texture.fromBitmapData(bitmapData, GAF.useMipMaps, false, tagfx.textureScale, tagfx.textureFormat);
 			}
 			else if (!dictionary[imageID])
 			{
+				if (!tagfx.ready)
+				{
+					_textureLoadersSet[tagfx] = tagfx;
+					tagfx.addEventListener(TAGFXBase.EVENT_TYPE_TEXTURE_READY, this.onTextureReady);
+				}
+
 				dictionary[imageID] = tagfx.texture;
 			}
 		}
@@ -278,6 +298,7 @@ package com.catalystapps.gaf.data
 
 			return image;
 		}
+
 		//--------------------------------------------------------------------------
 		//
 		// OVERRIDDEN METHODS
@@ -290,10 +311,34 @@ package com.catalystapps.gaf.data
 		//
 		//--------------------------------------------------------------------------
 
+		private function onTextureReady(event: Event): void
+		{
+			var tagfx: ITAGFX = event.currentTarget as ITAGFX;
+			tagfx.removeEventListener(TAGFXBase.EVENT_TYPE_TEXTURE_READY, this.onTextureReady);
+
+			delete _textureLoadersSet[tagfx];
+
+			if (this.isTexturesReady)
+				this.dispatchEvent(new Event(EVENT_TYPE_TEXTURES_READY));
+		}
+
 		//--------------------------------------------------------------------------
 		//
 		//  GETTERS AND SETTERS
 		//
 		//--------------------------------------------------------------------------
+
+		/** @private */
+		public function get isTexturesReady(): Boolean
+		{
+			var empty: Boolean = true;
+			for (var tagfx: ITAGFX in this._textureLoadersSet)
+			{
+				empty = false;
+				break;
+			}
+
+			return empty;
+		}
 	}
 }
