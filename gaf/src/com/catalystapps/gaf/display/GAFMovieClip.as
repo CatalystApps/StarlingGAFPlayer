@@ -1749,10 +1749,8 @@ package com.catalystapps.gaf.display
 		//--------------------------------------------------------------------------
 
 		[Inline]
-		private static function getTransformMatrix(displayObject: IGAFDisplayObject, matrix: Matrix = null): Matrix
+		private static function getTransformMatrix(displayObject: IGAFDisplayObject, matrix: Matrix): Matrix
 		{
-			if (!matrix) matrix = new Matrix();
-
 			matrix.copyFrom(displayObject.pivotMatrix);
 
 			return matrix;

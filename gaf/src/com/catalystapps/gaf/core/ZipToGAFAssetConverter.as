@@ -498,13 +498,13 @@ package com.catalystapps.gaf.core
 			}
 
 			if (this._gfxData.isTexturesReady)
+			{
 				this.dispatchEvent(new Event(Event.COMPLETE));
+			}
 			else
-				this._gfxData.addEventListener(GAFGFXData.EVENT_TYPE_TEXTURES_READY,
-						function (event: Event): void
-						{
-							dispatchEvent(new Event(Event.COMPLETE));
-						});
+			{
+				this._gfxData.addEventListener(GAFGFXData.EVENT_TYPE_TEXTURES_READY, this.onTexturesReady);
+			}
 		}
 
 		private static function getFolderURL(url: String): String
@@ -866,6 +866,13 @@ package com.catalystapps.gaf.core
 			var sound: Sound = event.target as Sound;
 			this.removeLoaderListeners(event.target as URLLoader, onSoundLoadIOError, onSoundLoadIOError);
 			this.zipProcessError(ErrorConstants.ERROR_LOADING + sound.url, 6);
+		}
+
+		private function onTexturesReady(event: Event): void
+		{
+			this._gfxData.removeEventListener(GAFGFXData.EVENT_TYPE_TEXTURES_READY, this.onTexturesReady);
+
+			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 
 		//--------------------------------------------------------------------------
