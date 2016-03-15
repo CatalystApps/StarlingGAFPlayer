@@ -1,15 +1,16 @@
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.data.converters.ErrorConstants;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CFrameSound;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasScale;
+	import com.catalystapps.gaf.data.converters.ErrorConstants;
 	import com.catalystapps.gaf.display.IGAFTexture;
 	import com.catalystapps.gaf.sound.GAFSoundData;
 	import com.catalystapps.gaf.sound.GAFSoundManager;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.media.Sound;
 
@@ -332,7 +333,7 @@ package com.catalystapps.gaf.data
 		public function set scale(value: Number): void
 		{
 			var scale: Number = this._gafAsset.gaf_internal::getValidScale(value);
-			if (isNaN(scale))
+			if (MathUtility.isNaN(scale))
 			{
 				throw new Error(ErrorConstants.SCALE_NOT_FOUND);
 			}

@@ -9,6 +9,7 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.DebugUtility;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import feathers.controls.TextInput;
 	import feathers.controls.text.TextFieldTextEditor;
@@ -79,8 +80,8 @@ package com.catalystapps.gaf.display
 		{
 			super();
 
-			if (isNaN(scale)) scale = 1;
-			if (isNaN(csf)) csf = 1;
+			if (MathUtility.isNaN(scale)) scale = 1;
+			if (MathUtility.isNaN(csf)) csf = 1;
 
 			this._scale = scale;
 			this._csf = csf;
@@ -90,12 +91,12 @@ package com.catalystapps.gaf.display
 			this._pivotMatrix.ty = config.pivotPoint.y;
 			this._pivotMatrix.scale(scale, scale);
 
-			if (!isNaN(config.width))
+			if (!MathUtility.isNaN(config.width))
 			{
 				this.width = config.width;
 			}
 
-			if (!isNaN(config.height))
+			if (!MathUtility.isNaN(config.height))
 			{
 				this.height = config.height;
 			}
@@ -252,7 +253,7 @@ package com.catalystapps.gaf.display
 				{
 					(this.textEditor as GAFTextFieldTextEditor).setFilterConfig(this._filterConfig, this._filterScale);
 				}
-				else if (this._filterConfig && !isNaN(this._filterScale))
+				else if (this._filterConfig && !MathUtility.isNaN(this._filterScale))
 				{
 					var gafFilter: GAFFilter;
 					if (this.filter)
@@ -287,7 +288,7 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(this.__debugOriginalAlpha))
+			if (MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
 			}
@@ -298,7 +299,7 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(this.__debugOriginalAlpha))
+			if (MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
 			}
@@ -309,7 +310,7 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;
-			if (!isNaN(this.__debugOriginalAlpha))
+			if (!MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.alpha = this.__debugOriginalAlpha;
 				this.__debugOriginalAlpha = NaN;

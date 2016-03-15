@@ -545,7 +545,7 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugHighlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(this.__debugOriginalAlpha))
+			if (MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
 			}
@@ -555,7 +555,7 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugLowlight(): void
 		{
 			use namespace gaf_internal;
-			if (isNaN(this.__debugOriginalAlpha))
+			if (MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
 			}
@@ -565,7 +565,7 @@ package com.catalystapps.gaf.display
 		gaf_internal function __debugResetLight(): void
 		{
 			use namespace gaf_internal;
-			if (!isNaN(this.__debugOriginalAlpha))
+			if (!MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.alpha = this.__debugOriginalAlpha;
 				this.__debugOriginalAlpha = NaN;

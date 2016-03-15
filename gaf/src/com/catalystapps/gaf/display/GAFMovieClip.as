@@ -1,10 +1,8 @@
 package com.catalystapps.gaf.display
 {
-	import starling.events.Event;
-	import com.catalystapps.gaf.data.GAFAsset;
-	import com.catalystapps.gaf.data.config.CSound;
-	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.core.gaf_internal;
+	import com.catalystapps.gaf.data.GAF;
+	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.GAFDebugInformation;
 	import com.catalystapps.gaf.data.GAFTimeline;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
@@ -14,10 +12,12 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CFrameAction;
+	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
 	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.DebugUtility;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.errors.IllegalOperationError;
 	import flash.events.ErrorEvent;
@@ -33,6 +33,7 @@ package com.catalystapps.gaf.display
 	import starling.display.Quad;
 	import starling.display.QuadBatch;
 	import starling.display.Sprite;
+	import starling.events.Event;
 	import starling.textures.TextureSmoothing;
 
 	/** Dispatched when playhead reached first frame of sequence */
@@ -1214,7 +1215,7 @@ package com.catalystapps.gaf.display
 		{
 			use namespace gaf_internal;
 
-			if (isNaN(this.__debugOriginalAlpha))
+			if (MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
 			}
@@ -1226,7 +1227,7 @@ package com.catalystapps.gaf.display
 		{
 			use namespace gaf_internal;
 
-			if (isNaN(this.__debugOriginalAlpha))
+			if (MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.__debugOriginalAlpha = this.alpha;
 			}
@@ -1238,7 +1239,7 @@ package com.catalystapps.gaf.display
 		{
 			use namespace gaf_internal;
 
-			if (!isNaN(this.__debugOriginalAlpha))
+			if (!MathUtility.isNaN(this.__debugOriginalAlpha))
 			{
 				this.alpha = this.__debugOriginalAlpha;
 				this.__debugOriginalAlpha = NaN;

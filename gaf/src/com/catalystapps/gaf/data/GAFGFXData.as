@@ -3,6 +3,7 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.tagfx.ITAGFX;
 	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
 	import com.catalystapps.gaf.utils.DebugUtility;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
@@ -212,7 +213,7 @@ package com.catalystapps.gaf.data
 		 */
 		public function disposeTextures(scale: Number = NaN, csf: Number = NaN, imageID: String = null): void
 		{
-			if (isNaN(scale))
+			if (MathUtility.isNaN(scale))
 			{
 				for (var scaleToDispose: String in this._texturesDictionary)
 				{
@@ -223,7 +224,7 @@ package com.catalystapps.gaf.data
 			}
 			else
 			{
-				if (isNaN(csf))
+				if (MathUtility.isNaN(csf))
 				{
 					for (var csfToDispose: String in this._texturesDictionary[scale])
 					{
