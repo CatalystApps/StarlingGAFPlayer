@@ -1,7 +1,6 @@
 package com.catalystapps.gaf.filter
 {
 	import starling.display.DisplayObject;
-	import starling.core.RenderSupport;
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import com.catalystapps.gaf.data.config.CColorMatrixFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
@@ -14,7 +13,6 @@ package com.catalystapps.gaf.filter
 
 	import starling.core.Starling;
 	import starling.filters.FragmentFilter;
-	import starling.filters.FragmentFilterMode;
 	import starling.textures.Texture;
 	import starling.utils.Color;
 
@@ -66,9 +64,9 @@ package com.catalystapps.gaf.filter
 
 		public function GAFFilter(resolution: Number = 1)
 		{
-			super(1, resolution);
+			super();
 
-			this.mode = "test";
+			//this.mode = "test";
 		}
 
 		//--------------------------------------------------------------------------
@@ -148,7 +146,7 @@ package com.catalystapps.gaf.filter
 
 		private function updateMarginsAndPasses(): void
 		{
-			if (mBlurX == 0 && mBlurY == 0)
+			/*if (mBlurX == 0 && mBlurY == 0)
 			{
 				mBlurX = 0.001;
 			}
@@ -160,7 +158,7 @@ package com.catalystapps.gaf.filter
 			if ((mBlurX > 0 || mBlurY > 0) && changeColor)
 			{
 				numPasses++;
-			}
+			}*/
 		}
 
 		private function updateBlurFilter(cBlurFilterData: CBlurFilterData): void
@@ -180,8 +178,8 @@ package com.catalystapps.gaf.filter
 			}
 
 			var angleInRadians: Number =  cBlurFilterData.angle * Math.PI / 180;
-			offsetX = Math.cos(angleInRadians) * cBlurFilterData.distance * _currentScale;
-			offsetY = Math.sin(angleInRadians) * cBlurFilterData.distance * _currentScale;
+			//offsetX = Math.cos(angleInRadians) * cBlurFilterData.distance * _currentScale;
+			//offsetY = Math.sin(angleInRadians) * cBlurFilterData.distance * _currentScale;
 
 			setUniformColor((cBlurFilterData.color > -1), cBlurFilterData.color, cBlurFilterData.alpha * cBlurFilterData.strength);
 		}
@@ -235,7 +233,7 @@ package com.catalystapps.gaf.filter
 					cUserMatrix[19]);
 		}
 
-		/** @private */
+		/*/!** @private *!/
 		protected override function activate(pass: int, context: Context3D, texture: Texture): void
 		{
 			if (pass == numPasses - 1 && changeColor) //color transform filter
@@ -292,7 +290,7 @@ package com.catalystapps.gaf.filter
 			super.render(object, support, parentAlpha);
 		}
 
-		/** @private */
+		/!** @private *!/
 		protected override function createPrograms(): void
 		{
 			mNormalProgram = createProgram(false);
@@ -391,7 +389,7 @@ package com.catalystapps.gaf.filter
 
 			return target.registerProgramFromSource(programName, STD_VERTEX_SHADER, fragmentProgramCode);
 		}
-
+*/
 		private function updateParameters(pass: int, textureWidth: int, textureHeight: int): void
 		{
 			// algorithm described here:

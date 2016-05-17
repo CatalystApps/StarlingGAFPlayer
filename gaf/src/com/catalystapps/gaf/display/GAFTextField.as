@@ -165,7 +165,7 @@ package com.catalystapps.gaf.display
 		/** @private */
 		public function set debugColors(value: Vector.<uint>): void
 		{
-			var t: Texture = Texture.fromColor(1, 1, DebugUtility.RENDERING_NEUTRAL_COLOR, true);
+			var t: Texture = Texture.fromColor(1, 1, DebugUtility.RENDERING_NEUTRAL_COLOR, 1, true);
 			var bgImage: Image = new Image(t);
 			var alpha0: Number;
 			var alpha1: Number;

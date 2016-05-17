@@ -277,14 +277,14 @@ package com.catalystapps.gaf.display
 
 			if (targetSpace == this) // optimization
 			{
-				mVertexData.getPosition(3, HELPER_POINT);
+				vertexData.getPoint(3, "position", HELPER_POINT);
 				resultRect.setTo(0.0, 0.0, HELPER_POINT.x, HELPER_POINT.y);
 			}
 			else if (targetSpace == parent && rotation == 0.0 && isEquivalent(skewX, skewY)) // optimization
 			{
 				var scaleX: Number = this.scaleX;
 				var scaleY: Number = this.scaleY;
-				mVertexData.getPosition(3, HELPER_POINT);
+				vertexData.getPoint(3, "position", HELPER_POINT);
 				resultRect.setTo(x - pivotX * scaleX,      y - pivotY * scaleY,
 						HELPER_POINT.x * scaleX, HELPER_POINT.y * scaleY);
 				if (scaleX < 0) { resultRect.width  *= -1; resultRect.x -= resultRect.width;  }
@@ -294,12 +294,13 @@ package com.catalystapps.gaf.display
 			{
 				stage.getCameraPosition(targetSpace, HELPER_POINT_3D);
 				getTransformationMatrix3D(targetSpace, HELPER_MATRIX_3D);
-				mVertexData.getBoundsProjected(HELPER_MATRIX_3D, HELPER_POINT_3D, 0, 4, resultRect);
+				vertexData.getBoundsProjected("position", HELPER_MATRIX_3D, HELPER_POINT_3D, 0, 4, resultRect);
 			}
 			else
 			{
 				getTransformationMatrix(targetSpace, HELPER_MATRIX);
-				mVertexData.getBounds(HELPER_MATRIX, 0, 4, resultRect);
+				vertexData.getBounds("position", HELPER_MATRIX, 0, 4, resultRect);
+
 			}
 
 			return resultRect;

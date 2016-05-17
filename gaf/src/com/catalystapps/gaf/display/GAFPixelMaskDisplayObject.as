@@ -7,14 +7,14 @@ package com.catalystapps.gaf.display
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
-	import starling.core.RenderSupport;
 	import starling.core.Starling;
 	import starling.display.BlendMode;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Image;
 	import starling.events.Event;
-	import starling.textures.RenderTexture;
+import starling.rendering.Painter;
+import starling.textures.RenderTexture;
 	import starling.textures.Texture;
 	import starling.utils.RectangleUtil;
 
@@ -160,17 +160,17 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		override public function render(support: RenderSupport, parentAlpha: Number): void
+		override public function render(painter:Painter): void
 		{
 			if (this._superRenderFlag || !this._mask)
 			{
-				super.render(support, parentAlpha);
+				super.render(painter);
 			}
 			else if (this._mask)
 			{
-				var previousStencilRefValue: uint = support.stencilReferenceValue;
+				var previousStencilRefValue: uint = painter.stencilReferenceValue;
 				if (previousStencilRefValue)
-					support.stencilReferenceValue = 0;
+					painter.stencilReferenceValue = 0;
 
 				_tx = this._mask.transformationMatrix.tx;
 				_ty = this._mask.transformationMatrix.ty;
@@ -196,12 +196,12 @@ package com.catalystapps.gaf.display
 				this._renderTexture.drawBundled(this.drawRenderTextures);
 
 				if (previousStencilRefValue)
-					support.stencilReferenceValue = previousStencilRefValue;
+					painter.stencilReferenceValue = previousStencilRefValue;
 
-				support.pushMatrix();
-				support.transformMatrix(this._image);
-				this._image.render(support, parentAlpha);
-				support.popMatrix();
+				//painter.pushMatrix();
+				//painter.transformMatrix(this._image);
+				this._image.render(painter);
+				//painter.popMatrix();
 			}
 		}
 

@@ -332,7 +332,7 @@ package com.catalystapps.gaf.data
 		public function get isTexturesReady(): Boolean
 		{
 			var empty: Boolean = true;
-			for (var tagfx: ITAGFX in this._textureLoadersSet)
+			for (var tagfx: * in this._textureLoadersSet)
 			{
 				empty = false;
 				break;
