@@ -343,7 +343,7 @@ package com.catalystapps.gaf.data.converters
 								var maskTimeline: GAFTimelineConfig;
 								for each (maskTimeline in this._config.timelines)
 								{
-									if (maskTimeline.id == frameInstance.id)
+									if (maskTimeline.id == animationObject.regionID)
 									{
 										break;
 									}
