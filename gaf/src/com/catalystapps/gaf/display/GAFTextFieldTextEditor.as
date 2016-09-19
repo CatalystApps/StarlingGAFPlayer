@@ -9,8 +9,6 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.utils.FiltersUtility;
 
 	import feathers.controls.text.TextFieldTextEditor;
-	import feathers.utils.geom.matrixToScaleX;
-	import feathers.utils.geom.matrixToScaleY;
 
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DProfile;
@@ -22,7 +20,7 @@ package com.catalystapps.gaf.display
 	import starling.display.Image;
 	import starling.textures.ConcreteTexture;
 	import starling.textures.Texture;
-	import starling.utils.getNextPowerOfTwo;
+	import starling.utils.MathUtil;
 
 	/** @private */
 	public class GAFTextFieldTextEditor extends TextFieldTextEditor
@@ -145,8 +143,8 @@ package com.catalystapps.gaf.display
 			}
 			else
 			{
-				this._snapshotWidth = getNextPowerOfTwo(this._snapshotClipRect.width);
-				this._snapshotHeight = getNextPowerOfTwo(this._snapshotClipRect.height);
+				this._snapshotWidth = MathUtil.getNextPowerOfTwo(this._snapshotClipRect.width);
+				this._snapshotHeight = MathUtil.getNextPowerOfTwo(this._snapshotClipRect.height);
 			}
 			var textureRoot: ConcreteTexture = this.textSnapshot ? this.textSnapshot.texture.root : null;
 			this._needsNewTexture = this._needsNewTexture || !this.textSnapshot ||

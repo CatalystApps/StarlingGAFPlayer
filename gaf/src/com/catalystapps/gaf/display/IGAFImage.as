@@ -9,7 +9,7 @@ package com.catalystapps.gaf.display
 	public interface IGAFImage extends IGAFDisplayObject
 	{
 		function get assetTexture(): IGAFTexture;
-		function get smoothing(): String;
-		function set smoothing(value: String): void;
+		function get textureSmoothing(): String;
+		function set textureSmoothing(value: String): void;
 	}
 }
