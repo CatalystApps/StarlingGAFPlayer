@@ -1,10 +1,7 @@
 package com.catalystapps.gaf.data.converters
 {
-	import com.catalystapps.gaf.data.GAF;
-	import flash.events.ErrorEvent;
 	import com.catalystapps.gaf.core.gaf_internal;
-	import com.catalystapps.gaf.data.config.CSound;
-	import starling.core.Starling;
+	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.GAFAssetConfig;
 	import com.catalystapps.gaf.data.GAFTimelineConfig;
 	import com.catalystapps.gaf.data.config.CAnimationFrame;
@@ -14,6 +11,7 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CFrameAction;
+	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.config.CStage;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
@@ -23,6 +21,7 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CTextureAtlasSource;
 	import com.catalystapps.gaf.utils.MathUtility;
 
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.geom.Matrix;
@@ -35,6 +34,7 @@ package com.catalystapps.gaf.data.converters
 	import flash.utils.Endian;
 	import flash.utils.getTimer;
 
+	import starling.core.Starling;
 	import starling.utils.RectangleUtil;
 
 	use namespace gaf_internal;
@@ -376,10 +376,10 @@ package com.catalystapps.gaf.data.converters
 
 			this.readMaskMaxSizes();
 
-			if (isNaN(this._config.defaultScale))
+			if (MathUtility.isNaN(this._config.defaultScale))
 			{
 				var itemIndex: int;
-				if (!isNaN(this._defaultScale))
+				if (!MathUtility.isNaN(this._defaultScale))
 				{
 					itemIndex = MathUtility.getItemIndex(this._config.scaleValues, this._defaultScale);
 					if (itemIndex < 0)
@@ -391,10 +391,10 @@ package com.catalystapps.gaf.data.converters
 				this._config.defaultScale = this._config.scaleValues[itemIndex];
 			}
 
-			if (isNaN(this._config.defaultContentScaleFactor))
+			if (MathUtility.isNaN(this._config.defaultContentScaleFactor))
 			{
 				itemIndex = 0;
-				if (!isNaN(this._defaultContentScaleFactor))
+				if (!MathUtility.isNaN(this._defaultContentScaleFactor))
 				{
 					itemIndex = MathUtility.getItemIndex(this._config.csfValues, this._defaultContentScaleFactor);
 					if (itemIndex < 0)
@@ -440,7 +440,7 @@ package com.catalystapps.gaf.data.converters
 
 		private function readAnimationFrames(tagID: int, startIndex: uint = 0, framesCount: Number = NaN, prevFrame: CAnimationFrame = null): void
 		{
-			if (isNaN(framesCount))
+			if (MathUtility.isNaN(framesCount))
 			{
 				framesCount = this._bytes.readUnsignedInt();
 			}

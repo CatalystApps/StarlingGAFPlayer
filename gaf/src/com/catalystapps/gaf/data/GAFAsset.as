@@ -3,7 +3,6 @@
  */
 package com.catalystapps.gaf.data
 {
-	import com.catalystapps.gaf.utils.MathUtility;
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CTextureAtlasCSF;
 	import com.catalystapps.gaf.data.config.CTextureAtlasElement;
@@ -11,6 +10,7 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.display.GAFScale9Texture;
 	import com.catalystapps.gaf.display.GAFTexture;
 	import com.catalystapps.gaf.display.IGAFTexture;
+	import com.catalystapps.gaf.utils.MathUtility;
 
 	import flash.geom.Matrix;
 
@@ -140,8 +140,8 @@ package com.catalystapps.gaf.data
 
 		gaf_internal function getCustomRegion(linkage: String, scale: Number = NaN, csf: Number = NaN): IGAFTexture
 		{
-			if (isNaN(scale)) scale = this._scale;
-			if (isNaN(csf)) csf = this._csf;
+			if (MathUtility.isNaN(scale)) scale = this._scale;
+			if (MathUtility.isNaN(csf)) csf = this._csf;
 
 			var gafTexture: IGAFTexture;
 			var atlasScale: CTextureAtlasScale;

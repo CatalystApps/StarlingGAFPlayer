@@ -387,11 +387,11 @@ package com.catalystapps.gaf.core
 
 					for each (var scale: CTextureAtlasScale in config.allTextureAtlases)
 					{
-						if (isNaN(this._defaultScale) || MathUtility.equals(scale.scale, this._defaultScale))
+						if (MathUtility.isNaN(this._defaultScale) || MathUtility.equals(scale.scale, this._defaultScale))
 						{
 							for each (var csf: CTextureAtlasCSF in scale.allContentScaleFactors)
 							{
-								if (isNaN(this._defaultContentScaleFactor) || MathUtility.equals(csf.csf, this._defaultContentScaleFactor))
+								if (MathUtility.isNaN(this._defaultContentScaleFactor) || MathUtility.equals(csf.csf, this._defaultContentScaleFactor))
 								{
 									for each (var source: CTextureAtlasSource in csf.sources)
 									{
@@ -669,11 +669,11 @@ package com.catalystapps.gaf.core
 		{
 			for each (var cScale: CTextureAtlasScale in config.allTextureAtlases)
 			{
-				if (isNaN(this._defaultScale) || MathUtility.equals(this._defaultScale, cScale.scale))
+				if (MathUtility.isNaN(this._defaultScale) || MathUtility.equals(this._defaultScale, cScale.scale))
 				{
 					for each(var cCSF: CTextureAtlasCSF in cScale.allContentScaleFactors)
 					{
-						if (isNaN(this._defaultContentScaleFactor) || MathUtility.equals(this._defaultContentScaleFactor, cCSF.csf))
+						if (MathUtility.isNaN(this._defaultContentScaleFactor) || MathUtility.equals(this._defaultContentScaleFactor, cCSF.csf))
 						{
 							for each (var taSource: CTextureAtlasSource in cCSF.sources)
 							{

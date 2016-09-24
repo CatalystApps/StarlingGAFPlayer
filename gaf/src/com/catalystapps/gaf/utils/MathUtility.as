@@ -19,6 +19,7 @@ package com.catalystapps.gaf.utils
 			return Math.abs(a - b) < epsilon;
 		}
 
+		[Inline]
 		public static function getItemIndex(source: Vector.<Number>, target: Number): int
 		{
 			for (var i: int = 0; i < source.length; i++)
@@ -29,6 +30,12 @@ package com.catalystapps.gaf.utils
 				}
 			}
 			return -1;
+		}
+
+		[Inline]
+		public static function isNaN(value: Number): Boolean
+		{
+			return value != value;
 		}
 	}
 }
