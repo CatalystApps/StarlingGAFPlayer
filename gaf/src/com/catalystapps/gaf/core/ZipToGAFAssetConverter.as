@@ -188,7 +188,7 @@ package com.catalystapps.gaf.core
 		 */
 		public function convert(data: *, defaultScale: Number = NaN, defaultContentScaleFactor: Number = NaN): void
 		{
-			if (!Starling.handleLostContext && ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
+			if (ZipToGAFAssetConverter.actionWithAtlases == ZipToGAFAssetConverter.ACTION_DONT_LOAD_IN_GPU_MEMORY)
 			{
 				throw new Error("Impossible parameters combination! Starling.handleLostContext = false and actionWithAtlases = ACTION_DONT_LOAD_ALL_IN_VIDEO_MEMORY One of the parameters must be changed!");
 			}
@@ -621,12 +621,9 @@ package com.catalystapps.gaf.core
 			var gafAsset: GAFAsset;
 			var i: uint;
 
-			if (!Starling.handleLostContext)
+			for each (var taGFX: TAGFXBase in this._taGFXs)
 			{
-				for each (var taGFX: TAGFXBase in this._taGFXs)
-				{
-					taGFX.clearSourceAfterTextureCreated = true;
-				}
+				taGFX.clearSourceAfterTextureCreated = true;
 			}
 
 			for (i = 0; i < this._gafAssetsIDs.length; i++)

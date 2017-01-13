@@ -1,6 +1,9 @@
 package com.catalystapps.gaf.display
 {
-	import starling.events.Event;
+import flash.errors.IllegalOperationError;
+import flash.events.ErrorEvent;
+
+import starling.events.Event;
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.GAF;
@@ -19,21 +22,20 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
-	import flash.errors.IllegalOperationError;
-	import flash.events.ErrorEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
 	import starling.animation.IAnimatable;
-	import starling.core.RenderSupport;
+
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Quad;
-	import starling.display.QuadBatch;
+	import starling.display.MeshBatch;
 	import starling.display.Sprite;
-	import starling.textures.TextureSmoothing;
+import starling.rendering.Painter;
+import starling.textures.TextureSmoothing;
 
 	/** Dispatched when playhead reached first frame of sequence */
 	[Event(name="typeSequenceStart", type="starling.events.Event")]
@@ -79,7 +81,7 @@ package com.catalystapps.gaf.display
 		private var _playingSequence: CAnimationSequence;
 		private var _timelineBounds: Rectangle;
 		private var _maxSize: Point;
-		private var _boundsAndPivot: QuadBatch;
+		private var _boundsAndPivot: MeshBatch;
 		private var _config: GAFTimelineConfig;
 		private var _gafTimeline: GAFTimeline;
 
@@ -463,7 +465,7 @@ package com.catalystapps.gaf.display
 			{
 				if (!this._boundsAndPivot)
 				{
-					this._boundsAndPivot = new QuadBatch();
+					this._boundsAndPivot = new MeshBatch();
 					this.updateBounds(this._config.bounds);
 				}
 
@@ -1112,7 +1114,7 @@ package com.catalystapps.gaf.display
 						else
 						{
 							displayObject = new GAFImage(texture);
-							(displayObject as GAFImage).smoothing = this._smoothing;
+							(displayObject as GAFImage).textureSmoothing = this._smoothing;
 						}
 						break;
 					case CAnimationObject.TYPE_TEXTFIELD:
@@ -1183,30 +1185,30 @@ package com.catalystapps.gaf.display
 
 		private function updateBounds(bounds: Rectangle): void
 		{
-			this._boundsAndPivot.reset();
+			this._boundsAndPivot.clear();
 			//bounds
 			if (bounds.width > 0 &&  bounds.height > 0)
 			{
 				var quad: Quad = new Quad(bounds.width * this._scale, 2, 0xff0000);
 				quad.x = bounds.x * this._scale;
 				quad.y = bounds.y * this._scale;
-				this._boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addMesh(quad);
 				quad = new Quad(bounds.width * this._scale, 2, 0xff0000);
 				quad.x = bounds.x * this._scale;
 				quad.y = bounds.bottom * this._scale - 2;
-				this._boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addMesh(quad);
 				quad = new Quad(2, bounds.height * this._scale, 0xff0000);
 				quad.x = bounds.x * this._scale;
 				quad.y = bounds.y * this._scale;
-				this._boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addMesh(quad);
 				quad = new Quad(2, bounds.height * this._scale, 0xff0000);
 				quad.x = bounds.right * this._scale - 2;
 				quad.y = bounds.y * this._scale;
-				this._boundsAndPivot.addQuad(quad);
+				this._boundsAndPivot.addMesh(quad);
 			}
 			//pivot point
 			quad = new Quad(5, 5, 0xff0000);
-			this._boundsAndPivot.addQuad(quad);
+			this._boundsAndPivot.addMesh(quad);
 		}
 
 		/** @private */
@@ -1400,11 +1402,11 @@ package com.catalystapps.gaf.display
 		}
 
 		/** @private */
-		override public function render(support: RenderSupport, parentAlpha: Number): void
+		override public function render(painter:Painter): void
 		{
 			try
 			{
-				super.render(support, parentAlpha);
+				super.render(painter);
 			}
 			catch (error: Error)
 			{
@@ -1613,7 +1615,7 @@ package com.catalystapps.gaf.display
 				var i: uint = this._imagesVector.length;
 				while (i--)
 				{
-					this._imagesVector[i].smoothing = this._smoothing;
+					this._imagesVector[i].textureSmoothing = this._smoothing;
 				}
 			}
 		}
@@ -1649,11 +1651,11 @@ package com.catalystapps.gaf.display
 
 			if (this._useClipping && this._config.stageConfig)
 			{
-				this.clipRect = new Rectangle(0, 0, this._config.stageConfig.width * this._scale, this._config.stageConfig.height * this._scale);
+				this.mask = new Quad(this._config.stageConfig.width * this._scale, this._config.stageConfig.height * this._scale);
 			}
 			else
 			{
-				this.clipRect = null;
+				this.mask = null;
 			}
 		}
 

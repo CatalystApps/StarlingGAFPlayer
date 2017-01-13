@@ -32,10 +32,10 @@ package
 				scale.setTo(1, 1);
 			}
 			//end block
-			
-			Starling.handleLostContext = true;
+
 			starling = new Starling(MainStarling, stage, viewport);
 			starling.addEventListener(Event.ROOT_CREATED, onRootCreated);
+			starling.skipUnchangedFrames = true; //TODO - дописать почему!)
 			starling.showStats = true;
        		starling.start();
 		}

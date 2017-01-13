@@ -7,16 +7,14 @@ package com.catalystapps.gaf.display
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
-	import starling.core.RenderSupport;
 	import starling.core.Starling;
 	import starling.display.BlendMode;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Image;
 	import starling.events.Event;
+	import starling.rendering.Painter;
 	import starling.textures.RenderTexture;
-	import starling.textures.Texture;
-	import starling.utils.RectangleUtil;
 
 	/**
 	 * @private
@@ -50,7 +48,7 @@ package com.catalystapps.gaf.display
 			this._scaleFactor = scaleFactor;
 			this._maskSize = new Point();
 
-			BlendMode.register(MASK_MODE, Context3DBlendFactor.ZERO, Context3DBlendFactor.SOURCE_ALPHA);
+			BlendMode.register(MASK_MODE, Context3DBlendFactor.ZERO, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 
 			// Handle lost context. By using the conventional event, we can make a weak listener.
 			// This avoids memory leaks when people forget to call "dispose" on the object.
@@ -160,17 +158,17 @@ package com.catalystapps.gaf.display
 			}
 		}
 
-		override public function render(support: RenderSupport, parentAlpha: Number): void
+		override public function render(painter:Painter): void
 		{
 			if (this._superRenderFlag || !this._mask)
 			{
-				super.render(support, parentAlpha);
+				super.render(painter);
 			}
 			else if (this._mask)
 			{
-				var previousStencilRefValue: uint = support.stencilReferenceValue;
+				var previousStencilRefValue: uint = painter.stencilReferenceValue;
 				if (previousStencilRefValue)
-					support.stencilReferenceValue = 0;
+                    painter.stencilReferenceValue = 0;
 
 				_tx = this._mask.transformationMatrix.tx;
 				_ty = this._mask.transformationMatrix.ty;
@@ -187,21 +185,24 @@ package com.catalystapps.gaf.display
 
 				this._mask.transformationMatrix.tx = _tx - sHelperRect.x + PADDING;
 				this._mask.transformationMatrix.ty = _ty - sHelperRect.y + PADDING;
-				this._maskRenderTexture.draw(this._mask);
+//				this._maskRenderTexture.draw(this._mask);
 				this._image.transformationMatrix.tx = sHelperRect.x;
 				this._image.transformationMatrix.ty = sHelperRect.y;
 				this._mask.transformationMatrix.tx = _tx;
 				this._mask.transformationMatrix.ty = _ty;
 
-				this._renderTexture.drawBundled(this.drawRenderTextures);
+//				this._renderTexture.drawBundled(this.drawRenderTextures);
 
 				if (previousStencilRefValue)
-					support.stencilReferenceValue = previousStencilRefValue;
+                    painter.stencilReferenceValue = previousStencilRefValue;
 
-				support.pushMatrix();
-				support.transformMatrix(this._image);
-				this._image.render(support, parentAlpha);
-				support.popMatrix();
+//				support.pushMatrix();
+//				support.transformMatrix(this._image);
+
+                painter.drawMask(_mask,_image);
+				super.render(painter);
+                painter.eraseMask(_mask,_image);
+//				support.popMatrix();
 			}
 		}
 

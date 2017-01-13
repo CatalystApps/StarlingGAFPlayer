@@ -12,9 +12,9 @@ package
 		
 		public function Main()
 		{
-			Starling.handleLostContext = true;
 			starling = new Starling(MainStarling, stage, new Rectangle(0, 0, stage.stageWidth, stage.stageHeight));
 			starling.showStats = true;
+			starling.skipUnchangedFrames = true; //TODO - дописать почему!)
        		starling.start();
 		}
 	}

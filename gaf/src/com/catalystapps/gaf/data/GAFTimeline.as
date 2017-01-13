@@ -95,8 +95,7 @@ package com.catalystapps.gaf.data
 
 		/**
 		 * Load all graphical data connected with this asset in device GPU memory. Used in case of manual control of GPU memory usage.
-		 * Works only in case when all graphical data stored in RAM (<code>Starling.handleLostContext</code> should be set to <code>true</code>
-		 * before asset conversion)
+		 * Works only in case when all graphical data stored in RAM.
 		 *
 		 * @param content content type that should be loaded. Available types: <code>CONTENT_ALL, CONTENT_DEFAULT, CONTENT_SPECIFY</code>
 		 * @param scale in case when specified content is <code>CONTENT_SPECIFY</code> scale and csf should be set in required values

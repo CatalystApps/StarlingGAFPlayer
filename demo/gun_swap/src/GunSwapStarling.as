@@ -63,7 +63,7 @@ package
 
 		private function onTouch(event: TouchEvent): void
 		{
-			var touch: Touch = event.getTouch(this, TouchPhase.BEGAN);
+			var touch: Touch = event.getTouch(this as Sprite, TouchPhase.BEGAN);
 			if (touch)
 			{
 				if (this._currentGun == this._gun2)
