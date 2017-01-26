@@ -9,7 +9,7 @@ package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.core.gaf_internal;
 	import com.catalystapps.gaf.data.config.CFilter;
-	import com.catalystapps.gaf.filter.GAFFilter;
+	import com.catalystapps.gaf.filter.GAFFilterChain;
 	import com.catalystapps.gaf.utils.MathUtility;
 
 	import feathers.core.IValidating;
@@ -94,6 +94,7 @@ package com.catalystapps.gaf.display
 		private var _debugColors: Vector.<uint>;
 		private var _debugAlphas: Vector.<Number>;
 
+        private var _filterChain:GAFFilterChain;
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
@@ -455,26 +456,17 @@ package com.catalystapps.gaf.display
 				{
 					this._filterConfig = value;
 					this._filterScale = scale;
-					var gafFilter: GAFFilter;
-					if (this._batch.filter)
-					{
-						if (this._batch.filter is GAFFilter)
-						{
-							gafFilter = this._batch.filter as GAFFilter;
-						}
-						else
-						{
-							this._batch.filter.dispose();
-							gafFilter = new GAFFilter();
-						}
-					}
-					else
-					{
-						gafFilter = new GAFFilter();
-					}
+                    if(this._filterChain)
+                    {
+                        _filterChain.dispose();
+                    }
+                    else
+                    {
+                        _filterChain = new GAFFilterChain();
+                    }
 
-					gafFilter.setConfig(this._filterConfig, this._filterScale);
-					this._batch.filter = gafFilter;
+                    _filterChain.setFilterData(_filterConfig);
+					this._batch.filter = _filterChain;
 				}
 				else
 				{
@@ -483,6 +475,8 @@ package com.catalystapps.gaf.display
 						this._batch.filter.dispose();
 						this._batch.filter = null;
 					}
+
+					this._filterChain = null;
 					this._filterConfig = null;
 					this._filterScale = NaN;
 				}

@@ -25,7 +25,6 @@ import starling.events.Event;
 	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
 	import com.catalystapps.gaf.data.config.CTextureAtlas;
-	import com.catalystapps.gaf.filter.GAFFilter;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import flash.geom.Matrix;

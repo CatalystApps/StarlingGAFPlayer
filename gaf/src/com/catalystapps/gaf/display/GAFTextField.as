@@ -7,7 +7,7 @@ package com.catalystapps.gaf.display
 	import com.catalystapps.gaf.data.GAF;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CTextFieldObject;
-	import com.catalystapps.gaf.filter.GAFFilter;
+	import com.catalystapps.gaf.filter.GAFFilterChain;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
 	import feathers.controls.TextInput;
@@ -46,6 +46,7 @@ package com.catalystapps.gaf.display
 
 		private var _pivotMatrix: Matrix;
 
+        private var _filterChain:GAFFilterChain;
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
@@ -254,31 +255,24 @@ package com.catalystapps.gaf.display
 				}
 				else if (this._filterConfig && !isNaN(this._filterScale))
 				{
-					var gafFilter: GAFFilter;
-					if (this.filter)
-					{
-						if (this.filter is GAFFilter)
-						{
-							gafFilter = this.filter as GAFFilter;
-						}
-						else
-						{
-							this.filter.dispose();
-							gafFilter = new GAFFilter();
-						}
-					}
-					else
-					{
-						gafFilter = new GAFFilter();
-					}
+                    if(this._filterChain)
+                    {
+                        _filterChain.dispose();
+                    }
+                    else
+                    {
+                        _filterChain = new GAFFilterChain();
+                    }
 
-					gafFilter.setConfig(this._filterConfig, this._filterScale);
-					this.filter = gafFilter;
+                    _filterChain.setFilterData(_filterConfig);
+					this.filter = _filterChain;
 				}
 				else if (this.filter)
 				{
 					this.filter.dispose();
 					this.filter = null;
+
+					this._filterChain = null;
 				}
 			}
 		}
