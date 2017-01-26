@@ -13,7 +13,9 @@ package
 
 	import flash.events.Event;
 
-	/**
+   import starling.text.TextFormat;
+
+   /**
 	 * @author Ivan Avdeenko
 	 */
 	public class NamedPartsStarling extends Sprite
@@ -93,12 +95,11 @@ package
 
 		private function initTextFileds(): void
 		{
-			var fontName: String = "Arial";
-			var fontSize: int = 24;
+			var textFormat:TextFormat = new TextFormat("Arial", 24);
 
-			var title: TextField = new TextField(stage.stageWidth, 100, "Click the robots to show/hide guns", fontName, fontSize);
-			var plain: TextField = new TextField(this.robotPlain.width, 100, "Plain", fontName, fontSize);
-			var nesting: TextField = new TextField(this.robotNesting.width, 100, "Nesting", fontName, fontSize);
+			var title: TextField = new TextField(stage.stageWidth, 100, "Click the robots to show/hide guns", textFormat);
+			var plain: TextField = new TextField(this.robotPlain.width, 100, "Plain", textFormat);
+			var nesting: TextField = new TextField(this.robotNesting.width, 100, "Nesting", textFormat);
 
 			nesting.x = Math.round(this.robotNesting.x);
 			nesting.y = stage.stageHeight - 100;

@@ -1,8 +1,9 @@
 package com.catalystapps.gaf.display
 {
 	import com.catalystapps.gaf.core.gaf_internal;
+
 	import com.catalystapps.gaf.data.config.CFilter;
-	import com.catalystapps.gaf.filter.GAFFilter;
+	import com.catalystapps.gaf.filter.GAFFilterChain;
 
 	import flash.geom.Matrix;
 	import flash.geom.Matrix3D;
@@ -40,6 +41,7 @@ package com.catalystapps.gaf.display
 
 		private var _assetTexture: IGAFTexture;
 
+		private var _filterChain:GAFFilterChain;
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
@@ -165,26 +167,19 @@ package com.catalystapps.gaf.display
 				{
 					this._filterConfig = value;
 					this._filterScale = scale;
-					var gafFilter: GAFFilter;
-					if (this.filter)
-					{
-						if (this.filter is GAFFilter)
-						{
-							gafFilter = this.filter as GAFFilter;
-						}
-						else
-						{
-							this.filter.dispose();
-							gafFilter = new GAFFilter();
-						}
-					}
-					else
-					{
-						gafFilter = new GAFFilter();
-					}
 
-					gafFilter.setConfig(this._filterConfig, this._filterScale);
-					this.filter = gafFilter;
+                    if(this._filterChain)
+                    {
+                        _filterChain.dispose();
+                    }
+                    else
+                    {
+                        _filterChain = new GAFFilterChain();
+                    }
+
+                    _filterChain.setFilterData(_filterConfig);
+
+					this.filter = _filterChain;
 				}
 				else
 				{
@@ -193,11 +188,15 @@ package com.catalystapps.gaf.display
 						this.filter.dispose();
 						this.filter = null;
 					}
+
+                    this._filterChain = null;
 					this._filterConfig = null;
 					this._filterScale = NaN;
 				}
 			}
 		}
+
+
 
 		//--------------------------------------------------------------------------
 		//

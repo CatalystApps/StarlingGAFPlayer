@@ -19,6 +19,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
+    [Deprecated(since="6.0")]
 	public class GAFPixelMaskDisplayObject extends DisplayObjectContainer
 	{
 		private static const MASK_MODE: String = "mask";

@@ -271,7 +271,10 @@ package com.catalystapps.gaf.data
 					bitmapData = setGrayScale(tagfx.source.clone());
 				}
 
-				dictionary[imageID] = Texture.fromBitmapData(bitmapData, GAF.useMipMaps, false, tagfx.textureScale, tagfx.textureFormat);
+				if(bitmapData)
+				{
+                    dictionary[imageID] = Texture.fromBitmapData(bitmapData, GAF.useMipMaps, false, tagfx.textureScale, tagfx.textureFormat);
+				}
 			}
 			else if (!dictionary[imageID])
 			{

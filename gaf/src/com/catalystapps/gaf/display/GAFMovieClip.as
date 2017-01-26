@@ -1,7 +1,13 @@
 package com.catalystapps.gaf.display
 {
+import com.catalystapps.gaf.filter.GAFFilterChain;
+import com.catalystapps.gaf.filter.masks.GAFStencilMaskStyle;
+
 import flash.errors.IllegalOperationError;
 import flash.events.ErrorEvent;
+
+import starling.display.Image;
+import starling.display.MovieClip;
 
 import starling.events.Event;
 	import com.catalystapps.gaf.data.GAFAsset;
@@ -34,8 +40,8 @@ import starling.events.Event;
 	import starling.display.Quad;
 	import starling.display.MeshBatch;
 	import starling.display.Sprite;
-import starling.rendering.Painter;
-import starling.textures.TextureSmoothing;
+	import starling.rendering.Painter;
+	import starling.textures.TextureSmoothing;
 
 	/** Dispatched when playhead reached first frame of sequence */
 	[Event(name="typeSequenceStart", type="starling.events.Event")]
@@ -72,11 +78,10 @@ import starling.textures.TextureSmoothing;
 		private var _smoothing: String = TextureSmoothing.BILINEAR;
 
 		private var _displayObjectsDictionary: Object;
-		private var _pixelMasksDictionary: Object;
+		private var _stencilMasksDictionary: Object;
 		private var _displayObjectsVector: Vector.<IGAFDisplayObject>;
 		private var _imagesVector: Vector.<IGAFImage>;
 		private var _mcVector: Vector.<GAFMovieClip>;
-		private var _pixelMasksVector: Vector.<GAFPixelMaskDisplayObject>;
 
 		private var _playingSequence: CAnimationSequence;
 		private var _timelineBounds: Rectangle;
@@ -112,6 +117,7 @@ import starling.textures.TextureSmoothing;
 		private var _currentFrame: uint;
 		private var _totalFrames: uint;
 
+        private var _filterChain:GAFFilterChain;
 		private var _filterConfig: CFilter;
 		private var _filterScale: Number;
 
@@ -121,6 +127,8 @@ import starling.textures.TextureSmoothing;
 		gaf_internal var __debugOriginalAlpha: Number = NaN;
 
 		private var _orientationChanged: Boolean;
+
+		private var _stencilMaskStyle:GAFStencilMaskStyle;
 
 		// --------------------------------------------------------------------------
 		//
@@ -183,7 +191,7 @@ import starling.textures.TextureSmoothing;
 		 */
 		public function getMaskByID(id: String): DisplayObject
 		{
-			return this._displayObjectsDictionary[id];
+			return this._stencilMasksDictionary[id];
 		}
 
 		/**
@@ -195,34 +203,12 @@ import starling.textures.TextureSmoothing;
 		{
 			var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[id];
 			var maskAsDisplayObject: DisplayObject = maskObject as DisplayObject;
-			var pixelMaskObject: GAFPixelMaskDisplayObject = this._pixelMasksDictionary[id];
-			if (maskObject && pixelMaskObject)
+			var stencilMaskObject:DisplayObject  = this._stencilMasksDictionary[id];
+			if (maskObject && stencilMaskObject)
 			{
-				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
-				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
-				if (maskInstance)
-				{
-					getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
-					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
-					maskObject.invalidateOrientation();
-				}
-
-				////////////////////////////////
-
-				var cFilter: CFilter = new CFilter();
-				var cmf: Vector.<Number> = new <Number>[1, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0];
-				cmf.fixed = true;
-				cFilter.addColorMatrixFilter(cmf);
-
-				var gafFilter: GAFFilter = new GAFFilter();
-				gafFilter.setConfig(cFilter, this._scale);
-
-				maskAsDisplayObject.filter = gafFilter;
-
-				////////////////////////////////
-
-				pixelMaskObject.pixelMask = null;
-				this.addChild(maskAsDisplayObject);
+                maskAsDisplayObject.mask = stencilMaskObject;
+                this.addChild(stencilMaskObject);
+                this.addChild(maskAsDisplayObject);
 			}
 			else
 			{
@@ -240,24 +226,15 @@ import starling.textures.TextureSmoothing;
 		{
 			var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[id];
 			var maskAsDisplayObject: DisplayObject = maskObject as DisplayObject;
-			var pixelMaskObject: GAFPixelMaskDisplayObject = this._pixelMasksDictionary[id];
-			if (maskObject && pixelMaskObject)
+			var stencilMaskObject: DisplayObject = this._stencilMasksDictionary[id];
+			if (stencilMaskObject)
 			{
-				maskAsDisplayObject.filter = null;
-				var frameConfig: CAnimationFrame = this._config.animationConfigFrames.frames[this._currentFrame];
-				var maskInstance: CAnimationFrameInstance = frameConfig.getInstanceByID(id);
-				if (maskInstance)
+				if (stencilMaskObject.parent == this)
 				{
-					getTransformMatrix(maskObject as IGAFDisplayObject, HELPER_MATRIX);
-					maskInstance.applyTransformMatrix(maskObject.transformationMatrix, HELPER_MATRIX, this._scale);
-					maskObject.invalidateOrientation();
-				}
-
-				if (maskObject.parent == this)
-				{
+                    stencilMaskObject.parent.mask = null;
+					this.removeChild(stencilMaskObject);
 					this.removeChild(maskAsDisplayObject);
 				}
-				pixelMaskObject.pixelMask = maskAsDisplayObject;
 			}
 			else
 			{
@@ -508,26 +485,19 @@ import starling.textures.TextureSmoothing;
 				{
 					this._filterConfig = value;
 					this._filterScale = scale;
-					var gafFilter: GAFFilter;
-					if (this.filter)
-					{
-						if (this.filter is GAFFilter)
-						{
-							gafFilter = this.filter as GAFFilter;
-						}
-						else
-						{
-							this.filter.dispose();
-							gafFilter = new GAFFilter();
-						}
-					}
+
+                    if(this._filterChain)
+                    {
+                        _filterChain.dispose();
+                    }
 					else
 					{
-						gafFilter = new GAFFilter();
+                        _filterChain = new GAFFilterChain();
 					}
 
-					gafFilter.setConfig(this._filterConfig, this._filterScale);
-					this.filter = gafFilter;
+                    _filterChain.setFilterData(_filterConfig);
+
+					this.filter = _filterChain;
 				}
 				else
 				{
@@ -536,6 +506,8 @@ import starling.textures.TextureSmoothing;
 						this.filter.dispose();
 						this.filter = null;
 					}
+
+					this._filterChain = null;
 					this._filterConfig = null;
 					this._filterScale = NaN;
 				}
@@ -605,7 +577,6 @@ import starling.textures.TextureSmoothing;
 
 				var child: DisplayObjectContainer;
 				var childMC: GAFMovieClip;
-				var pixelMask: GAFPixelMaskDisplayObject;
 				for (i = 0, l = this.numChildren; i < l; i++)
 				{
 					child = this.getChildAt(i) as DisplayObjectContainer;
@@ -619,36 +590,6 @@ import starling.textures.TextureSmoothing;
 						else
 						{
 							childMC._play(true);
-						}
-					}
-					else if (child is GAFPixelMaskDisplayObject)
-					{
-						pixelMask = child as GAFPixelMaskDisplayObject;
-						for (var mi: int = 0, ml: uint = pixelMask.numChildren; mi < ml; mi++)
-						{
-							childMC = pixelMask.getChildAt(mi) as GAFMovieClip;
-							if (childMC)
-							{
-								if (calledByUser)
-								{
-									childMC.play(true);
-								}
-								else
-								{
-									childMC._play(true);
-								}
-							}
-						}
-						if (pixelMask.pixelMask is GAFMovieClip)
-						{
-							if (calledByUser)
-							{
-								(pixelMask.pixelMask as GAFMovieClip).play(true);
-							}
-							else
-							{
-								(pixelMask.pixelMask as GAFMovieClip)._play(true);
-							}
 						}
 					}
 				}
@@ -668,7 +609,6 @@ import starling.textures.TextureSmoothing;
 			{
 				var child: DisplayObjectContainer;
 				var childMC: GAFMovieClip;
-				var childMask: GAFPixelMaskDisplayObject;
 				for (var i: int = 0; i < this.numChildren; i++)
 				{
 					child = this.getChildAt(i) as DisplayObjectContainer;
@@ -682,36 +622,6 @@ import starling.textures.TextureSmoothing;
 						else
 						{
 							childMC._stop(true);
-						}
-					}
-					else if (child is GAFPixelMaskDisplayObject)
-					{
-						childMask = (child as GAFPixelMaskDisplayObject);
-						for (var m: int = 0; m < childMask.numChildren; m++)
-						{
-							childMC = childMask.getChildAt(m) as GAFMovieClip;
-							if (childMC)
-							{
-								if (calledByUser)
-								{
-									childMC.stop(true);
-								}
-								else
-								{
-									childMC._stop(true);
-								}
-							}
-						}
-						if (childMask.pixelMask is GAFMovieClip)
-						{
-							if (calledByUser)
-							{
-								(childMask.pixelMask as GAFMovieClip).stop(true);
-							}
-							else
-							{
-								(childMask.pixelMask as GAFMovieClip)._stop(true);
-							}
 						}
 					}
 				}
@@ -846,11 +756,6 @@ import starling.textures.TextureSmoothing;
 		private function clearDisplayList(): void
 		{
 			this.removeChildren();
-
-			for (var i: uint = 0, l: uint = this._pixelMasksVector.length; i < l; i++)
-			{
-				this._pixelMasksVector[i].removeChildren();
-			}
 		}
 
 		private function draw(): void
@@ -880,12 +785,11 @@ import starling.textures.TextureSmoothing;
 			var frames: Vector.<CAnimationFrame> = this._config.animationConfigFrames.frames;
 			if (frames.length > this._currentFrame)
 			{
-				var maskIndex: int = 0;
 				var mc: GAFMovieClip;
 				var objectPivotMatrix: Matrix;
 				var displayObject: IGAFDisplayObject;
 				var instance: CAnimationFrameInstance;
-				var pixelMaskObject: GAFPixelMaskDisplayObject;
+				var stencilMaskObject: DisplayObject;
 
 				var animationObjectsDictionary: Object = this._config.animationObjects.animationObjectsDictionary;
 				var frameConfig: CAnimationFrame = frames[this._currentFrame];
@@ -929,30 +833,26 @@ import starling.textures.TextureSmoothing;
 							{
 								this.renderDebug(mc, instance, true);
 
-								pixelMaskObject = this._pixelMasksDictionary[instance.maskID];
-								if (pixelMaskObject)
+                                stencilMaskObject = this._stencilMasksDictionary[instance.maskID];
+
+								if (stencilMaskObject)
 								{
-									pixelMaskObject.addChild(displayObject as DisplayObject);
-									maskIndex++;
+                                    _stencilMaskStyle = new GAFStencilMaskStyle();
+									(stencilMaskObject as GAFImage).style = _stencilMaskStyle;
 
 									instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
 									displayObject.invalidateOrientation();
-									displayObject.setFilterConfig(null);
 
-									if (maskIndex == 1)
-									{
-										this.addChild(pixelMaskObject);
-									}
+                                    (displayObject as DisplayObject).mask = stencilMaskObject;
+
+									this.addChild(stencilMaskObject);
+									this.addChild((displayObject as DisplayObject));
+
+                                    _stencilMaskStyle.threshold = 1;
 								}
 							}
 							else //if display object is not masked
 							{
-								if (pixelMaskObject)
-								{
-									maskIndex = 0;
-									pixelMaskObject = null;
-								}
-
 								this.renderDebug(mc, instance, this._masked);
 
 								instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
@@ -976,8 +876,6 @@ import starling.textures.TextureSmoothing;
 						}
 						else
 						{
-							maskIndex = 0;
-
 							var maskObject: IGAFDisplayObject = this._displayObjectsDictionary[instance.id];
 							if (maskObject)
 							{
@@ -999,10 +897,6 @@ import starling.textures.TextureSmoothing;
 									mc._play(true);
 								}
 							}
-							/*else
-							{
-								throw new Error("Unable to find mask with ID " + instance.id);
-							}*/
 						}
 					}
 				}
@@ -1088,11 +982,10 @@ import starling.textures.TextureSmoothing;
 		private function initialize(textureAtlas: CTextureAtlas, gafAsset: GAFAsset): void
 		{
 			this._displayObjectsDictionary = {};
-			this._pixelMasksDictionary = {};
+			this._stencilMasksDictionary = {};
 			this._displayObjectsVector = new <IGAFDisplayObject>[];
 			this._imagesVector = new <IGAFImage>[];
 			this._mcVector = new <GAFMovieClip>[];
-			this._pixelMasksVector = new <GAFPixelMaskDisplayObject>[];
 
 			this._currentFrame = 0;
 			this._totalFrames = this._config.framesCount;
@@ -1138,10 +1031,7 @@ import starling.textures.TextureSmoothing;
 				this.addDisplayObject(animationObjectConfig.instanceID, displayObject);
 				if (animationObjectConfig.mask)
 				{
-					var pixelMaskDisplayObject: GAFPixelMaskDisplayObject = new GAFPixelMaskDisplayObject(this._gafTimeline.contentScaleFactor);
-					pixelMaskDisplayObject.pixelMask = displayObject;
-
-					this.addDisplayObject(animationObjectConfig.instanceID, pixelMaskDisplayObject);
+					this.addDisplayObject(animationObjectConfig.instanceID, displayObject, true);
 				}
 
 				if (this._config.namedParts != null)
@@ -1161,12 +1051,11 @@ import starling.textures.TextureSmoothing;
 			}
 		}
 
-		private function addDisplayObject(id: String, displayObject: DisplayObject): void
+		private function addDisplayObject(id: String, displayObject: DisplayObject, asMask:Boolean = false): void
 		{
-			if (displayObject is GAFPixelMaskDisplayObject)
+			if (asMask)
 			{
-				this._pixelMasksDictionary[id] = displayObject;
-				this._pixelMasksVector[_pixelMasksVector.length] = displayObject as GAFPixelMaskDisplayObject;
+				this._stencilMasksDictionary[id] = displayObject;
 			}
 			else
 			{
@@ -1307,27 +1196,22 @@ import starling.textures.TextureSmoothing;
 							}
 						}
 					}
-					id = this._pixelMasksVector.indexOf(child as GAFPixelMaskDisplayObject);
-					if (id >= 0)
+
+					for (key in this._stencilMasksDictionary)
 					{
-						this._pixelMasksVector.splice(id, 1);
-
-						for (key in this._pixelMasksDictionary)
+						if (this._stencilMasksDictionary[key] == child)
 						{
-							if (this._pixelMasksDictionary[key] == child)
+							if (this._config.namedParts != null)
 							{
-								if (this._config.namedParts != null)
+								instanceName = this._config.namedParts[key];
+								if (instanceName && this.hasOwnProperty(instanceName))
 								{
-									instanceName = this._config.namedParts[key];
-									if (instanceName && this.hasOwnProperty(instanceName))
-									{
-										delete this[instanceName];
-									}
+									delete this[instanceName];
 								}
-
-								delete this._pixelMasksDictionary[key];
-								break;
 							}
+
+							delete this._stencilMasksDictionary[key];
+							break;
 						}
 					}
 				}
@@ -1372,10 +1256,10 @@ import starling.textures.TextureSmoothing;
 				this._displayObjectsVector[i].dispose();
 			}
 
-			for (i = 0, l = this._pixelMasksVector.length; i < l; i++)
-			{
-				this._pixelMasksVector[i].dispose();
-			}
+            for (var key:String in this._stencilMasksDictionary)
+            {
+                this._stencilMasksDictionary[key].dispose();
+            }
 
 			if (this._boundsAndPivot)
 			{
@@ -1384,9 +1268,8 @@ import starling.textures.TextureSmoothing;
 			}
 
 			this._displayObjectsDictionary = null;
-			this._pixelMasksDictionary = null;
+			this._stencilMasksDictionary = null;
 			this._displayObjectsVector = null;
-			this._pixelMasksVector = null;
 			this._imagesVector = null;
 			this._gafTimeline = null;
 			this._mcVector = null;
