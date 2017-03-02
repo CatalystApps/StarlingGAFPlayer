@@ -4,6 +4,7 @@ package com.catalystapps.gaf.data
 	import com.catalystapps.gaf.data.tagfx.TAGFXBase;
 	import com.catalystapps.gaf.utils.DebugUtility;
 
+
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.events.Event;
@@ -275,6 +276,17 @@ package com.catalystapps.gaf.data
 				{
                     dictionary[imageID] = Texture.fromBitmapData(bitmapData, GAF.useMipMaps, false, tagfx.textureScale, tagfx.textureFormat);
 				}
+				else
+				{
+					if(tagfx.texture)
+					{
+                        dictionary[imageID] = Texture.fromTexture(tagfx.texture);
+					}
+					else
+					{
+						throw new Error("GAFGFXData texture for rendering not found!")
+					}
+				}
 			}
 			else if (!dictionary[imageID])
 			{
@@ -284,7 +296,7 @@ package com.catalystapps.gaf.data
 					tagfx.addEventListener(TAGFXBase.EVENT_TYPE_TEXTURE_READY, this.onTextureReady);
 				}
 
-				dictionary[imageID] = tagfx.texture;
+				dictionary[imageID] = Texture.fromTexture(tagfx.texture);
 			}
 		}
 
@@ -313,7 +325,6 @@ package com.catalystapps.gaf.data
 		//  EVENT HANDLERS
 		//
 		//--------------------------------------------------------------------------
-
 		private function onTextureReady(event: Event): void
 		{
 			var tagfx: ITAGFX = event.currentTarget as ITAGFX;

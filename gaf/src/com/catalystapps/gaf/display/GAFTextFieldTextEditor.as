@@ -18,14 +18,13 @@ package com.catalystapps.gaf.display
 	import flash.geom.Rectangle;
 	import flash.text.TextFormat;
 
-import starling.core.Starling;
+	import starling.core.Starling;
 
-import starling.core.Starling;
+	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.textures.ConcreteTexture;
 	import starling.textures.Texture;
-import starling.utils.MathUtil;
-import starling.utils.MathUtil;
+	import starling.utils.MathUtil;
 
 	/** @private */
 	public class GAFTextFieldTextEditor extends TextFieldTextEditor

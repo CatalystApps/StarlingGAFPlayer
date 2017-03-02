@@ -623,7 +623,7 @@ package com.catalystapps.gaf.core
 
 			for each (var taGFX: TAGFXBase in this._taGFXs)
 			{
-				taGFX.clearSourceAfterTextureCreated = true;
+				taGFX.clearSourceAfterTextureCreated = false;
 			}
 
 			for (i = 0; i < this._gafAssetsIDs.length; i++)

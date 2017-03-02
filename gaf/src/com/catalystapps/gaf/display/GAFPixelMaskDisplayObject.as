@@ -19,7 +19,7 @@ package com.catalystapps.gaf.display
 	/**
 	 * @private
 	 */
-    [Deprecated(since="6.0")]
+    [Deprecated(replacement="Use GAFStencilMaskStyle for styling Starling display objects", message="Starling 2.0+ support stencil mask")]
 	public class GAFPixelMaskDisplayObject extends DisplayObjectContainer
 	{
 		private static const MASK_MODE: String = "mask";

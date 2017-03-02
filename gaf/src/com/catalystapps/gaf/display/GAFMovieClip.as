@@ -1,15 +1,12 @@
 package com.catalystapps.gaf.display
 {
-import com.catalystapps.gaf.filter.GAFFilterChain;
-import com.catalystapps.gaf.filter.masks.GAFStencilMaskStyle;
+	import com.catalystapps.gaf.filter.GAFFilterChain;
+	import com.catalystapps.gaf.filter.masks.GAFStencilMaskStyle;
 
-import flash.errors.IllegalOperationError;
-import flash.events.ErrorEvent;
+	import flash.errors.IllegalOperationError;
+	import flash.events.ErrorEvent;
 
-import starling.display.Image;
-import starling.display.MovieClip;
-
-import starling.events.Event;
+	import starling.events.Event;
 	import com.catalystapps.gaf.data.GAFAsset;
 	import com.catalystapps.gaf.data.config.CSound;
 	import com.catalystapps.gaf.data.GAF;
