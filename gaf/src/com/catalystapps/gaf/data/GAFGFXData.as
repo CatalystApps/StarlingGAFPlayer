@@ -280,7 +280,7 @@ package com.catalystapps.gaf.data
 				{
 					if(tagfx.texture)
 					{
-                        dictionary[imageID] = Texture.fromTexture(tagfx.texture);
+                        dictionary[imageID] = tagfx.texture;
 					}
 					else
 					{
@@ -296,7 +296,7 @@ package com.catalystapps.gaf.data
 					tagfx.addEventListener(TAGFXBase.EVENT_TYPE_TEXTURE_READY, this.onTextureReady);
 				}
 
-				dictionary[imageID] = Texture.fromTexture(tagfx.texture);
+				dictionary[imageID] = tagfx.texture;
 			}
 		}
 
