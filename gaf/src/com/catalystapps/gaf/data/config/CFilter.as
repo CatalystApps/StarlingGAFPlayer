@@ -106,6 +106,7 @@ package com.catalystapps.gaf.data.config
 					0, Number(params[3]), 0, 0, Number(params[4]),
 					0, 0, Number(params[5]), 0, Number(params[6]),
 								   0, 0, 0, 1, 0);
+			filterData.isColorTransform = true;
 			_filterConfigs.push(filterData);
 		}
 
