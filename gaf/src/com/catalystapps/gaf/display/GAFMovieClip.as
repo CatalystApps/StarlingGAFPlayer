@@ -938,7 +938,7 @@ package com.catalystapps.gaf.display
 
 									instance.applyTransformMatrix(displayObject.transformationMatrix, objectPivotMatrix, this._scale);
 									displayObject.invalidateOrientation();
-									displayObject.setFilterConfig(null);
+									displayObject.setFilterConfig(instance.filter, this._scale);
 
 									if (maskIndex == 1)
 									{

@@ -54,10 +54,9 @@ package com.catalystapps.gaf.filter
 		private static const UNITY_MODE_COLOR: int = 0;
 		private static const UNITY_MODE_GLOW: int = 1;
 		private static const UNITY_MODE_BLUR: int = 2;
-		private static const UNITY_BLUR_DIVIDER: Number = 8;
-		private static const UNITY_KERNEL_SIZE: Number = 9;
-		private static const UNITY_TAP_WEIGHTS: Vector.<Number> = new <Number>[0.05, 0.09, 0.12, 0.15, 0.18, 0.15, 0.12, 0.09, 0.05];
-		private static const UNITY_TAP_CONSTANTS: Vector.<String> = new <String>["fc1.x", "fc1.y", "fc1.z", "fc1.w", "fc2.x", "fc1.w", "fc1.z", "fc1.y", "fc1.x"];
+		// Unity picks 8-64 taps by blur width; 32 keeps the glow programs within the AGAL1 limit of 200 operations
+		private static const UNITY_TAPS: int = 32;
+		private static const UNITY_WEIGHTS_REGISTER: int = 16;
 
 		private var mNormalProgram: Program3D;
 		private var mTintedProgram: Program3D;
@@ -85,6 +84,10 @@ package com.catalystapps.gaf.filter
 		private var _unityMode: int;
 		private var _unityBlurX: Number = 0;
 		private var _unityBlurY: Number = 0;
+		private var _unityBlurWidthX: Number = 0;
+		private var _unityBlurWidthY: Number = 0;
+		private var _unityQuality: int = 1;
+		private var _unityWeights: Vector.<Number> = new Vector.<Number>(32, true); // UNITY_TAPS
 		private var _unityStrength: Number = 1;
 		private var _unityGlowColor: Vector.<Number> = new <Number>[1, 1, 1, 1];
 		private var _unityColorMatrix: Vector.<Number> = new Vector.<Number>(20, true);
@@ -93,7 +96,7 @@ package com.catalystapps.gaf.filter
 		private var _unityStageUnitsPerTexelY: Number = 1;
 		private var _unityAlpha: Number = 1;
 		private var _unityObjectTexture: Texture;
-		private var _unityConstants: Vector.<Number> = new Vector.<Number>(64, true);
+		private var _unityConstants: Vector.<Number> = new Vector.<Number>(96, true); // fc0-fc23
 		private var _unityColorProgram: Program3D;
 		private var _unityGlowBlurProgram: Program3D;
 		private var _unityGlowFinalProgram: Program3D;
@@ -172,12 +175,18 @@ package com.catalystapps.gaf.filter
 			{
 				_unityMode = UNITY_MODE_COLOR;
 				_unityBlurX = _unityBlurY = 0;
+				_unityBlurWidthX = _unityBlurWidthY = 0;
+				_unityQuality = 1;
 			}
 			else
 			{
 				_unityMode = effect.color > -1 ? UNITY_MODE_GLOW : UNITY_MODE_BLUR;
-				_unityBlurX = effect.blurX / UNITY_BLUR_DIVIDER;
-				_unityBlurY = effect.blurY / UNITY_BLUR_DIVIDER;
+				_unityBlurWidthX = effect.blurX;
+				_unityBlurWidthY = effect.blurY;
+				_unityQuality = Math.max(1, effect.quality);
+				_unityBlurX = effect.blurX * _unityQuality / (UNITY_TAPS - 1);
+				_unityBlurY = effect.blurY * _unityQuality / (UNITY_TAPS - 1);
+				updateUnityWeights(_unityQuality);
 				_unityStrength = effect.strength;
 				_unityGlowColor[0] = Color.getRed(effect.color) / 255.0;
 				_unityGlowColor[1] = Color.getGreen(effect.color) / 255.0;
@@ -194,6 +203,34 @@ package com.catalystapps.gaf.filter
 			numPasses = _unityMode == UNITY_MODE_COLOR ? 1 : 2;
 			offsetX = offsetY = 0;
 			return true;
+		}
+
+		// Starling keeps only two pass textures, so the glow's last pass would lose the object texture
+		// after more than two passes. Unity repeats the box pass per quality level instead; the same result
+		// in one pass is the box convolved with itself: a box, a triangle or a quadratic B-spline,
+		// sampled at UNITY_TAPS points across quality * blur width.
+		private function updateUnityWeights(quality: int): void
+		{
+			var sum: Number = 0;
+			for (var i: int = 0; i < UNITY_TAPS; i++)
+			{
+				var t: Number = Math.abs((i / (UNITY_TAPS - 1) - 0.5) * quality);
+				var weight: Number = 1;
+				if (quality == 2)
+				{
+					weight = Math.max(0, 1 - t);
+				}
+				else if (quality >= 3)
+				{
+					weight = t <= 0.5 ? 0.75 - t * t : 0.5 * Math.pow(Math.max(0, 1.5 - t), 2);
+				}
+				_unityWeights[i] = weight;
+				sum += weight;
+			}
+			for (var j: int = 0; j < UNITY_TAPS; j++)
+			{
+				_unityWeights[j] /= sum;
+			}
 		}
 
 		private static function applyColorMatrix(matrix: Vector.<Number>, rgba: Vector.<Number>): void
@@ -417,9 +454,9 @@ package com.catalystapps.gaf.filter
 		}
 
 		// Fragment constants of the Unity programs:
-		// fc0 step (uv), fc1-fc2.x tap weights, fc2.y 4, fc2.z 1, fc3 glow color,
+		// fc0 step (uv), fc2.y offset of the first tap in steps, fc2.z 1, fc3 glow color,
 		// fc4.x strength, fc4.y object alpha, fc5-fc8 + fc9 Adjust Color,
-		// fc10-fc13 + fc14 Tint, fc15 minimal color used to un-premultiply.
+		// fc10-fc13 + fc14 Tint, fc15 minimal color used to un-premultiply, fc16-fc23 tap weights.
 		private function activateUnity(pass: int, context: Context3D, texture: Texture): void
 		{
 			if (pass == 0)
@@ -429,17 +466,21 @@ package com.catalystapps.gaf.filter
 
 			var pixelsPerStageUnit: Number = resolution * Starling.current.contentScaleFactor;
 			var c: Vector.<Number> = _unityConstants;
-			var horizontal: Boolean = pass == 0;
+			var horizontal: Boolean = pass % 2 == 0;
 			c[0] = horizontal ? _unityBlurX * _unityStageUnitsPerTexelX * pixelsPerStageUnit / texture.nativeWidth : 0;
 			c[1] = horizontal ? 0 : _unityBlurY * _unityStageUnitsPerTexelY * pixelsPerStageUnit / texture.nativeHeight;
 			c[2] = c[3] = 0;
-			c[4] = UNITY_TAP_WEIGHTS[0]; c[5] = UNITY_TAP_WEIGHTS[1]; c[6] = UNITY_TAP_WEIGHTS[2]; c[7] = UNITY_TAP_WEIGHTS[3];
-			c[8] = UNITY_TAP_WEIGHTS[4]; c[9] = 4; c[10] = 1; c[11] = 0;
+			c[4] = 0; c[5] = 0; c[6] = 0; c[7] = 0;
+			c[8] = 0; c[9] = (UNITY_TAPS - 1) * 0.5; c[10] = 1; c[11] = 0;
 			c[12] = _unityGlowColor[0]; c[13] = _unityGlowColor[1]; c[14] = _unityGlowColor[2]; c[15] = _unityGlowColor[3];
 			c[16] = _unityStrength; c[17] = _unityAlpha; c[18] = 0; c[19] = 0;
 			writeMatrixConstants(_unityColorMatrix, c, 20);
 			writeMatrixConstants(_unityTint, c, 40);
 			c[60] = 0; c[61] = 0; c[62] = 0; c[63] = 0.0001;
+			for (var w: int = 0; w < UNITY_TAPS; w++)
+			{
+				c[UNITY_WEIGHTS_REGISTER * 4 + w] = _unityWeights[w];
+			}
 			context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, c);
 
 			var finalPass: Boolean = pass == numPasses - 1;
@@ -500,8 +541,8 @@ package com.catalystapps.gaf.filter
 			var textureScale: Number = image && image.texture ? image.texture.scale : 1;
 			_unityStageUnitsPerTexelX = scaleX / textureScale;
 			_unityStageUnitsPerTexelY = scaleY / textureScale;
-			marginX = Math.ceil(UNITY_KERNEL_SIZE * 0.5 * _unityBlurX * _unityStageUnitsPerTexelX) + 2;
-			marginY = Math.ceil(UNITY_KERNEL_SIZE * 0.5 * _unityBlurY * _unityStageUnitsPerTexelY) + 2;
+			marginX = Math.ceil(0.5 * _unityBlurWidthX * _unityQuality * _unityStageUnitsPerTexelX) + 2;
+			marginY = Math.ceil(0.5 * _unityBlurWidthY * _unityQuality * _unityStageUnitsPerTexelY) + 2;
 
 			var objectAlpha: Number = object.alpha;
 			_unityAlpha = objectAlpha * parentAlpha;
@@ -573,7 +614,7 @@ package com.catalystapps.gaf.filter
 					tintAndOutput);
 		}
 
-		// 9-tap kernel of the Unity GAFBlur/GAFGlow shaders along fc0.xy, summed into ft3.
+		// Blur of the Unity GAFBlur/GAFGlow shaders: UNITY_TAPS taps along fc0.xy weighted by fc16-fc23, summed into ft3.
 		private static function blurTaps(alphaOnly: Boolean): String
 		{
 			var code: String =
@@ -581,22 +622,18 @@ package com.catalystapps.gaf.filter
 					"mov ft1, fc0                   \n" + // AGAL forbids two constant operands
 					"mul ft1, ft1, fc2.yyyy         \n" +
 					"sub ft0.xy, ft0.xy, ft1.xy     \n";
-			for (var i: int = 0; i < UNITY_TAP_CONSTANTS.length; i++)
+			var components: Array = ["x", "y", "z", "w"];
+			for (var i: int = 0; i < UNITY_TAPS; i++)
 			{
-				var weight: String = UNITY_TAP_CONSTANTS[i];
+				var weight: String = "fc" + (UNITY_WEIGHTS_REGISTER + int(i / 4)) + "." + components[i % 4];
 				if (i > 0)
 				{
 					code += "add ft0.xy, ft0.xy, fc0.xy     \n";
 				}
 				code += "tex ft2, ft0, fs0 <2d, clamp, linear, mipnone> \n";
-				if (alphaOnly)
-				{
-					code += "mul ft2, ft2.wwww, " + weight + "\n";
-				}
-				else
-				{
-					code += "mul ft2, ft2, " + weight + "\n";
-				}
+				code += alphaOnly
+						? "mul ft2, ft2.wwww, " + weight + "\n"
+						: "mul ft2, ft2, " + weight + "\n";
 				code += i == 0 ? "mov ft3, ft2                   \n" : "add ft3, ft3, ft2              \n";
 			}
 			return code;

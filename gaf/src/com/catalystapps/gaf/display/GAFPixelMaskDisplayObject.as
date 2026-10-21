@@ -224,9 +224,23 @@ package com.catalystapps.gaf.display
 			this.transformationMatrix.copyFrom(this._image.transformationMatrix);
 			this.transformationMatrix.invert();
 
+			// A filter places its output by the object's bounds on the stage, while the render texture
+			// is in this object's space. Detached for the draw, this object is the root and the spaces match.
+			var parentContainer: DisplayObjectContainer = hasFilter(this) ? this.parent : null;
+			var index: int = parentContainer ? parentContainer.getChildIndex(this) : -1;
+			if (parentContainer)
+			{
+				parentContainer.removeChild(this);
+			}
+
 			this._superRenderFlag = true;
 			this._renderTexture.draw(this);
 			this._superRenderFlag = false;
+
+			if (parentContainer)
+			{
+				parentContainer.addChildAt(this, index);
+			}
 
 			this.transformationMatrix.a = _a;
 			this.transformationMatrix.b = _b;
@@ -238,6 +252,26 @@ package com.catalystapps.gaf.display
 			//-----------------------------------------------------------------------------------------------------------------
 
 			this._renderTexture.draw(this._maskImage);
+		}
+
+		private static function hasFilter(container: DisplayObjectContainer): Boolean
+		{
+			var count: int = container.numChildren;
+			for (var i: int = 0; i < count; i++)
+			{
+				var child: DisplayObject = container.getChildAt(i);
+				if (child.filter)
+				{
+					return true;
+				}
+
+				var childContainer: DisplayObjectContainer = child as DisplayObjectContainer;
+				if (childContainer && hasFilter(childContainer))
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public function get mustReorder(): Boolean

@@ -12,6 +12,7 @@ package com.catalystapps.gaf.data.converters
 	import com.catalystapps.gaf.data.config.CAnimationObject;
 	import com.catalystapps.gaf.data.config.CAnimationSequence;
 	import com.catalystapps.gaf.data.config.CBlurFilterData;
+	import com.catalystapps.gaf.data.config.ICFilterData;
 	import com.catalystapps.gaf.data.config.CFilter;
 	import com.catalystapps.gaf.data.config.CFrameAction;
 	import com.catalystapps.gaf.data.config.CStage;
@@ -67,6 +68,7 @@ package com.catalystapps.gaf.data.converters
 		private static const TAG_DEFINE_SOUNDS: uint = 14; // v5.0
 		private static const TAG_DEFINE_ATLAS3: uint = 15; // v5.0
 		private static const TAG_DEFINE_BLEND_MODES: uint = 16; // PetCity converter extension
+		private static const TAG_DEFINE_FILTER_QUALITY: uint = 17; // PetCity converter extension
 
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
@@ -237,6 +239,9 @@ package com.catalystapps.gaf.data.converters
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_BLEND_MODES:
 					readBlendModes(this._bytes, this._currentTimeline);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_FILTER_QUALITY:
+					readFilterQuality(this._bytes, this._currentTimeline);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_SEQUENCES:
 					readAnimationSequences(this._bytes, this._currentTimeline);
@@ -609,11 +614,6 @@ package com.catalystapps.gaf.data.converters
 
 							instance = new CAnimationFrameInstance(stateID + "");
 							instance.update(zIndex, matrix, alpha, maskID, filter);
-
-							if (maskID && filter)
-							{
-								timelineConfig.addWarning(WarningConstants.FILTERS_UNDER_MASK);
-							}
 
 							currentFrame.addInstance(instance);
 						}
@@ -1105,6 +1105,38 @@ package com.catalystapps.gaf.data.converters
 				var instance: CAnimationFrameInstance = frames[frameNumber - 1].getInstanceByID(objectID.toString());
 				if (instance)
 					instance.blendMode = mode;
+			}
+		}
+
+		/**
+		 * u32 count, then per entry: u32 frameNumber, u32 objectID, u8 quality of the last blur/glow/shadow.
+		 * Instances are shared by reference like with the blend modes.
+		 */
+		private static function readFilterQuality(tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
+		{
+			var frames: Vector.<CAnimationFrame> = timelineConfig.animationConfigFrames.frames;
+			var count: uint = tagContent.readUnsignedInt();
+			for (var i: uint = 0; i < count; i++)
+			{
+				var frameNumber: uint = tagContent.readUnsignedInt();
+				var objectID: uint = tagContent.readUnsignedInt();
+				var quality: int = tagContent.readUnsignedByte();
+
+				if (frameNumber == 0 || frameNumber > frames.length)
+					continue;
+
+				var instance: CAnimationFrameInstance = frames[frameNumber - 1].getInstanceByID(objectID.toString());
+				if (!instance || !instance.filter)
+					continue;
+
+				var effect: CBlurFilterData = null;
+				for each (var filterConfig: ICFilterData in instance.filter.filterConfigs)
+				{
+					if (filterConfig is CBlurFilterData)
+						effect = filterConfig as CBlurFilterData;
+				}
+				if (effect)
+					effect.quality = quality;
 			}
 		}
 

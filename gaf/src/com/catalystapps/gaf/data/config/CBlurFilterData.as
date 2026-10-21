@@ -15,6 +15,7 @@ package com.catalystapps.gaf.data.config
 		public var inner: Boolean;
 		public var knockout: Boolean;
 		public var resolution: Number = 1;
+		public var quality: int = 1;
 		
 		public function clone(): ICFilterData
 		{
@@ -30,6 +31,7 @@ package com.catalystapps.gaf.data.config
 			copy.inner = this.inner;
 			copy.knockout = this.knockout;
 			copy.resolution = this.resolution;
+			copy.quality = this.quality;
 			
 			return copy;
 		}
