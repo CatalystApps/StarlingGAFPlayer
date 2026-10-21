@@ -28,6 +28,7 @@ package com.catalystapps.gaf.display
 	import starling.animation.IAnimatable;
 	import starling.core.RenderSupport;
 	import starling.core.Starling;
+	import starling.display.BlendMode;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Quad;
@@ -922,6 +923,8 @@ package com.catalystapps.gaf.display
 						//if display object is not a mask
 						if (!animationObjectsDictionary[instance.id].mask)
 						{
+							(displayObject as DisplayObject).blendMode = instance.blendMode ? instance.blendMode : BlendMode.AUTO;
+
 							//if display object is under mask
 							if (instance.maskID)
 							{

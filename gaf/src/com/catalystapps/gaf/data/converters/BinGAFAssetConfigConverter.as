@@ -35,6 +35,7 @@ package com.catalystapps.gaf.data.converters
 	import flash.utils.Endian;
 	import flash.utils.getTimer;
 
+	import starling.display.BlendMode;
 	import starling.utils.RectangleUtil;
 
 	use namespace gaf_internal;
@@ -65,6 +66,7 @@ package com.catalystapps.gaf.data.converters
 		private static const TAG_DEFINE_TIMELINE: uint = 13; // v4.0
 		private static const TAG_DEFINE_SOUNDS: uint = 14; // v5.0
 		private static const TAG_DEFINE_ATLAS3: uint = 15; // v5.0
+		private static const TAG_DEFINE_BLEND_MODES: uint = 16; // PetCity converter extension
 
 		//filters
 		private static const FILTER_DROP_SHADOW: uint = 0;
@@ -232,6 +234,9 @@ package com.catalystapps.gaf.data.converters
 					return;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_NAMED_PARTS:
 					readNamedParts(this._bytes, this._currentTimeline);
+					break;
+				case BinGAFAssetConfigConverter.TAG_DEFINE_BLEND_MODES:
+					readBlendModes(this._bytes, this._currentTimeline);
 					break;
 				case BinGAFAssetConfigConverter.TAG_DEFINE_SEQUENCES:
 					readAnimationSequences(this._bytes, this._currentTimeline);
@@ -1076,6 +1081,42 @@ package com.catalystapps.gaf.data.converters
 				endFrameNo = tagContent.readShort();
 				timelineConfig.animationSequences.addSequence(new CAnimationSequence(sequenceID, startFrameNo, endFrameNo));
 			}
+		}
+
+		/**
+		 * u32 count, then per entry: u32 frameNumber, u32 objectID, u8 blend mode (codes of the PetCity converter).
+		 * Frames share unchanged instances by reference, so a mode set on the frame a state was written in
+		 * carries over to the frames that reuse it. Modes Stage3D cannot reproduce (no blend ops, no shader)
+		 * stay normal here; Unity renders them.
+		 */
+		private static function readBlendModes(tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void
+		{
+			var frames: Vector.<CAnimationFrame> = timelineConfig.animationConfigFrames.frames;
+			var count: uint = tagContent.readUnsignedInt();
+			for (var i: uint = 0; i < count; i++)
+			{
+				var frameNumber: uint = tagContent.readUnsignedInt();
+				var objectID: uint = tagContent.readUnsignedInt();
+				var mode: String = getStarlingBlendMode(tagContent.readUnsignedByte());
+
+				if (!mode || frameNumber == 0 || frameNumber > frames.length)
+					continue;
+
+				var instance: CAnimationFrameInstance = frames[frameNumber - 1].getInstanceByID(objectID.toString());
+				if (instance)
+					instance.blendMode = mode;
+			}
+		}
+
+		private static function getStarlingBlendMode(code: uint): String
+		{
+			switch (code)
+			{
+				case 1: return BlendMode.ADD;
+				case 2: return BlendMode.MULTIPLY;
+				case 3: return BlendMode.SCREEN;
+			}
+			return null;
 		}
 
 		private static function readNamedParts(tagContent: ByteArray, timelineConfig: GAFTimelineConfig): void

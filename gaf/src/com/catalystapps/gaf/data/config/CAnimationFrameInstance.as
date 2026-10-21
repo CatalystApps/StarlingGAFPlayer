@@ -23,6 +23,7 @@ package com.catalystapps.gaf.data.config
 		private var _alpha: Number;
 		private var _maskID: String;
 		private var _filter: CFilter;
+		private var _blendMode: String;
 
 		private static var tx: Number, ty: Number;
 
@@ -53,6 +54,7 @@ package com.catalystapps.gaf.data.config
 			}
 
 			result.update(this._zIndex, this._matrix.clone(), this._alpha, this._maskID, filterCopy);
+			result.blendMode = this._blendMode;
 
 			return result;
 		}
@@ -136,6 +138,17 @@ package com.catalystapps.gaf.data.config
 		public function get maskID(): String
 		{
 			return this._maskID;
+		}
+
+		/** Starling blend mode name, or null for normal blending. Set by the PetCity blend modes tag. */
+		public function get blendMode(): String
+		{
+			return this._blendMode;
+		}
+
+		public function set blendMode(value: String): void
+		{
+			this._blendMode = value;
 		}
 
 		public function get filter(): CFilter
